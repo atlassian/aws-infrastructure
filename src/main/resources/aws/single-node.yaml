@@ -1,0 +1,84 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Serves JIRA Standalone with DB running on separate machine.
+Parameters:
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  InstanceProfile:
+    Type: String
+  Ami:
+    Type: String
+Resources:
+  Database:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: m4.xlarge
+      SecurityGroupIds:
+        - Ref: SshSecurityGroup
+        - Ref: MySqlSecurityGroup
+      KeyName:
+        Ref: KeyName
+      ImageId: !Ref Ami
+      Tags:
+        -
+          Key: jpt-database
+          Value: true
+      IamInstanceProfile: !Ref InstanceProfile
+      BlockDeviceMappings:
+        -
+          DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 100
+            VolumeType: gp2
+  JIRA:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: c4.8xlarge
+      SecurityGroupIds:
+        - Ref: SshSecurityGroup
+        - Ref: TomcatSecurityGroup
+      KeyName:
+        Ref: KeyName
+      ImageId: !Ref Ami
+      Tags:
+        -
+          Key: jpt-jira
+          Value: true
+      IamInstanceProfile: !Ref InstanceProfile
+      BlockDeviceMappings:
+        -
+          DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 100
+            VolumeType: gp2
+  SshSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enables SSH access
+      SecurityGroupIngress:
+        -
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+  TomcatSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enables Tomcat HTTP access
+      SecurityGroupIngress:
+        -
+          IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: 0.0.0.0/0
+  MySqlSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enables MySql access
+      SecurityGroupIngress:
+        -
+          IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 0.0.0.0/0

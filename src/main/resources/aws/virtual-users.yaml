@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Virtual users for load generation.
+Parameters:
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  InstanceProfile:
+    Type: String
+  Ami:
+    Type: String
+Resources:
+  VirtualUsers:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: c4.8xlarge
+      SecurityGroupIds:
+        - Ref: SshSecurityGroup
+      KeyName:
+        Ref: KeyName
+      ImageId: !Ref Ami
+      Tags:
+        -
+          Key: jpt-virtual-users
+          Value: true
+      IamInstanceProfile: !Ref InstanceProfile
+      BlockDeviceMappings:
+        -
+          DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 30
+            VolumeType: gp2
+  SshSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enables SSH access
+      SecurityGroupIngress:
+        -
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0

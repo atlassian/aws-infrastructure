@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: A classic sticky load balancer
+Parameters:
+  Instances:
+    Type: List<AWS::EC2::Instance::Id>
+  Vpc:
+    Type: AWS::EC2::VPC::Id
+  Subnet:
+    Type: AWS::EC2::Subnet::Id
+Resources:
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      Subnets:
+        - Ref: Subnet
+      SecurityGroups:
+        - Ref: HttpSecurityGroup
+      Instances: !Ref Instances
+      HealthCheck:
+        Target: HTTP:8080/
+        HealthyThreshold: '3'
+        UnhealthyThreshold: '10'
+        Interval: '60'
+        Timeout: '30'
+      ConnectionSettings:
+        IdleTimeout: 4000
+      Listeners:
+        -
+          LoadBalancerPort: '80'
+          InstancePort: '8080'
+          Protocol: HTTP
+          PolicyNames:
+          - JiraCookieStickinessPolicy
+      Policies:
+        -
+          PolicyName: JiraCookieStickinessPolicy
+          PolicyType: AppCookieStickinessPolicyType
+          Attributes:
+            -
+              Name: "CookieName"
+              Value: "JSESSIONID"
+  HttpSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        Ref: Vpc
+      GroupDescription: Enables HTTP
+      SecurityGroupIngress:
+        -
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
