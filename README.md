@@ -6,3 +6,8 @@ This module defines provisioning of JPT infrastructure in AWS.
 This module uses [gradle-release](https://bitbucket.org/atlassian/gradle-release/src/master/) plugin help with 
 version and release management. 
 Please refer to [plugin docs](https://bitbucket.org/atlassian/gradle-release/src/release-0.0.2/README.md) for more information.
+
+##License
+Copyright (c) 2018 Atlassian and others.
+Apache 2.0 licensed, see [LICENSE.txt](LICENSE.txt) file.
+
