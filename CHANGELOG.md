@@ -5,7 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-0.0.1
+[Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-0.0.2
+
+## [0.0.2] - 2018-08-24
+[0.0.2]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-0.0.2%0DDrelease-0.0.1
 
 ### Added
 - License.
