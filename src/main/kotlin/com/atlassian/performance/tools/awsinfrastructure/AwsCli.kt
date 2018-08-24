@@ -1,7 +1,7 @@
 package com.atlassian.performance.tools.awsinfrastructure
 
 import com.atlassian.performance.tools.aws.StorageLocation
-import com.atlassian.performance.tools.infrastructure.os.Ubuntu
+import com.atlassian.performance.tools.infrastructure.api.os.Ubuntu
 import com.atlassian.performance.tools.ssh.SshConnection
 import java.time.Duration
 

@@ -4,9 +4,9 @@ import com.atlassian.performance.tools.aws.SshKey
 import com.atlassian.performance.tools.aws.Storage
 import com.atlassian.performance.tools.awsinfrastructure.jira.Jira
 import com.atlassian.performance.tools.concurrency.submitWithLogContext
-import com.atlassian.performance.tools.infrastructure.MeasurementSource
-import com.atlassian.performance.tools.infrastructure.virtualusers.LoadProfile
-import com.atlassian.performance.tools.infrastructure.virtualusers.VirtualUsers
+import com.atlassian.performance.tools.infrastructure.api.MeasurementSource
+import com.atlassian.performance.tools.infrastructure.api.virtualusers.LoadProfile
+import com.atlassian.performance.tools.infrastructure.api.virtualusers.VirtualUsers
 import com.atlassian.performance.tools.jiraactions.scenario.Scenario
 import com.atlassian.performance.tools.jvmtasks.TaskTimer.time
 import com.google.common.util.concurrent.ThreadFactoryBuilder

@@ -1,9 +1,9 @@
 package com.atlassian.performance.tools.awsinfrastructure
 
 import com.atlassian.performance.tools.aws.StorageLocation
-import com.atlassian.performance.tools.infrastructure.DatasetPackage
-import com.atlassian.performance.tools.infrastructure.FileArchiver
-import com.atlassian.performance.tools.infrastructure.os.Ubuntu
+import com.atlassian.performance.tools.infrastructure.api.dataset.DatasetPackage
+import com.atlassian.performance.tools.infrastructure.api.dataset.FileArchiver
+import com.atlassian.performance.tools.infrastructure.api.os.Ubuntu
 import com.atlassian.performance.tools.jvmtasks.TaskTimer.time
 import com.atlassian.performance.tools.ssh.SshConnection
 import java.time.Duration

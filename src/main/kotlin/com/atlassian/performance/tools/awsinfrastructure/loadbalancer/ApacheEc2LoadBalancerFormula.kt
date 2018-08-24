@@ -3,10 +3,12 @@ package com.atlassian.performance.tools.awsinfrastructure.loadbalancer
 import com.amazonaws.services.ec2.AmazonEC2
 import com.amazonaws.services.ec2.model.*
 import com.atlassian.performance.tools.aws.*
-import com.atlassian.performance.tools.infrastructure.loadbalancer.ApacheLoadBalancer
+import com.atlassian.performance.tools.infrastructure.api.loadbalancer.LoadBalancer
+import com.atlassian.performance.tools.ssh.Ssh
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.net.URI
+import java.time.Duration
 
 class ApacheEc2LoadBalancerFormula : LoadBalancerFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
@@ -75,5 +77,28 @@ class ApacheEc2LoadBalancerFormula : LoadBalancerFormula {
                 )
         )
         return securityGroup
+    }
+}
+
+private class ApacheLoadBalancer(
+    private val nodes: List<URI>,
+    private val ssh: Ssh,
+    private val httpPort: Int
+) : LoadBalancer {
+
+    init {
+        throw Exception("Wait until the `infrastructure` module ships `ApacheLoadBalancer`")
+    }
+
+    override val uri: URI = URI("http://${ssh.host.ipAddress}:$httpPort/")
+
+    override fun waitUntilHealthy(
+        timeout: Duration
+    ) {
+        throw Exception(
+            "TODO: Install Apache load balancer via $ssh," +
+                " configure it to balance between $nodes" +
+                " and listen on $httpPort"
+        )
     }
 }

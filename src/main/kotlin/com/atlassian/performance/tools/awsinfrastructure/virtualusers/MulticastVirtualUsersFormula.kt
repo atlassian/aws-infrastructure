@@ -2,10 +2,10 @@ package com.atlassian.performance.tools.awsinfrastructure.virtualusers
 
 import com.atlassian.performance.tools.aws.*
 import com.atlassian.performance.tools.concurrency.submitWithLogContext
-import com.atlassian.performance.tools.infrastructure.virtualusers.LoadProfile
-import com.atlassian.performance.tools.infrastructure.virtualusers.MulticastVirtualUsers
-import com.atlassian.performance.tools.infrastructure.virtualusers.ResultsTransport
-import com.atlassian.performance.tools.infrastructure.virtualusers.SshVirtualUsers
+import com.atlassian.performance.tools.infrastructure.api.virtualusers.LoadProfile
+import com.atlassian.performance.tools.infrastructure.api.virtualusers.MulticastVirtualUsers
+import com.atlassian.performance.tools.infrastructure.api.virtualusers.ResultsTransport
+import com.atlassian.performance.tools.infrastructure.api.virtualusers.SshVirtualUsers
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import java.io.File
 import java.util.concurrent.Executors

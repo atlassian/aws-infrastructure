@@ -3,8 +3,8 @@ package com.atlassian.performance.tools.awsinfrastructure.virtualusers
 import com.amazonaws.services.cloudformation.model.Parameter
 import com.amazonaws.services.ec2.model.Tag
 import com.atlassian.performance.tools.aws.*
-import com.atlassian.performance.tools.infrastructure.virtualusers.ResultsTransport
-import com.atlassian.performance.tools.infrastructure.virtualusers.SshVirtualUsers
+import com.atlassian.performance.tools.infrastructure.api.virtualusers.ResultsTransport
+import com.atlassian.performance.tools.infrastructure.api.virtualusers.SshVirtualUsers
 import com.atlassian.performance.tools.io.readResourceText
 import com.atlassian.performance.tools.ssh.Ssh
 import com.atlassian.performance.tools.ssh.SshHost

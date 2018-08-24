@@ -6,7 +6,7 @@ plugins {
 }
 
 dependencies {
-    tools("infrastructure", "0.0.2")
+    tools("infrastructure", "[1.0.0,2.0.0)")
     tools("aws-resources", "0.0.1")
     tools("jvm-tasks", "0.0.2")
     compile("org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlinVersion")

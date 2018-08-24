@@ -2,7 +2,7 @@ package com.atlassian.performance.tools.awsinfrastructure.virtualusers
 
 import com.atlassian.performance.tools.aws.Storage
 import com.atlassian.performance.tools.awsinfrastructure.AwsCli
-import com.atlassian.performance.tools.infrastructure.virtualusers.ResultsTransport
+import com.atlassian.performance.tools.infrastructure.api.virtualusers.ResultsTransport
 import com.atlassian.performance.tools.ssh.SshConnection
 import java.time.Duration
 

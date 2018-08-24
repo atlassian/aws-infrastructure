@@ -2,9 +2,9 @@ package com.atlassian.performance.tools.awsinfrastructure.jira.home
 
 import com.atlassian.performance.tools.aws.Storage
 import com.atlassian.performance.tools.awsinfrastructure.AwsCli
-import com.atlassian.performance.tools.infrastructure.jira.home.JiraHomeSource
-import com.atlassian.performance.tools.infrastructure.jira.home.SharedHome
-import com.atlassian.performance.tools.infrastructure.os.Ubuntu
+import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource
+import com.atlassian.performance.tools.infrastructure.api.jira.SharedHome
+import com.atlassian.performance.tools.infrastructure.api.os.Ubuntu
 import com.atlassian.performance.tools.ssh.Ssh
 import java.time.Duration
 

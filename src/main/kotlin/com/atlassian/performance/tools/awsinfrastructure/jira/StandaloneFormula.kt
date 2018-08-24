@@ -7,10 +7,10 @@ import com.atlassian.performance.tools.awsinfrastructure.RemoteLocation
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
 import com.atlassian.performance.tools.awsinfrastructure.storage.ApplicationStorage
 import com.atlassian.performance.tools.concurrency.submitWithLogContext
-import com.atlassian.performance.tools.infrastructure.Database
-import com.atlassian.performance.tools.infrastructure.app.Apps
-import com.atlassian.performance.tools.infrastructure.jira.home.JiraHomeSource
-import com.atlassian.performance.tools.infrastructure.jira.nodes.JiraNodeConfig
+import com.atlassian.performance.tools.infrastructure.api.app.Apps
+import com.atlassian.performance.tools.infrastructure.api.database.Database
+import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource
+import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
 import com.atlassian.performance.tools.jvmtasks.TaskTimer.time
 import com.atlassian.performance.tools.ssh.Ssh
 import com.atlassian.performance.tools.ssh.SshHost

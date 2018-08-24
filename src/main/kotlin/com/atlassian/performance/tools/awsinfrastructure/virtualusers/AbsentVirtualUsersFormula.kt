@@ -1,9 +1,9 @@
 package com.atlassian.performance.tools.awsinfrastructure.virtualusers
 
 import com.atlassian.performance.tools.aws.*
-import com.atlassian.performance.tools.infrastructure.virtualusers.LoadProfile
-import com.atlassian.performance.tools.infrastructure.virtualusers.ResultsTransport
-import com.atlassian.performance.tools.infrastructure.virtualusers.VirtualUsers
+import com.atlassian.performance.tools.infrastructure.api.virtualusers.LoadProfile
+import com.atlassian.performance.tools.infrastructure.api.virtualusers.ResultsTransport
+import com.atlassian.performance.tools.infrastructure.api.virtualusers.VirtualUsers
 import com.atlassian.performance.tools.jiraactions.scenario.Scenario
 import org.apache.logging.log4j.LogManager
 import java.net.URI

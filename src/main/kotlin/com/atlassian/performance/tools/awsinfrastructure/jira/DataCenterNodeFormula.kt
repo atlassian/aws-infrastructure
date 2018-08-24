@@ -1,6 +1,6 @@
 package com.atlassian.performance.tools.awsinfrastructure.jira
 
-import com.atlassian.performance.tools.infrastructure.jira.home.SharedHome
+import com.atlassian.performance.tools.infrastructure.api.jira.SharedHome
 import java.util.concurrent.Future
 
 internal class DataCenterNodeFormula(

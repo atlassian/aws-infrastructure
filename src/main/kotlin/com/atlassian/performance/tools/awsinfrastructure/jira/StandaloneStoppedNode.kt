@@ -1,9 +1,9 @@
 package com.atlassian.performance.tools.awsinfrastructure.jira
 
 import com.atlassian.performance.tools.aws.Storage
-import com.atlassian.performance.tools.infrastructure.jvm.OracleJDK
-import com.atlassian.performance.tools.infrastructure.os.MonitoringProcess
-import com.atlassian.performance.tools.infrastructure.os.OsMetric
+import com.atlassian.performance.tools.infrastructure.api.jvm.OracleJDK
+import com.atlassian.performance.tools.infrastructure.api.os.MonitoringProcess
+import com.atlassian.performance.tools.infrastructure.api.os.OsMetric
 import com.atlassian.performance.tools.ssh.Ssh
 import com.atlassian.performance.tools.ssh.SshConnection
 import org.apache.logging.log4j.LogManager

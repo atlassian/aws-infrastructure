@@ -3,8 +3,8 @@ package com.atlassian.performance.tools.awsinfrastructure.virtualusers
 import com.amazonaws.services.ec2.model.IamInstanceProfileSpecification
 import com.amazonaws.services.ec2.model.InstanceType
 import com.atlassian.performance.tools.aws.*
-import com.atlassian.performance.tools.infrastructure.virtualusers.ResultsTransport
-import com.atlassian.performance.tools.infrastructure.virtualusers.SshVirtualUsers
+import com.atlassian.performance.tools.infrastructure.api.virtualusers.ResultsTransport
+import com.atlassian.performance.tools.infrastructure.api.virtualusers.SshVirtualUsers
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.io.File

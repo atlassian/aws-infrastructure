@@ -2,10 +2,10 @@ package com.atlassian.performance.tools.awsinfrastructure
 
 import com.amazonaws.regions.Regions.EU_CENTRAL_1
 import com.atlassian.performance.tools.aws.StorageLocation
-import com.atlassian.performance.tools.infrastructure.Dataset
-import com.atlassian.performance.tools.infrastructure.FileArchiver
-import com.atlassian.performance.tools.infrastructure.MySqlDatabase
-import com.atlassian.performance.tools.infrastructure.jira.home.JiraHomePackage
+import com.atlassian.performance.tools.infrastructure.api.database.MySqlDatabase
+import com.atlassian.performance.tools.infrastructure.api.dataset.Dataset
+import com.atlassian.performance.tools.infrastructure.api.dataset.FileArchiver
+import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomePackage
 import java.net.URI
 import java.time.Duration
 import java.time.Duration.ofMinutes

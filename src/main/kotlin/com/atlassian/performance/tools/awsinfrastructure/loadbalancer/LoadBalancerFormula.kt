@@ -7,7 +7,7 @@ import com.atlassian.performance.tools.aws.Aws
 import com.atlassian.performance.tools.aws.Investment
 import com.atlassian.performance.tools.aws.Resource
 import com.atlassian.performance.tools.aws.SshKey
-import com.atlassian.performance.tools.infrastructure.loadbalancer.LoadBalancer
+import com.atlassian.performance.tools.infrastructure.api.loadbalancer.LoadBalancer
 
 interface LoadBalancerFormula {
 

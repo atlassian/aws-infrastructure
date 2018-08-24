@@ -1,8 +1,8 @@
 package com.atlassian.performance.tools.awsinfrastructure.virtualusers
 
 import com.atlassian.performance.tools.aws.*
-import com.atlassian.performance.tools.infrastructure.virtualusers.ResultsTransport
-import com.atlassian.performance.tools.infrastructure.virtualusers.VirtualUsers
+import com.atlassian.performance.tools.infrastructure.api.virtualusers.ResultsTransport
+import com.atlassian.performance.tools.infrastructure.api.virtualusers.VirtualUsers
 import java.util.concurrent.Future
 
 interface VirtualUsersFormula<out T : VirtualUsers> {

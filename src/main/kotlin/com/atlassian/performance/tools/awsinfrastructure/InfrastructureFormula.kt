@@ -5,7 +5,7 @@ import com.atlassian.performance.tools.awsinfrastructure.jira.JiraFormula
 import com.atlassian.performance.tools.awsinfrastructure.virtualusers.S3ResultsTransport
 import com.atlassian.performance.tools.awsinfrastructure.virtualusers.VirtualUsersFormula
 import com.atlassian.performance.tools.concurrency.submitWithLogContext
-import com.atlassian.performance.tools.infrastructure.virtualusers.VirtualUsers
+import com.atlassian.performance.tools.infrastructure.api.virtualusers.VirtualUsers
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import java.nio.file.Path
 import java.util.concurrent.Executors

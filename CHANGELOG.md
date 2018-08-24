@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - License.
 - Add this change log.
 
+### Fixed
+- Depend on a stable version of APT `infrastructure`.
+
 ## [0.0.1] - 2018-08-03
 [0.0.1]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-0.0.1%0Dinitial-commit
 

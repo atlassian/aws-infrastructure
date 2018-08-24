@@ -1,8 +1,8 @@
 package com.atlassian.performance.tools.awsinfrastructure
 
 import com.atlassian.performance.tools.aws.StorageLocation
-import com.atlassian.performance.tools.infrastructure.FileArchiver
-import com.atlassian.performance.tools.infrastructure.os.Ubuntu
+import com.atlassian.performance.tools.infrastructure.api.dataset.FileArchiver
+import com.atlassian.performance.tools.infrastructure.api.os.Ubuntu
 import com.atlassian.performance.tools.ssh.Ssh
 import com.atlassian.performance.tools.ssh.SshHost
 import org.apache.logging.log4j.LogManager

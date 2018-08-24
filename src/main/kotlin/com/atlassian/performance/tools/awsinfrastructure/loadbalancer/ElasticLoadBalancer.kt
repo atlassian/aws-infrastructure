@@ -3,7 +3,7 @@ package com.atlassian.performance.tools.awsinfrastructure.loadbalancer
 import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancing
 import com.amazonaws.services.elasticloadbalancing.model.DescribeInstanceHealthRequest
 import com.amazonaws.services.elasticloadbalancing.model.LoadBalancerDescription
-import com.atlassian.performance.tools.infrastructure.loadbalancer.LoadBalancer
+import com.atlassian.performance.tools.infrastructure.api.loadbalancer.LoadBalancer
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.net.URI

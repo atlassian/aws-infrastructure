@@ -2,8 +2,8 @@ package com.atlassian.performance.tools.awsinfrastructure.virtualusers
 
 import com.atlassian.performance.tools.aws.Storage
 import com.atlassian.performance.tools.awsinfrastructure.AwsCli
-import com.atlassian.performance.tools.infrastructure.jvm.OpenJDK
-import com.atlassian.performance.tools.infrastructure.os.Ubuntu
+import com.atlassian.performance.tools.infrastructure.api.jvm.OpenJDK
+import com.atlassian.performance.tools.infrastructure.api.os.Ubuntu
 import com.atlassian.performance.tools.ssh.Ssh
 import java.io.File
 
