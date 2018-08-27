@@ -25,9 +25,10 @@ data class Infrastructure<out T : VirtualUsers>(
 
     fun applyLoad(
         loadProfile: LoadProfile,
-        scenarioClass: Class<out Scenario>?
+        scenarioClass: Class<out Scenario>?,
+        diagnosticsLimit: Int? = null
     ) {
-        time("applying load") { virtualUsers.applyLoad(jira.address, loadProfile, scenarioClass) }
+        time("applying load") { virtualUsers.applyLoad(jira.address, loadProfile, scenarioClass, diagnosticsLimit) }
     }
 
     fun downloadResults(

@@ -35,7 +35,8 @@ class AbsentVirtualUsers : VirtualUsers {
     override fun applyLoad(
         jira: URI,
         loadProfile: LoadProfile,
-        scenarioClass: Class<out Scenario>?
+        scenarioClass: Class<out Scenario>?,
+        diagnosticsLimit: Int?
     ) {
         logger.debug("Load will not be applied")
     }
