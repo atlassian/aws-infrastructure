@@ -5,7 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-0.0.2
+[Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-0.0.3
+
+## [0.0.3] - 2018-08-27
+[0.0.3]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-0.0.3%0Drelease-0.0.2
 
 ### Fixed
 - [JPERF-26] - Increase Jira AWS Instance disk size.
@@ -13,7 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 [JPERF-26]: https://ecosystem.atlassian.net/browse/JPERF-26
 
 ## [0.0.2] - 2018-08-24
-[0.0.2]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-0.0.2%0DDrelease-0.0.1
+[0.0.2]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-0.0.2%0Drelease-0.0.1
 
 ### Added
 - License.
