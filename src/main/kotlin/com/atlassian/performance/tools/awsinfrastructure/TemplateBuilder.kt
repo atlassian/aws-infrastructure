@@ -9,7 +9,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator
 
 // This is a workaround for JPT-296. Please use EC2 API instead of template hacking when fixed.
-class TemplateBuilder(baseTemplateName: String) {
+internal class TemplateBuilder(baseTemplateName: String) {
     private val template = readResourceText("aws/$baseTemplateName").replace("!Ref", "__Ref__")
 
     private val mapper = ObjectMapper(YAMLFactory()

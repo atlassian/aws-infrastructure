@@ -1,11 +1,12 @@
-package com.atlassian.performance.tools.awsinfrastructure.jira
+package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
 import com.amazonaws.services.cloudformation.model.Parameter
 import com.amazonaws.services.ec2.model.Tag
 import com.atlassian.performance.tools.aws.*
-import com.atlassian.performance.tools.awsinfrastructure.RemoteLocation
+import com.atlassian.performance.tools.awsinfrastructure.api.RemoteLocation
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
-import com.atlassian.performance.tools.awsinfrastructure.storage.ApplicationStorage
+import com.atlassian.performance.tools.awsinfrastructure.jira.StandaloneNodeFormula
+import com.atlassian.performance.tools.awsinfrastructure.api.storage.ApplicationStorage
 import com.atlassian.performance.tools.concurrency.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
 import com.atlassian.performance.tools.infrastructure.api.database.Database

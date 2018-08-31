@@ -5,7 +5,7 @@ import com.atlassian.performance.tools.infrastructure.api.os.Ubuntu
 import com.atlassian.performance.tools.ssh.SshConnection
 import java.time.Duration
 
-class AwsCli {
+internal class AwsCli {
     fun ensureAwsCli(ssh: SshConnection) {
         Ubuntu().install(ssh, listOf("zip", "python"), Duration.ofMinutes(3))
         if (!ssh.safeExecute("aws --version").isSuccessful()) {

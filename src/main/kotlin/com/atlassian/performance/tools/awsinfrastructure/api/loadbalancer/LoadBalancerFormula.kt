@@ -1,4 +1,4 @@
-package com.atlassian.performance.tools.awsinfrastructure.loadbalancer
+package com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer
 
 import com.amazonaws.services.ec2.model.Instance
 import com.amazonaws.services.ec2.model.Subnet

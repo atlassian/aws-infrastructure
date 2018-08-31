@@ -1,4 +1,4 @@
-package com.atlassian.performance.tools.awsinfrastructure.storage
+package com.atlassian.performance.tools.awsinfrastructure.api.storage
 
 import com.atlassian.performance.tools.awsinfrastructure.AwsCli
 import com.atlassian.performance.tools.ssh.SshConnection

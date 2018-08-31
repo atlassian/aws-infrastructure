@@ -6,7 +6,7 @@ import com.atlassian.performance.tools.infrastructure.api.virtualusers.ResultsTr
 import com.atlassian.performance.tools.ssh.SshConnection
 import java.time.Duration
 
-class S3ResultsTransport(
+internal class S3ResultsTransport(
     private val results: Storage
 ) : ResultsTransport {
 

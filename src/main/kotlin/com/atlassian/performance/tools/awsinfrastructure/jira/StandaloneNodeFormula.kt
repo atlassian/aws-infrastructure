@@ -2,7 +2,7 @@ package com.atlassian.performance.tools.awsinfrastructure.jira
 
 import com.atlassian.performance.tools.aws.Storage
 import com.atlassian.performance.tools.awsinfrastructure.AwsCli
-import com.atlassian.performance.tools.awsinfrastructure.storage.ApplicationStorage
+import com.atlassian.performance.tools.awsinfrastructure.api.storage.ApplicationStorage
 import com.atlassian.performance.tools.infrastructure.api.Sed
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraGcLog
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource

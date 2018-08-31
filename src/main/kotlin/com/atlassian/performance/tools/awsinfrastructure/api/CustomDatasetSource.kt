@@ -1,4 +1,4 @@
-package com.atlassian.performance.tools.awsinfrastructure
+package com.atlassian.performance.tools.awsinfrastructure.api
 
 import com.atlassian.performance.tools.aws.StorageLocation
 import com.atlassian.performance.tools.concurrency.submitWithLogContext

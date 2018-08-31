@@ -1,4 +1,4 @@
-package com.atlassian.performance.tools.awsinfrastructure.loadbalancer
+package com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer
 
 import com.amazonaws.services.cloudformation.model.Parameter
 import com.amazonaws.services.ec2.model.Instance
@@ -8,6 +8,7 @@ import com.atlassian.performance.tools.aws.Aws
 import com.atlassian.performance.tools.aws.Investment
 import com.atlassian.performance.tools.aws.SshKey
 import com.atlassian.performance.tools.aws.StackFormula
+import com.atlassian.performance.tools.awsinfrastructure.loadbalancer.ElasticLoadBalancer
 import com.atlassian.performance.tools.io.readResourceText
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger

@@ -1,6 +1,6 @@
-package com.atlassian.performance.tools.awsinfrastructure.jira
+package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
-import com.atlassian.performance.tools.awsinfrastructure.RemoteLocation
+import com.atlassian.performance.tools.awsinfrastructure.api.RemoteLocation
 import com.atlassian.performance.tools.concurrency.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.MeasurementSource
 import com.atlassian.performance.tools.infrastructure.api.jvm.jmx.JmxClient

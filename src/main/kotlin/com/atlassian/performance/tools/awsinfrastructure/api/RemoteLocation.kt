@@ -1,6 +1,7 @@
-package com.atlassian.performance.tools.awsinfrastructure
+package com.atlassian.performance.tools.awsinfrastructure.api
 
 import com.atlassian.performance.tools.aws.StorageLocation
+import com.atlassian.performance.tools.awsinfrastructure.AwsCli
 import com.atlassian.performance.tools.infrastructure.api.dataset.FileArchiver
 import com.atlassian.performance.tools.infrastructure.api.os.Ubuntu
 import com.atlassian.performance.tools.ssh.Ssh

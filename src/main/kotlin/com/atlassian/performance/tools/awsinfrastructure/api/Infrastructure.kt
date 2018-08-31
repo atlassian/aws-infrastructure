@@ -1,8 +1,8 @@
-package com.atlassian.performance.tools.awsinfrastructure
+package com.atlassian.performance.tools.awsinfrastructure.api
 
 import com.atlassian.performance.tools.aws.SshKey
 import com.atlassian.performance.tools.aws.Storage
-import com.atlassian.performance.tools.awsinfrastructure.jira.Jira
+import com.atlassian.performance.tools.awsinfrastructure.api.jira.Jira
 import com.atlassian.performance.tools.concurrency.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.MeasurementSource
 import com.atlassian.performance.tools.infrastructure.api.virtualusers.LoadProfile

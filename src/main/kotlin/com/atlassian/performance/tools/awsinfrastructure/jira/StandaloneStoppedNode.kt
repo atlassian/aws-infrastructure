@@ -1,6 +1,7 @@
 package com.atlassian.performance.tools.awsinfrastructure.jira
 
 import com.atlassian.performance.tools.aws.Storage
+import com.atlassian.performance.tools.awsinfrastructure.api.jira.StartedNode
 import com.atlassian.performance.tools.infrastructure.api.jvm.OracleJDK
 import com.atlassian.performance.tools.infrastructure.api.os.MonitoringProcess
 import com.atlassian.performance.tools.infrastructure.api.os.OsMetric

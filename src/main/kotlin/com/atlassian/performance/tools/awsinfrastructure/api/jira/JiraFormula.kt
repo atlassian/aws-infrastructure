@@ -1,4 +1,4 @@
-package com.atlassian.performance.tools.awsinfrastructure.jira
+package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
 import com.atlassian.performance.tools.aws.*
 import java.util.concurrent.Future

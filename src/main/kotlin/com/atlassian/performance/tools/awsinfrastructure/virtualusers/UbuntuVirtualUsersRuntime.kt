@@ -7,7 +7,7 @@ import com.atlassian.performance.tools.infrastructure.api.os.Ubuntu
 import com.atlassian.performance.tools.ssh.Ssh
 import java.io.File
 
-class UbuntuVirtualUsersRuntime {
+internal class UbuntuVirtualUsersRuntime {
 
     /**
      * @return remote JAR path

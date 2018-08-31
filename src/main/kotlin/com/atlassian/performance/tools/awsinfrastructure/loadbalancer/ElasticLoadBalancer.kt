@@ -10,7 +10,7 @@ import java.net.URI
 import java.time.Duration
 import java.time.Instant
 
-class ElasticLoadBalancer(
+internal class ElasticLoadBalancer(
     private val loadBalancer: AmazonElasticLoadBalancing,
     private val loadBalancerDescription: LoadBalancerDescription
 ) : LoadBalancer {

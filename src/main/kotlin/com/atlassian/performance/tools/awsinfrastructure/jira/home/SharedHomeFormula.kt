@@ -8,7 +8,7 @@ import com.atlassian.performance.tools.infrastructure.api.os.Ubuntu
 import com.atlassian.performance.tools.ssh.Ssh
 import java.time.Duration
 
-class SharedHomeFormula(
+internal class SharedHomeFormula(
     private val pluginsTransport: Storage,
     private val jiraHomeSource: JiraHomeSource,
     private val ip: String,
