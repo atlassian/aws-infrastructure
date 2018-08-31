@@ -1,10 +1,10 @@
 package com.atlassian.performance.tools.awsinfrastructure.virtualusers
 
-import com.atlassian.performance.tools.aws.Storage
+import com.atlassian.performance.tools.aws.api.Storage
 import com.atlassian.performance.tools.awsinfrastructure.AwsCli
 import com.atlassian.performance.tools.infrastructure.api.jvm.OpenJDK
 import com.atlassian.performance.tools.infrastructure.api.os.Ubuntu
-import com.atlassian.performance.tools.ssh.Ssh
+import com.atlassian.performance.tools.ssh.api.Ssh
 import java.io.File
 
 internal class UbuntuVirtualUsersRuntime {

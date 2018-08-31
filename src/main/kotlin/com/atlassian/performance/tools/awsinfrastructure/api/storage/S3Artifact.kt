@@ -1,6 +1,6 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.storage
 
-import com.atlassian.performance.tools.ssh.SshConnection
+import com.atlassian.performance.tools.ssh.api.SshConnection
 import java.net.URI
 import java.time.Duration
 

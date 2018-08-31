@@ -1,10 +1,10 @@
 package com.atlassian.performance.tools.awsinfrastructure.api
 
-import com.atlassian.performance.tools.aws.*
+import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.JiraFormula
-import com.atlassian.performance.tools.awsinfrastructure.virtualusers.S3ResultsTransport
 import com.atlassian.performance.tools.awsinfrastructure.api.virtualusers.VirtualUsersFormula
-import com.atlassian.performance.tools.concurrency.submitWithLogContext
+import com.atlassian.performance.tools.awsinfrastructure.virtualusers.S3ResultsTransport
+import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.virtualusers.VirtualUsers
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import java.nio.file.Path

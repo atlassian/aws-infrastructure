@@ -1,7 +1,7 @@
 package com.atlassian.performance.tools.awsinfrastructure
 
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
-import com.atlassian.performance.tools.io.readResourceText
+import com.atlassian.performance.tools.io.api.readResourceText
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode

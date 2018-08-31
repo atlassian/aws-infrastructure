@@ -1,6 +1,6 @@
 package com.atlassian.performance.tools.awsinfrastructure.jira
 
-import com.atlassian.performance.tools.aws.Storage
+import com.atlassian.performance.tools.aws.api.Storage
 import com.atlassian.performance.tools.awsinfrastructure.AwsCli
 import com.atlassian.performance.tools.awsinfrastructure.api.storage.ApplicationStorage
 import com.atlassian.performance.tools.infrastructure.api.Sed
@@ -11,8 +11,8 @@ import com.atlassian.performance.tools.infrastructure.api.jira.SetenvSh
 import com.atlassian.performance.tools.infrastructure.api.jvm.JavaDevelopmentKit
 import com.atlassian.performance.tools.infrastructure.api.jvm.OracleJDK
 import com.atlassian.performance.tools.infrastructure.api.os.Ubuntu
-import com.atlassian.performance.tools.ssh.Ssh
-import com.atlassian.performance.tools.ssh.SshConnection
+import com.atlassian.performance.tools.ssh.api.Ssh
+import com.atlassian.performance.tools.ssh.api.SshConnection
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.time.Duration

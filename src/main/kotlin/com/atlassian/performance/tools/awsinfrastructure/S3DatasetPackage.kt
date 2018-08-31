@@ -1,11 +1,10 @@
 package com.atlassian.performance.tools.awsinfrastructure
 
-import com.atlassian.performance.tools.aws.StorageLocation
+import com.atlassian.performance.tools.aws.api.StorageLocation
 import com.atlassian.performance.tools.infrastructure.api.dataset.DatasetPackage
 import com.atlassian.performance.tools.infrastructure.api.dataset.FileArchiver
-import com.atlassian.performance.tools.infrastructure.api.os.Ubuntu
-import com.atlassian.performance.tools.jvmtasks.TaskTimer.time
-import com.atlassian.performance.tools.ssh.SshConnection
+import com.atlassian.performance.tools.jvmtasks.api.TaskTimer.time
+import com.atlassian.performance.tools.ssh.api.SshConnection
 import java.time.Duration
 
 internal data class S3DatasetPackage(
@@ -15,7 +14,6 @@ internal data class S3DatasetPackage(
     private val downloadTimeout: Duration
 ) : DatasetPackage {
 
-    val ubuntu = Ubuntu()
     private val stdOut = "-"
 
     override fun download(

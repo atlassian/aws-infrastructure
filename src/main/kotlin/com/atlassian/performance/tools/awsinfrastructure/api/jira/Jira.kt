@@ -1,10 +1,10 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
 import com.atlassian.performance.tools.awsinfrastructure.api.RemoteLocation
-import com.atlassian.performance.tools.concurrency.submitWithLogContext
+import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.MeasurementSource
 import com.atlassian.performance.tools.infrastructure.api.jvm.jmx.JmxClient
-import com.atlassian.performance.tools.jvmtasks.TaskTimer.time
+import com.atlassian.performance.tools.jvmtasks.api.TaskTimer.time
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import java.net.URI
 import java.util.concurrent.Executors

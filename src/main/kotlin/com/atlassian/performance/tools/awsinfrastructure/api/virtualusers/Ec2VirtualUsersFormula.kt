@@ -2,7 +2,7 @@ package com.atlassian.performance.tools.awsinfrastructure.api.virtualusers
 
 import com.amazonaws.services.ec2.model.IamInstanceProfileSpecification
 import com.amazonaws.services.ec2.model.InstanceType
-import com.atlassian.performance.tools.aws.*
+import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.virtualusers.UbuntuVirtualUsersRuntime
 import com.atlassian.performance.tools.infrastructure.api.virtualusers.ResultsTransport
 import com.atlassian.performance.tools.infrastructure.api.virtualusers.SshVirtualUsers

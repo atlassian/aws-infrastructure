@@ -5,7 +5,7 @@ Provision JPT infrastructure in AWS.
 Versioning, releasing and distribution are managed by the [gradle-release] plugin.
 See the [changelog](CHANGELOG.md).
 
-[gradle-release]: https://bitbucket.org/atlassian/gradle-release/src/release-0.0.2/README.md
+[gradle-release]: https://bitbucket.org/atlassian/gradle-release/src/release-0.4.0/README.md
 
 ## License
 Copyright (c) 2018 Atlassian and others.

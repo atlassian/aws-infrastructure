@@ -1,11 +1,10 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
-import com.atlassian.performance.tools.aws.Storage
+import com.atlassian.performance.tools.aws.api.Storage
 import com.atlassian.performance.tools.awsinfrastructure.AwsCli
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraGcLog
 import com.atlassian.performance.tools.infrastructure.api.os.MonitoringProcess
-import com.atlassian.performance.tools.infrastructure.api.os.Ubuntu
-import com.atlassian.performance.tools.ssh.Ssh
+import com.atlassian.performance.tools.ssh.api.Ssh
 import java.time.Duration
 
 data class StartedNode(
@@ -17,7 +16,6 @@ data class StartedNode(
     private val monitoringProcesses: List<MonitoringProcess>,
     private val ssh: Ssh
 ) {
-    private val ubuntu: Ubuntu = Ubuntu()
     private val resultsDirectory = "results"
 
     fun gatherResults() {

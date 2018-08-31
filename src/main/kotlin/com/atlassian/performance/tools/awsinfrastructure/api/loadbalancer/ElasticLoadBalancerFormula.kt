@@ -4,12 +4,12 @@ import com.amazonaws.services.cloudformation.model.Parameter
 import com.amazonaws.services.ec2.model.Instance
 import com.amazonaws.services.ec2.model.Subnet
 import com.amazonaws.services.ec2.model.Vpc
-import com.atlassian.performance.tools.aws.Aws
-import com.atlassian.performance.tools.aws.Investment
-import com.atlassian.performance.tools.aws.SshKey
-import com.atlassian.performance.tools.aws.StackFormula
+import com.atlassian.performance.tools.aws.api.Aws
+import com.atlassian.performance.tools.aws.api.Investment
+import com.atlassian.performance.tools.aws.api.SshKey
+import com.atlassian.performance.tools.aws.api.StackFormula
 import com.atlassian.performance.tools.awsinfrastructure.loadbalancer.ElasticLoadBalancer
-import com.atlassian.performance.tools.io.readResourceText
+import com.atlassian.performance.tools.io.api.readResourceText
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 

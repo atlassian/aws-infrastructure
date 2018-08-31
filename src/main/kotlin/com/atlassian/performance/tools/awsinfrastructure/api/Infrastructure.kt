@@ -1,14 +1,13 @@
 package com.atlassian.performance.tools.awsinfrastructure.api
 
-import com.atlassian.performance.tools.aws.SshKey
-import com.atlassian.performance.tools.aws.Storage
+import com.atlassian.performance.tools.aws.api.SshKey
+import com.atlassian.performance.tools.aws.api.Storage
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.Jira
-import com.atlassian.performance.tools.concurrency.submitWithLogContext
+import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.MeasurementSource
-import com.atlassian.performance.tools.infrastructure.api.virtualusers.LoadProfile
 import com.atlassian.performance.tools.infrastructure.api.virtualusers.VirtualUsers
-import com.atlassian.performance.tools.jiraactions.scenario.Scenario
-import com.atlassian.performance.tools.jvmtasks.TaskTimer.time
+import com.atlassian.performance.tools.jvmtasks.api.TaskTimer.time
+import com.atlassian.performance.tools.virtualusers.api.VirtualUserOptions
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -24,11 +23,9 @@ data class Infrastructure<out T : VirtualUsers>(
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
     fun applyLoad(
-        loadProfile: LoadProfile,
-        scenarioClass: Class<out Scenario>?,
-        diagnosticsLimit: Int? = null
+        virtualUserOptions: VirtualUserOptions
     ) {
-        time("applying load") { virtualUsers.applyLoad(jira.address, loadProfile, scenarioClass, diagnosticsLimit) }
+        time("applying load") { virtualUsers.applyLoad(virtualUserOptions) }
     }
 
     fun downloadResults(

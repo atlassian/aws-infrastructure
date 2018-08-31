@@ -2,11 +2,11 @@ package com.atlassian.performance.tools.awsinfrastructure.loadbalancer
 
 import com.amazonaws.services.ec2.AmazonEC2
 import com.amazonaws.services.ec2.model.*
-import com.atlassian.performance.tools.aws.*
+import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.LoadBalancerFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.ProvisionedLoadBalancer
 import com.atlassian.performance.tools.infrastructure.api.loadbalancer.LoadBalancer
-import com.atlassian.performance.tools.ssh.Ssh
+import com.atlassian.performance.tools.ssh.api.Ssh
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.net.URI

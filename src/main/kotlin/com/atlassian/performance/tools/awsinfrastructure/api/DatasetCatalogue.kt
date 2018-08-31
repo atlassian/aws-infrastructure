@@ -1,7 +1,7 @@
 package com.atlassian.performance.tools.awsinfrastructure.api
 
 import com.amazonaws.regions.Regions.EU_CENTRAL_1
-import com.atlassian.performance.tools.aws.StorageLocation
+import com.atlassian.performance.tools.aws.api.StorageLocation
 import com.atlassian.performance.tools.awsinfrastructure.S3DatasetPackage
 import com.atlassian.performance.tools.infrastructure.api.database.MySqlDatabase
 import com.atlassian.performance.tools.infrastructure.api.dataset.Dataset

@@ -25,6 +25,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 
 ### Changed
 - Define the public API.
+- Use stable APT APIs.
 
 ## [0.1.1] - 2018-08-28
 [0.1.1]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-0.1.1%0Drelease-0.0.3

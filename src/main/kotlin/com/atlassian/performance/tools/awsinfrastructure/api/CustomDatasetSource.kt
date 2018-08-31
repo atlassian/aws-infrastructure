@@ -1,9 +1,9 @@
 package com.atlassian.performance.tools.awsinfrastructure.api
 
-import com.atlassian.performance.tools.aws.StorageLocation
-import com.atlassian.performance.tools.concurrency.submitWithLogContext
-import com.atlassian.performance.tools.ssh.Ssh
-import com.atlassian.performance.tools.ssh.SshHost
+import com.atlassian.performance.tools.aws.api.StorageLocation
+import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
+import com.atlassian.performance.tools.ssh.api.Ssh
+import com.atlassian.performance.tools.ssh.api.SshHost
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger

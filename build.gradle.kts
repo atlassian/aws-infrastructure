@@ -2,29 +2,45 @@ val kotlinVersion = "1.2.30"
 
 plugins {
     kotlin("jvm").version("1.2.30")
-    id("com.atlassian.performance.tools.gradle-release").version("0.0.2")
+    `java-library`
+    id("com.atlassian.performance.tools.gradle-release").version("0.4.0")
+}
+
+configurations.all {
+    resolutionStrategy {
+        failOnVersionConflict()
+        eachDependency {
+            when (requested.module.toString()) {
+                "com.google.guava:guava" -> useVersion("23.6-jre")
+                "org.apache.httpcomponents:httpclient" -> useVersion("4.5.5")
+                "com.fasterxml.jackson.core:jackson-core" -> useVersion("2.9.4")
+                "org.slf4j:slf4j-api" -> useVersion("1.8.0-alpha2")
+                "org.apache.httpcomponents:httpcore" -> useVersion("4.4.9")
+                "commons-logging:commons-logging" -> useVersion("1.2")
+                "org.codehaus.plexus:plexus-utils" -> useVersion("3.1.0")
+                "com.google.code.gson:gson" -> useVersion("2.8.2")
+                "org.jsoup:jsoup" -> useVersion("1.10.2")
+            }
+        }
+    }
 }
 
 dependencies {
-    tools("infrastructure", "[1.1.0,2.0.0)")
-    tools("aws-resources", "0.0.1")
-    tools("jvm-tasks", "0.0.2")
-    compile("org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlinVersion")
-    compile("org.glassfish:javax.json:1.1")
-    compile("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.4")
-    testCompile("junit:junit:4.12")
-    testCompile("org.hamcrest:hamcrest-library:1.3")
+    api("com.atlassian.performance.tools:infrastructure:[2.0.0,3.0.0)")
+    api("com.atlassian.performance.tools:aws-resources:[1.0.0,2.0.0)")
+
+    implementation("com.atlassian.performance.tools:jvm-tasks:[1.0.0,2.0.0)")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlinVersion")
+    implementation("org.glassfish:javax.json:1.1")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.4")
     log4j(
         "api",
         "core",
         "slf4j-impl"
-    ).forEach { compile(it) }}
+    ).forEach { implementation(it) }
 
-fun DependencyHandler.tools(
-    module: String,
-    version: String
-) {
-    compile("com.atlassian.performance.tools:$module:$version")
+    testCompile("junit:junit:4.12")
+    testCompile("org.hamcrest:hamcrest-library:1.3")
 }
 
 fun log4j(

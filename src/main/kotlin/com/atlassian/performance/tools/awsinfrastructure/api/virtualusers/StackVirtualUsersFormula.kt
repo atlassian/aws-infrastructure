@@ -2,13 +2,13 @@ package com.atlassian.performance.tools.awsinfrastructure.api.virtualusers
 
 import com.amazonaws.services.cloudformation.model.Parameter
 import com.amazonaws.services.ec2.model.Tag
-import com.atlassian.performance.tools.aws.*
+import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.virtualusers.UbuntuVirtualUsersRuntime
 import com.atlassian.performance.tools.infrastructure.api.virtualusers.ResultsTransport
 import com.atlassian.performance.tools.infrastructure.api.virtualusers.SshVirtualUsers
-import com.atlassian.performance.tools.io.readResourceText
-import com.atlassian.performance.tools.ssh.Ssh
-import com.atlassian.performance.tools.ssh.SshHost
+import com.atlassian.performance.tools.io.api.readResourceText
+import com.atlassian.performance.tools.ssh.api.Ssh
+import com.atlassian.performance.tools.ssh.api.SshHost
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.io.File

@@ -1,7 +1,7 @@
 package com.atlassian.performance.tools.awsinfrastructure.jira
 
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.StartedNode
-import com.atlassian.performance.tools.ssh.Ssh
+import com.atlassian.performance.tools.ssh.api.Ssh
 
 internal interface StoppedNode {
     val jiraHome: String

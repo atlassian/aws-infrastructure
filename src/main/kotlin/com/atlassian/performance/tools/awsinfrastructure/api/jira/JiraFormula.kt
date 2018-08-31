@@ -1,6 +1,6 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
-import com.atlassian.performance.tools.aws.*
+import com.atlassian.performance.tools.aws.api.*
 import java.util.concurrent.Future
 
 interface JiraFormula {
