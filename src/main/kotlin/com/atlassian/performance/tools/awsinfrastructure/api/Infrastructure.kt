@@ -7,7 +7,6 @@ import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.MeasurementSource
 import com.atlassian.performance.tools.infrastructure.api.virtualusers.VirtualUsers
 import com.atlassian.performance.tools.jvmtasks.api.TaskTimer.time
-import com.atlassian.performance.tools.virtualusers.api.VirtualUserOptions
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -23,9 +22,15 @@ data class Infrastructure<out T : VirtualUsers>(
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
     fun applyLoad(
-        virtualUserOptions: VirtualUserOptions
+        virtualUsersConfiguration: VirtualUsersConfiguration
     ) {
-        time("applying load") { virtualUsers.applyLoad(virtualUserOptions) }
+        time("applying load") {
+            virtualUsers.applyLoad(
+                virtualUsersConfiguration.configure(
+                    jira.address
+                )
+            )
+        }
     }
 
     fun downloadResults(

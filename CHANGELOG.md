@@ -24,6 +24,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 [Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-0.1.1
 
 ### Changed
+- Require APT `jira-actions:2`.
 - Define the public API.
 - Use stable APT APIs.
 

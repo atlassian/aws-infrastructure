@@ -26,9 +26,11 @@ configurations.all {
 }
 
 dependencies {
-    api("com.atlassian.performance.tools:infrastructure:[2.0.0,3.0.0)")
+    api("com.atlassian.performance.tools:infrastructure:[2.1.0,3.0.0)")
     api("com.atlassian.performance.tools:aws-resources:[1.0.0,2.0.0)")
+    api("com.atlassian.performance.tools:jira-actions:[2.0.0,3.0.0)")
 
+    implementation("com.atlassian.performance.tools:virtual-users:[2.0.0,3.0.0)")
     implementation("com.atlassian.performance.tools:jvm-tasks:[1.0.0,2.0.0)")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlinVersion")
     implementation("org.glassfish:javax.json:1.1")
