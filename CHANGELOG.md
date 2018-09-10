@@ -21,7 +21,10 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-1.0.0
+[Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-1.0.1
+
+## [1.0.1] - 2018-09-10
+[1.0.1]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-1.0.1%0Drelease-1.0.0
 
 ## Fixed
 - Increase Jira home download time for the large Jira dataset. Fix [JPERF-68](https://ecosystem.atlassian.net/browse/JPERF-68).
