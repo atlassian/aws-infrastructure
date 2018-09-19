@@ -4,6 +4,8 @@ import com.amazonaws.services.cloudformation.model.Parameter
 import com.amazonaws.services.ec2.model.Tag
 import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.virtualusers.UbuntuVirtualUsersRuntime
+import com.atlassian.performance.tools.infrastructure.api.splunk.DisabledSplunkForwarder
+import com.atlassian.performance.tools.infrastructure.api.splunk.SplunkForwarder
 import com.atlassian.performance.tools.infrastructure.api.virtualusers.ResultsTransport
 import com.atlassian.performance.tools.infrastructure.api.virtualusers.SshVirtualUsers
 import com.atlassian.performance.tools.io.api.readResourceText
@@ -16,11 +18,24 @@ import java.util.concurrent.Future
 
 class StackVirtualUsersFormula(
     private val nodeOrder: Int = 1,
-    private val shadowJar: File
+    private val shadowJar: File,
+    private val splunkForwarder: SplunkForwarder
 ) : VirtualUsersFormula<SshVirtualUsers> {
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
     private val name: String = "virtual-user-node-$nodeOrder"
+
+    @Deprecated(
+        message = "Use the primary constructor"
+    )
+    constructor(
+        nodeOrder: Int = 1,
+        shadowJar: File
+    ) : this(
+        nodeOrder = nodeOrder,
+        shadowJar = shadowJar,
+        splunkForwarder = DisabledSplunkForwarder()
+    )
 
     override fun provision(
         investment: Investment,
@@ -63,6 +78,10 @@ class StackVirtualUsersFormula(
             shadowJar,
             shadowJarTransport
         )
+        virtualUsersSsh.newConnection().use {
+            it.execute("mkdir splunkforward")
+            splunkForwarder.run(it, name, logsPath = "/home/ubuntu/splunkforward/")
+        }
         logger.info("$name is ready to apply load")
         return ProvisionedVirtualUsers(
             virtualUsers = SshVirtualUsers(

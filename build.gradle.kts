@@ -3,7 +3,7 @@ val kotlinVersion = "1.2.30"
 plugins {
     kotlin("jvm").version("1.2.30")
     `java-library`
-    id("com.atlassian.performance.tools.gradle-release").version("0.4.1")
+    id("com.atlassian.performance.tools.gradle-release").version("0.4.3")
 }
 
 configurations.all {
@@ -26,7 +26,7 @@ configurations.all {
 }
 
 dependencies {
-    api("com.atlassian.performance.tools:infrastructure:[2.1.0,3.0.0)")
+    api("com.atlassian.performance.tools:infrastructure:[2.2.0,3.0.0)")
     api("com.atlassian.performance.tools:aws-resources:[1.0.0,2.0.0)")
     api("com.atlassian.performance.tools:jira-actions:[2.0.0,3.0.0)")
 
