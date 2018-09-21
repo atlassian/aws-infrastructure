@@ -66,7 +66,7 @@ Resources:
         - Ref: RmiSecurityGroup
         - Ref: TomcatSecurityGroup
         - Ref: SubnetSecurityGroup
-      InstanceType: c5.9xlarge
+      InstanceType: c4.8xlarge
       SubnetId:
         Ref: Subnet
       KeyName:
@@ -91,7 +91,7 @@ Resources:
         - Ref: RmiSecurityGroup
         - Ref: TomcatSecurityGroup
         - Ref: SubnetSecurityGroup
-      InstanceType: c5.9xlarge
+      InstanceType: c4.8xlarge
       SubnetId:
         Ref: Subnet
       KeyName:
@@ -114,7 +114,7 @@ Resources:
       SecurityGroupIds:
       - Ref: SshSecurityGroup
       - Ref: SubnetSecurityGroup
-      InstanceType: c5.9xlarge
+      InstanceType: c4.8xlarge
       SubnetId:
         Ref: Subnet
       KeyName:
@@ -134,7 +134,7 @@ Resources:
   Database:
     Type: AWS::EC2::Instance
     Properties:
-      InstanceType: c5.xlarge
+      InstanceType: c4.xlarge
       SubnetId:
         Ref: Subnet
       SecurityGroupIds:

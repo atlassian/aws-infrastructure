@@ -23,11 +23,6 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-1.0.2
 
-### Fixed
-- Use new EC2 instance types (c5, m5). Fix [JPERF-104].
-
-[JPERF-104]: https://ecosystem.atlassian.net/browse/JPERF-104
-
 ## [1.0.2] - 2018-09-11
 [1.0.2]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-1.0.2%0Drelease-1.0.1
 

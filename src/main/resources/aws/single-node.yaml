@@ -13,7 +13,7 @@ Resources:
   Database:
     Type: AWS::EC2::Instance
     Properties:
-      InstanceType: m5.xlarge
+      InstanceType: m4.xlarge
       SecurityGroupIds:
         - Ref: SshSecurityGroup
         - Ref: MySqlSecurityGroup
@@ -34,7 +34,7 @@ Resources:
   JIRA:
     Type: AWS::EC2::Instance
     Properties:
-      InstanceType: c5.9xlarge
+      InstanceType: c4.8xlarge
       SecurityGroupIds:
         - Ref: SshSecurityGroup
         - Ref: TomcatSecurityGroup

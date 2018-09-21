@@ -58,7 +58,7 @@ class Ec2VirtualUsersFormula(
                 .withIamInstanceProfile(
                     IamInstanceProfileSpecification().withName(roleProfile)
                 )
-                .withInstanceType(InstanceType.C59xlarge)
+                .withInstanceType(InstanceType.C48xlarge)
         }
     )
 }

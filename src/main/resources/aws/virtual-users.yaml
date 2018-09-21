@@ -13,7 +13,7 @@ Resources:
   VirtualUsers:
     Type: AWS::EC2::Instance
     Properties:
-      InstanceType: c5.9xlarge
+      InstanceType: c4.8xlarge
       SecurityGroupIds:
         - Ref: SshSecurityGroup
       KeyName:
