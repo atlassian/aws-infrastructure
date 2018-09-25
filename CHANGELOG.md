@@ -21,7 +21,13 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-1.0.2
+[Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-1.1.0
+
+## [1.1.0] - 2018-09-25
+[1.1.0]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-1.1.0%0Drelease-1.0.2
+
+## Added
+- Forward logs to Splunk from a predefined directory on Virtual User nodes.
 
 ## [1.0.2] - 2018-09-11
 [1.0.2]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-1.0.2%0Drelease-1.0.1

@@ -16,6 +16,9 @@ import org.apache.logging.log4j.Logger
 import java.io.File
 import java.util.concurrent.Future
 
+/**
+ * @param [splunkForwarder] Forwards logs from `/home/ubuntu/splunkforward`.
+ */
 class StackVirtualUsersFormula(
     private val nodeOrder: Int = 1,
     private val shadowJar: File,
