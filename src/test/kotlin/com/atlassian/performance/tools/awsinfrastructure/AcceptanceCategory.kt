@@ -1,0 +1,3 @@
+package com.atlassian.performance.tools.awsinfrastructure
+
+interface AcceptanceCategory

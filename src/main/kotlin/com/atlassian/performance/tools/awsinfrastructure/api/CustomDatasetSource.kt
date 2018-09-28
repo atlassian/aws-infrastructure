@@ -2,6 +2,7 @@ package com.atlassian.performance.tools.awsinfrastructure.api
 
 import com.atlassian.performance.tools.aws.api.StorageLocation
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
+import com.atlassian.performance.tools.infrastructure.api.dataset.Dataset
 import com.atlassian.performance.tools.ssh.api.Ssh
 import com.atlassian.performance.tools.ssh.api.SshHost
 import com.google.common.util.concurrent.ThreadFactoryBuilder
@@ -38,13 +39,19 @@ data class CustomDatasetSource(
     fun storeInS3(
         location: StorageLocation
     ) {
+        store(location)
+    }
+
+    internal fun store(
+        location: StorageLocation
+    ): Dataset {
+        logger.info("Uploading dataset to '$location'...")
         val executor = Executors.newFixedThreadPool(
             3,
             ThreadFactoryBuilder()
                 .setNameFormat("s3-upload-thread-%d")
                 .build()
         )
-        logger.info("Uploading dataset to '$location'...")
 
         stopJira(jiraHome.host)
         stopDockerContainers(database.host)
@@ -53,7 +60,7 @@ data class CustomDatasetSource(
             val renamed = jiraHome.move(FileNames.JIRAHOME, Duration.ofMinutes(1))
             try {
                 renamed
-                    .archive(Duration.ofMinutes(10))
+                    .archive(Duration.ofMinutes(25))
                     .upload(location, Duration.ofMinutes(10))
             } finally {
                 renamed.move(jiraHome.location, Duration.ofMinutes(1))
@@ -63,7 +70,7 @@ data class CustomDatasetSource(
             val renamed = database.move(FileNames.DATABASE, Duration.ofMinutes(1))
             try {
                 renamed
-                    .archive(Duration.ofMinutes(20))
+                    .archive(Duration.ofMinutes(25))
                     .upload(location, Duration.ofMinutes(10))
             } finally {
                 renamed.move(database.location, Duration.ofMinutes(1))
@@ -74,9 +81,9 @@ data class CustomDatasetSource(
         databaseUpload.get()
 
         executor.shutdownNow()
-
         val locationSnippet = location.toKotlinCodeSnippet()
         logger.info("Dataset saved. You can use it via `DatasetCatalogue().custom($locationSnippet)`")
+        return DatasetCatalogue().custom(location)
     }
 
     private fun stopJira(host: SshHost) {

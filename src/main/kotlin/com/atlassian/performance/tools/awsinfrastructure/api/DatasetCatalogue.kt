@@ -1,6 +1,6 @@
 package com.atlassian.performance.tools.awsinfrastructure.api
 
-import com.amazonaws.regions.Regions.EU_CENTRAL_1
+import com.amazonaws.regions.Regions
 import com.atlassian.performance.tools.aws.api.StorageLocation
 import com.atlassian.performance.tools.awsinfrastructure.S3DatasetPackage
 import com.atlassian.performance.tools.infrastructure.api.database.MySqlDatabase
@@ -16,9 +16,10 @@ class DatasetCatalogue {
     fun largeJira() = custom(
         location = StorageLocation(
             URI("s3://jpt-custom-datasets-storage-a008820-datasetbucket-dah44h6l1l8p/dataset-6aa68633-3655-4c51-b344-d8a13cfb3fd0"),
-            EU_CENTRAL_1
+            Regions.EU_CENTRAL_1
         ),
         label = "2M issues",
+        databaseDownload = ofMinutes(16),
         jiraHomeDownload = ofMinutes(16)
     )
 

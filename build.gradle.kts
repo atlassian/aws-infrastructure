@@ -20,6 +20,7 @@ configurations.all {
                 "org.codehaus.plexus:plexus-utils" -> useVersion("3.1.0")
                 "com.google.code.gson:gson" -> useVersion("2.8.2")
                 "org.jsoup:jsoup" -> useVersion("1.10.2")
+                "com.jcraft:jzlib" -> useVersion("1.1.3")
             }
         }
     }
@@ -32,6 +33,7 @@ dependencies {
 
     implementation("com.atlassian.performance.tools:virtual-users:[2.0.0,3.0.0)")
     implementation("com.atlassian.performance.tools:jvm-tasks:[1.0.0,2.0.0)")
+    implementation("com.atlassian.performance.tools:workspace:[2.0.0,3.0.0)")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlinVersion")
     implementation("org.glassfish:javax.json:1.1")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.4")
@@ -51,6 +53,17 @@ fun log4j(
     "org.apache.logging.log4j:log4j-$module:2.10.0"
 }
 
-val wrapper = tasks["wrapper"] as Wrapper
-wrapper.gradleVersion = "4.9"
-wrapper.distributionType = Wrapper.DistributionType.ALL
+tasks.getByName("test", Test::class).apply {
+    useJUnit {
+        excludeCategories("com.atlassian.performance.tools.awsinfrastructure.AcceptanceCategory")
+    }
+}
+
+val testAcceptance = task<Test>("testAcceptance")
+
+tasks["release"].dependsOn(testAcceptance)
+
+task<Wrapper>("wrapper") {
+    gradleVersion = "4.9"
+    distributionType = Wrapper.DistributionType.ALL
+}
