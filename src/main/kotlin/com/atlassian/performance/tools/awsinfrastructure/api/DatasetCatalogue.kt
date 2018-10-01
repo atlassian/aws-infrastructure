@@ -23,6 +23,16 @@ class DatasetCatalogue {
         jiraHomeDownload = ofMinutes(16)
     )
 
+    internal fun largeJiraWithoutBackups(): Dataset = custom(
+        location = StorageLocation(
+            URI("s3://jpt-custom-datasets-storage-a008820-datasetbucket-1sjxdtrv5hdhj/large-jira-without-backups"),
+            Regions.EU_WEST_1
+        ),
+        label = "2M issues (without backups)",
+        databaseDownload = ofMinutes(12),
+        jiraHomeDownload = ofMinutes(12)
+    )
+
     fun custom(
         location: StorageLocation,
         label: String = "custom",
