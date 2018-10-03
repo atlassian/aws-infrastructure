@@ -21,7 +21,13 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-1.1.0
+[Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-1.1.1
+
+## [1.1.1] - 2018-10-03
+[1.1.1]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-1.1.1%0Drelease-1.1.0
+
+## Fixed
+- Increase the timeouts when storing custom datasets.
 
 ## [1.1.0] - 2018-09-25
 [1.1.0]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-1.1.0%0Drelease-1.0.2
