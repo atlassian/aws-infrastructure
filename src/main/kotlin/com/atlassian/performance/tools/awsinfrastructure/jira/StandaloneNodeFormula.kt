@@ -24,7 +24,8 @@ internal class StandaloneNodeFormula(
     private val databaseIp: String,
     private val application: ApplicationStorage,
     private val ssh: Ssh,
-    private val config: JiraNodeConfig
+    private val config: JiraNodeConfig,
+    private val ephemeralDrive: Boolean = true
 ) : NodeFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
     private val jdk: JavaDevelopmentKit = OracleJDK()
@@ -36,6 +37,9 @@ internal class StandaloneNodeFormula(
         logger.info("Setting up $name...")
 
         ssh.newConnection().use { connection ->
+            if (ephemeralDrive) {
+                mountEphemeralDrive(connection)
+            }
             val jiraArchiveName = application.download(connection, ".")
             val jiraHome = jiraHomeSource.download(connection)
             val unpackedProduct = getUnpackedProductName(connection, jiraArchiveName)
@@ -100,5 +104,17 @@ internal class StandaloneNodeFormula(
             output = """\1$databaseIp\5""",
             file = dbconfigXml
         )
+    }
+
+    private fun mountEphemeralDrive(
+        connection: SshConnection
+    ) {
+        connection.execute("sudo tar -cf /home/ubuntu.tar .")
+        connection.execute("sudo mkfs.ext4 /dev/nvme1n1")
+        connection.execute("sudo mount -t ext4 /dev/nvme1n1 /home/ubuntu")
+        connection.execute("sudo chown ubuntu /home/ubuntu")
+        connection.execute("cd /home/ubuntu")
+        connection.execute("tar -xf /home/ubuntu.tar")
+        connection.execute("sudo rm /home/ubuntu.tar")
     }
 }

@@ -27,7 +27,8 @@ class StandaloneFormula(
     private val application: ApplicationStorage,
     private val jiraHomeSource: JiraHomeSource,
     private val database: Database,
-    private val config: JiraNodeConfig = JiraNodeConfig()
+    private val config: JiraNodeConfig = JiraNodeConfig(),
+    private val fastNonpersistentStorage: Boolean = true
 ) : JiraFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
@@ -105,7 +106,8 @@ class StandaloneFormula(
             resultsTransport = resultsTransport,
             databaseIp = databaseIp,
             application = application,
-            ssh = ssh
+            ssh = ssh,
+            ephemeralDrive = fastNonpersistentStorage
         )
 
         uploadPlugins.get()

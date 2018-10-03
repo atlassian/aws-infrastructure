@@ -34,7 +34,7 @@ Resources:
   JIRA:
     Type: AWS::EC2::Instance
     Properties:
-      InstanceType: c4.8xlarge
+      InstanceType: c5d.9xlarge
       SecurityGroupIds:
         - Ref: SshSecurityGroup
         - Ref: TomcatSecurityGroup

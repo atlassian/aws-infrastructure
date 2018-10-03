@@ -23,6 +23,12 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-1.1.1
 
+## Added
+- Add ability to choose between fast non-persistent or slow persistent storage for standalone node, which resolves [JPERF-164] and [JPERF-120].
+
+[JPERF-120]: https://ecosystem.atlassian.net/browse/JPERF-120
+[JPERF-164]: https://ecosystem.atlassian.net/browse/JPERF-164
+
 ## [1.1.1] - 2018-10-03
 [1.1.1]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-1.1.1%0Drelease-1.1.0
 
