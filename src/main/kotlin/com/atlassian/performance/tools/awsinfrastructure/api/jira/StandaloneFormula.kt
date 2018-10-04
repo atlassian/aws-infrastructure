@@ -30,6 +30,21 @@ class StandaloneFormula(
     private val config: JiraNodeConfig = JiraNodeConfig(),
     private val fastNonpersistentStorage: Boolean = true
 ) : JiraFormula {
+    constructor (
+        apps: Apps,
+        application: ApplicationStorage,
+        jiraHomeSource: JiraHomeSource,
+        database: Database,
+        config: JiraNodeConfig = JiraNodeConfig()
+    ) : this(
+        apps = apps,
+        application = application,
+        jiraHomeSource = jiraHomeSource,
+        database = database,
+        config = config,
+        fastNonpersistentStorage = true
+    )
+
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
     override fun provision(
