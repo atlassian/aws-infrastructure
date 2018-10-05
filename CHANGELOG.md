@@ -24,7 +24,10 @@ Dropping a requirement of a major version of a dependency is a new contract.
 [Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-1.1.1
 
 ## Added
-- Add ability to choose between fast non-persistent or slow persistent storage for standalone node, which resolves [JPERF-164] and [JPERF-120].
+- Support fast block storage for Jira nodes. Resolve [JPERF-164] and [JPERF-120].
+
+## Deprecated
+- Deprecate formula constructors, which don't enforce a block storage choice.
 
 [JPERF-120]: https://ecosystem.atlassian.net/browse/JPERF-120
 [JPERF-164]: https://ecosystem.atlassian.net/browse/JPERF-164

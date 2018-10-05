@@ -6,6 +6,8 @@ import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
 import com.atlassian.performance.tools.awsinfrastructure.api.RemoteLocation
 import com.atlassian.performance.tools.awsinfrastructure.api.storage.ApplicationStorage
+import com.atlassian.performance.tools.awsinfrastructure.api.storage.BlockStorage
+import com.atlassian.performance.tools.awsinfrastructure.api.storage.EphemeralBlockStorage
 import com.atlassian.performance.tools.awsinfrastructure.jira.StandaloneNodeFormula
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
@@ -27,9 +29,13 @@ class StandaloneFormula(
     private val application: ApplicationStorage,
     private val jiraHomeSource: JiraHomeSource,
     private val database: Database,
-    private val config: JiraNodeConfig = JiraNodeConfig(),
-    private val fastNonpersistentStorage: Boolean = true
+    private val config: JiraNodeConfig,
+    private val blockStorage: BlockStorage
 ) : JiraFormula {
+
+    @Deprecated(
+        message = "Use the primary constructor"
+    )
     constructor (
         apps: Apps,
         application: ApplicationStorage,
@@ -42,7 +48,7 @@ class StandaloneFormula(
         jiraHomeSource = jiraHomeSource,
         database = database,
         config = config,
-        fastNonpersistentStorage = true
+        blockStorage = EphemeralBlockStorage()
     )
 
     private val logger: Logger = LogManager.getLogger(this::class.java)
@@ -122,7 +128,7 @@ class StandaloneFormula(
             databaseIp = databaseIp,
             application = application,
             ssh = ssh,
-            ephemeralDrive = fastNonpersistentStorage
+            blockStorage = blockStorage
         )
 
         uploadPlugins.get()

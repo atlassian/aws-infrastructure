@@ -9,6 +9,8 @@ import com.atlassian.performance.tools.awsinfrastructure.api.RemoteLocation
 import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.ElasticLoadBalancerFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.LoadBalancerFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.storage.ApplicationStorage
+import com.atlassian.performance.tools.awsinfrastructure.api.storage.BlockStorage
+import com.atlassian.performance.tools.awsinfrastructure.api.storage.EphemeralBlockStorage
 import com.atlassian.performance.tools.awsinfrastructure.jira.DataCenterNodeFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.DiagnosableNodeFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.StandaloneNodeFormula
@@ -29,17 +31,38 @@ import java.util.concurrent.Executors
 import java.util.concurrent.Future
 
 /**
- * @param configs applied to nodes in the same order as they are provisioned and started
+ * @param [configs] applied to nodes in the same order as they are provisioned and started
  */
 class DataCenterFormula(
-    private val configs: List<JiraNodeConfig> = JiraNodeConfig().clone(times = 2),
-    private val loadBalancerFormula: LoadBalancerFormula = ElasticLoadBalancerFormula(),
+    private val configs: List<JiraNodeConfig>,
+    private val loadBalancerFormula: LoadBalancerFormula,
     private val apps: Apps,
     private val application: ApplicationStorage,
     private val jiraHomeSource: JiraHomeSource,
-    private val database: Database
+    private val database: Database,
+    private val blockStorage: BlockStorage
 ) : JiraFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
+
+    @Deprecated(
+        message = "Use the primary constructor"
+    )
+    constructor(
+        configs: List<JiraNodeConfig> = JiraNodeConfig().clone(times = 2),
+        loadBalancerFormula: LoadBalancerFormula = ElasticLoadBalancerFormula(),
+        apps: Apps,
+        application: ApplicationStorage,
+        jiraHomeSource: JiraHomeSource,
+        database: Database
+    ) : this(
+        configs = configs,
+        loadBalancerFormula = loadBalancerFormula,
+        apps = apps,
+        application = application,
+        jiraHomeSource = jiraHomeSource,
+        database = database,
+        blockStorage = EphemeralBlockStorage()
+    )
 
     override fun provision(
         investment: Investment,
@@ -133,7 +156,8 @@ class DataCenterFormula(
                             pluginsTransport = pluginsTransport,
                             application = application,
                             ssh = ssh,
-                            config = configs[i]
+                            config = configs[i],
+                            blockStorage = blockStorage
                         ),
                         nodeIndex = i,
                         sharedHome = sharedHome

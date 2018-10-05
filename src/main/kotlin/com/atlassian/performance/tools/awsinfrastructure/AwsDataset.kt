@@ -9,6 +9,7 @@ import com.atlassian.performance.tools.awsinfrastructure.api.InfrastructureFormu
 import com.atlassian.performance.tools.awsinfrastructure.api.ProvisionedInfrastructure
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.Jira
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.StandaloneFormula
+import com.atlassian.performance.tools.awsinfrastructure.api.storage.EphemeralBlockStorage
 import com.atlassian.performance.tools.awsinfrastructure.api.storage.JiraSoftwareStorage
 import com.atlassian.performance.tools.awsinfrastructure.api.virtualusers.AbsentVirtualUsersFormula
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
@@ -52,7 +53,8 @@ internal class AwsDataset(
                 database = dataset.database,
                 jiraHomeSource = dataset.jiraHomeSource,
                 application = JiraSoftwareStorage("7.2.0"),
-                config = JiraNodeConfig()
+                config = JiraNodeConfig(),
+                blockStorage = EphemeralBlockStorage()
             ),
             virtualUsersFormula = AbsentVirtualUsersFormula(),
             aws = aws

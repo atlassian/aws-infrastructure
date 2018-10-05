@@ -6,9 +6,12 @@ import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.taskWorkspace
 import com.atlassian.performance.tools.awsinfrastructure.api.DatasetCatalogue
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.DataCenterFormula
+import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.ElasticLoadBalancerFormula
+import com.atlassian.performance.tools.awsinfrastructure.api.storage.EphemeralBlockStorage
 import com.atlassian.performance.tools.awsinfrastructure.api.storage.JiraSoftwareStorage
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
 import com.atlassian.performance.tools.infrastructure.api.app.NoApp
+import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
 import org.junit.Test
 import java.time.Duration
 import java.util.*
@@ -33,7 +36,10 @@ class DataCenterFormulaIT {
             apps = Apps(listOf(NoApp())),
             application = JiraSoftwareStorage("7.2.0"),
             database = dataset.database,
-            jiraHomeSource = dataset.jiraHomeSource
+            jiraHomeSource = dataset.jiraHomeSource,
+            configs = JiraNodeConfig().clone(2),
+            loadBalancerFormula = ElasticLoadBalancerFormula(),
+            blockStorage = EphemeralBlockStorage()
         )
 
         val (_, resource) = dcFormula.provision(
