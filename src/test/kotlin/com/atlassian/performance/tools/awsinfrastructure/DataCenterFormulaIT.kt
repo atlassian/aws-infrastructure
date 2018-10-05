@@ -2,8 +2,8 @@ package com.atlassian.performance.tools.awsinfrastructure
 
 import com.atlassian.performance.tools.aws.api.Investment
 import com.atlassian.performance.tools.aws.api.SshKeyFormula
-import com.atlassian.performance.tools.awsinfrastructure.AcceptanceTest.aws
-import com.atlassian.performance.tools.awsinfrastructure.AcceptanceTest.taskWorkspace
+import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.aws
+import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.taskWorkspace
 import com.atlassian.performance.tools.awsinfrastructure.api.DatasetCatalogue
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.DataCenterFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.storage.JiraSoftwareStorage

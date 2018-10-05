@@ -1,7 +1,7 @@
 package com.atlassian.performance.tools.awsinfrastructure
 
-import com.atlassian.performance.tools.awsinfrastructure.AcceptanceTest.aws
-import com.atlassian.performance.tools.awsinfrastructure.AcceptanceTest.taskWorkspace
+import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.aws
+import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.taskWorkspace
 import com.atlassian.performance.tools.awsinfrastructure.api.DatasetCatalogue
 import com.atlassian.performance.tools.ssh.api.Ssh
 import org.junit.Test

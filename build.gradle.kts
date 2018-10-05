@@ -59,14 +59,14 @@ tasks.getByName("test", Test::class).apply {
     }
 }
 
-val testAcceptance = task<Test>("testAcceptance") {
+val testIntegration = task<Test>("testIntegration") {
     filter {
         include("**/*IT.class")
     }
-    maxParallelForks = 2
+    maxParallelForks = 4
 }
 
-tasks["release"].dependsOn(testAcceptance)
+tasks["check"].dependsOn(testIntegration)
 
 task<Wrapper>("wrapper") {
     gradleVersion = "4.9"

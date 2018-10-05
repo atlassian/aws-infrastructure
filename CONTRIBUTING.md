@@ -13,13 +13,13 @@ All the changes are welcome. Please help us to improve code, examples and docume
 ./gradlew test
 ```
 
-### Acceptance tests
+### Integration tests
 
 ```
-./gradlew testAcceptance
+./gradlew testIntegration
 ```
 
-Acceptance tests check the suitability for release. They cover the critical features of the API.
+Integration tests cover the critical features of the API.
 These tests use real dependencies instead of mocking them, so they require AWS credentials.
     
 ## Developer’s environment
@@ -30,9 +30,17 @@ You can build and run aws-infrastructure on MacOS, Windows or Linux. You'll need
  
 Pull requests, issues and comments are welcome. For pull requests:
 
+  - Create your own [fork] of the repository and raise a pull request targeting master branch in the main repository
+  - Enable Bitbucket pipelines, it is important that you do it via *Settings* menu and not *Pipelines* menu otherwise 
+    Bitbucket will create an empty commit polluting Git history of your fork
+  - Configure Bitbucket pipelines by providing `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables
+    with your AWS credentials. This can be done in your [repository settings] in *Pipelines* section
   - Add tests for new features and bug fixes
   - Follow the existing style
   - Separate unrelated changes into multiple pull requests
+
+[fork]: https://confluence.atlassian.com/bitbucket/forking-a-repository-221449527.html
+[repository settings]: https://confluence.atlassian.com/bitbucket/environment-variables-794502608.html
   
 See the [existing issues](https://ecosystem.atlassian.net/projects/JPERF/issues/?filter=allissues) for things to start contributing.
 

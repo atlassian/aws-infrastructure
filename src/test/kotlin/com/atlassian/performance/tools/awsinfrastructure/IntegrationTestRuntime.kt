@@ -6,7 +6,7 @@ import com.atlassian.performance.tools.aws.api.Aws
 import com.atlassian.performance.tools.workspace.api.RootWorkspace
 import org.apache.logging.log4j.core.config.ConfigurationFactory
 
-object AcceptanceTest {
+object IntegrationTestRuntime {
     val taskWorkspace = RootWorkspace().currentTask
     val aws: Aws
 

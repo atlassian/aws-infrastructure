@@ -8,6 +8,9 @@ pipelines:
           - gradle
         script:
           - bash ./gradlew build
+        artifacts:
+          - build/reports/**
+          - jpt-workspace/**
   branches:
     master:
       - step:
@@ -16,6 +19,9 @@ pipelines:
           - gradle
           script:
           - bash ./gradlew build
+          artifacts:
+          - build/reports/**
+          - jpt-workspace/**
       - step:
           name: Release project
           caches:
