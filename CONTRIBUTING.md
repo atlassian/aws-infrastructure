@@ -7,7 +7,20 @@ All the changes are welcome. Please help us to improve code, examples and docume
 
 ## Testing 
 
-    ./gradlew test
+### Unit tests
+
+```
+./gradlew test
+```
+
+### Acceptance tests
+
+```
+./gradlew testAcceptance
+```
+
+Acceptance tests check the suitability for release. They cover the critical features of the API.
+These tests use real dependencies instead of mocking them, so they require AWS credentials.
     
 ## Developer’s environment
 

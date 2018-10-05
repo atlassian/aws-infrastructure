@@ -54,12 +54,17 @@ fun log4j(
 }
 
 tasks.getByName("test", Test::class).apply {
-    useJUnit {
-        excludeCategories("com.atlassian.performance.tools.awsinfrastructure.AcceptanceCategory")
+    filter {
+        exclude("**/*IT.class")
     }
 }
 
-val testAcceptance = task<Test>("testAcceptance")
+val testAcceptance = task<Test>("testAcceptance") {
+    filter {
+        include("**/*IT.class")
+    }
+    maxParallelForks = 2
+}
 
 tasks["release"].dependsOn(testAcceptance)
 

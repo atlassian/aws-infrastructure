@@ -1,23 +1,14 @@
 package com.atlassian.performance.tools.awsinfrastructure
 
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
-import com.amazonaws.regions.Regions
-import com.atlassian.performance.tools.aws.api.Aws
+import com.atlassian.performance.tools.awsinfrastructure.AcceptanceTest.aws
+import com.atlassian.performance.tools.awsinfrastructure.AcceptanceTest.taskWorkspace
 import com.atlassian.performance.tools.awsinfrastructure.api.DatasetCatalogue
 import com.atlassian.performance.tools.ssh.api.Ssh
-import com.atlassian.performance.tools.workspace.api.RootWorkspace
-import org.apache.logging.log4j.core.config.ConfigurationFactory
-import org.junit.BeforeClass
 import org.junit.Test
-import org.junit.experimental.categories.Category
 
-@Category(AcceptanceCategory::class)
-class AwsDatasetTest {
+class AwsDatasetIT {
 
-    private val aws: Aws = Aws(
-        region = Regions.EU_WEST_1,
-        credentialsProvider = DefaultAWSCredentialsProviderChain()
-    )
+    private val workspace = taskWorkspace.isolateTest(javaClass.simpleName)
     private val sourceDataset = DatasetCatalogue().largeJira()
 
     @Test
@@ -39,15 +30,5 @@ class AwsDatasetTest {
                         ssh.execute("rm -r $backupPath")
                     }
             }
-    }
-
-    companion object {
-        private val workspace = RootWorkspace().currentTask
-
-        @BeforeClass
-        @JvmStatic
-        fun configureLogs() {
-            ConfigurationFactory.setConfigurationFactory(LogConfigurationFactory(workspace))
-        }
     }
 }

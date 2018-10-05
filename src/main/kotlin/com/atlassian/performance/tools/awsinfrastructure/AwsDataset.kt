@@ -15,7 +15,7 @@ import com.atlassian.performance.tools.infrastructure.api.app.Apps
 import com.atlassian.performance.tools.infrastructure.api.app.NoApp
 import com.atlassian.performance.tools.infrastructure.api.dataset.Dataset
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
-import com.atlassian.performance.tools.workspace.api.TaskWorkspace
+import com.atlassian.performance.tools.workspace.api.TestWorkspace
 import org.apache.logging.log4j.LogManager.getLogger
 import java.time.Duration
 import java.util.concurrent.TimeUnit
@@ -26,7 +26,7 @@ internal class AwsDataset(
 
     fun modify(
         aws: Aws,
-        workspace: TaskWorkspace,
+        workspace: TestWorkspace,
         newDatasetName: String,
         modification: (Infrastructure<*>) -> Unit
     ): Dataset {
@@ -39,7 +39,7 @@ internal class AwsDataset(
 
     private fun provision(
         aws: Aws,
-        workspace: TaskWorkspace
+        workspace: TestWorkspace
     ): ProvisionedInfrastructure<*> {
         logger.info("Provisioning the ${dataset.label} dataset ...")
         val formula = InfrastructureFormula(
