@@ -6,7 +6,7 @@ import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.taskWorkspace
 import com.atlassian.performance.tools.awsinfrastructure.api.DatasetCatalogue
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C5NineExtraLargeEphemeral
-import com.atlassian.performance.tools.awsinfrastructure.api.storage.JiraSoftwareStorage
+import com.atlassian.performance.tools.awsinfrastructure.api.storage.JiraServiceDeskStorage
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
 import com.atlassian.performance.tools.infrastructure.api.app.NoApp
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
@@ -33,7 +33,7 @@ class StandaloneFormulaIT {
         )
         val serverFormula = StandaloneFormula(
             apps = Apps(listOf(NoApp())),
-            application = JiraSoftwareStorage("7.6.9"),
+            application = JiraServiceDeskStorage("3.9.8"),
             database = dataset.database,
             jiraHomeSource = dataset.jiraHomeSource,
             config = JiraNodeConfig(),
@@ -42,7 +42,7 @@ class StandaloneFormulaIT {
 
         val (_, resource) = serverFormula.provision(
             investment = Investment(
-                useCase = "Test Server provisioning",
+                useCase = "Test JSD Server provisioning",
                 lifespan = lifespan
             ),
             pluginsTransport = aws.jiraStorage(nonce),
