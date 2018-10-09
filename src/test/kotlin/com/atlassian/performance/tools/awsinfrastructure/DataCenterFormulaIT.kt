@@ -5,9 +5,9 @@ import com.atlassian.performance.tools.aws.api.SshKeyFormula
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.aws
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.taskWorkspace
 import com.atlassian.performance.tools.awsinfrastructure.api.DatasetCatalogue
+import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C5NineExtraLargeEphemeral
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.DataCenterFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.ElasticLoadBalancerFormula
-import com.atlassian.performance.tools.awsinfrastructure.api.storage.EphemeralBlockStorage
 import com.atlassian.performance.tools.awsinfrastructure.api.storage.JiraSoftwareStorage
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
 import com.atlassian.performance.tools.infrastructure.api.app.NoApp
@@ -39,7 +39,7 @@ class DataCenterFormulaIT {
             jiraHomeSource = dataset.jiraHomeSource,
             configs = JiraNodeConfig().clone(2),
             loadBalancerFormula = ElasticLoadBalancerFormula(),
-            blockStorage = EphemeralBlockStorage()
+            computer = C5NineExtraLargeEphemeral()
         )
 
         val (_, resource) = dcFormula.provision(

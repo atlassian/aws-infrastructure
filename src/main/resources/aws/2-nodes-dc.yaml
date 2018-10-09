@@ -9,6 +9,8 @@ Parameters:
     Type: String
   Ami:
     Type: String
+  JiraInstanceType:
+    Type: String
   AvailabilityZone:
     Type: AWS::EC2::AvailabilityZone::Name
 Resources:
@@ -91,7 +93,7 @@ Resources:
         - Ref: RmiSecurityGroup
         - Ref: TomcatSecurityGroup
         - Ref: SubnetSecurityGroup
-      InstanceType: c5d.9xlarge
+      InstanceType: !Ref JiraInstanceType
       SubnetId:
         Ref: Subnet
       KeyName:
@@ -114,7 +116,7 @@ Resources:
       SecurityGroupIds:
       - Ref: SshSecurityGroup
       - Ref: SubnetSecurityGroup
-      InstanceType: c4.8xlarge
+      InstanceType: !Ref JiraInstanceType
       SubnetId:
         Ref: Subnet
       KeyName:

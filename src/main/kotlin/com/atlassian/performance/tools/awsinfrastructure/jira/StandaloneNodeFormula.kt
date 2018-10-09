@@ -2,8 +2,8 @@ package com.atlassian.performance.tools.awsinfrastructure.jira
 
 import com.atlassian.performance.tools.aws.api.Storage
 import com.atlassian.performance.tools.awsinfrastructure.AwsCli
+import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
 import com.atlassian.performance.tools.awsinfrastructure.api.storage.ApplicationStorage
-import com.atlassian.performance.tools.awsinfrastructure.api.storage.BlockStorage
 import com.atlassian.performance.tools.infrastructure.api.Sed
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraGcLog
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource
@@ -26,7 +26,7 @@ internal class StandaloneNodeFormula(
     private val application: ApplicationStorage,
     private val ssh: Ssh,
     private val config: JiraNodeConfig,
-    private val blockStorage: BlockStorage
+    private val computer: Computer
 ) : NodeFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
     private val jdk: JavaDevelopmentKit = OracleJDK()
@@ -38,7 +38,7 @@ internal class StandaloneNodeFormula(
         logger.info("Setting up $name...")
 
         ssh.newConnection().use { connection ->
-            blockStorage.mount(connection)
+            computer.setUp(connection)
             val jiraArchiveName = application.download(connection, ".")
             val jiraHome = jiraHomeSource.download(connection)
             val unpackedProduct = getUnpackedProductName(connection, jiraArchiveName)

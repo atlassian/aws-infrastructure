@@ -24,10 +24,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 [Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-1.1.1
 
 ## Added
+- Support different hardware specifications for Jira nodes.
 - Support fast block storage for Jira nodes. Resolve [JPERF-164] and [JPERF-120].
 
 ## Deprecated
-- Deprecate formula constructors, which don't enforce a block storage choice.
+- Deprecate formula constructors, which don't enforce a computer choice.
 
 [JPERF-120]: https://ecosystem.atlassian.net/browse/JPERF-120
 [JPERF-164]: https://ecosystem.atlassian.net/browse/JPERF-164

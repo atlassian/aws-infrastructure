@@ -5,9 +5,9 @@ import com.amazonaws.services.ec2.model.Tag
 import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
 import com.atlassian.performance.tools.awsinfrastructure.api.RemoteLocation
+import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C4EightExtraLargeElastic
+import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
 import com.atlassian.performance.tools.awsinfrastructure.api.storage.ApplicationStorage
-import com.atlassian.performance.tools.awsinfrastructure.api.storage.BlockStorage
-import com.atlassian.performance.tools.awsinfrastructure.api.storage.EphemeralBlockStorage
 import com.atlassian.performance.tools.awsinfrastructure.jira.StandaloneNodeFormula
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
@@ -30,7 +30,7 @@ class StandaloneFormula(
     private val jiraHomeSource: JiraHomeSource,
     private val database: Database,
     private val config: JiraNodeConfig,
-    private val blockStorage: BlockStorage
+    private val computer: Computer
 ) : JiraFormula {
 
     @Deprecated(
@@ -48,7 +48,7 @@ class StandaloneFormula(
         jiraHomeSource = jiraHomeSource,
         database = database,
         config = config,
-        blockStorage = EphemeralBlockStorage()
+        computer = C4EightExtraLargeElastic()
     )
 
     private val logger: Logger = LogManager.getLogger(this::class.java)
@@ -84,7 +84,10 @@ class StandaloneFormula(
                         .withParameterValue(roleProfile),
                     Parameter()
                         .withParameterKey("Ami")
-                        .withParameterValue(aws.defaultAmi)
+                        .withParameterValue(aws.defaultAmi),
+                    Parameter()
+                        .withParameterKey("JiraInstanceType")
+                        .withParameterValue(computer.instanceType.toString())
                 ),
                 aws = aws
             ).provision()
@@ -128,7 +131,7 @@ class StandaloneFormula(
             databaseIp = databaseIp,
             application = application,
             ssh = ssh,
-            blockStorage = blockStorage
+            computer = computer
         )
 
         uploadPlugins.get()

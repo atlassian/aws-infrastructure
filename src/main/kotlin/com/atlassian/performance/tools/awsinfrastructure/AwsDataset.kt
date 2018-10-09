@@ -7,9 +7,9 @@ import com.atlassian.performance.tools.awsinfrastructure.api.CustomDatasetSource
 import com.atlassian.performance.tools.awsinfrastructure.api.Infrastructure
 import com.atlassian.performance.tools.awsinfrastructure.api.InfrastructureFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.ProvisionedInfrastructure
+import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C5NineExtraLargeEphemeral
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.Jira
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.StandaloneFormula
-import com.atlassian.performance.tools.awsinfrastructure.api.storage.EphemeralBlockStorage
 import com.atlassian.performance.tools.awsinfrastructure.api.storage.JiraSoftwareStorage
 import com.atlassian.performance.tools.awsinfrastructure.api.virtualusers.AbsentVirtualUsersFormula
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
@@ -54,7 +54,7 @@ internal class AwsDataset(
                 jiraHomeSource = dataset.jiraHomeSource,
                 application = JiraSoftwareStorage("7.2.0"),
                 config = JiraNodeConfig(),
-                blockStorage = EphemeralBlockStorage()
+                computer = C5NineExtraLargeEphemeral()
             ),
             virtualUsersFormula = AbsentVirtualUsersFormula(),
             aws = aws

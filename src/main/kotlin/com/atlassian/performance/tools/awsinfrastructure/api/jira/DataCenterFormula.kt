@@ -6,11 +6,11 @@ import com.amazonaws.services.ec2.model.Tag
 import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
 import com.atlassian.performance.tools.awsinfrastructure.api.RemoteLocation
+import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C4EightExtraLargeElastic
+import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
 import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.ElasticLoadBalancerFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.LoadBalancerFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.storage.ApplicationStorage
-import com.atlassian.performance.tools.awsinfrastructure.api.storage.BlockStorage
-import com.atlassian.performance.tools.awsinfrastructure.api.storage.EphemeralBlockStorage
 import com.atlassian.performance.tools.awsinfrastructure.jira.DataCenterNodeFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.DiagnosableNodeFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.StandaloneNodeFormula
@@ -40,7 +40,7 @@ class DataCenterFormula(
     private val application: ApplicationStorage,
     private val jiraHomeSource: JiraHomeSource,
     private val database: Database,
-    private val blockStorage: BlockStorage
+    private val computer: Computer
 ) : JiraFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
@@ -61,7 +61,7 @@ class DataCenterFormula(
         application = application,
         jiraHomeSource = jiraHomeSource,
         database = database,
-        blockStorage = EphemeralBlockStorage()
+        computer = C4EightExtraLargeElastic()
     )
 
     override fun provision(
@@ -95,6 +95,9 @@ class DataCenterFormula(
                     Parameter()
                         .withParameterKey("Ami")
                         .withParameterValue(aws.defaultAmi),
+                    Parameter()
+                        .withParameterKey("JiraInstanceType")
+                        .withParameterValue(computer.instanceType.toString()),
                     Parameter()
                         .withParameterKey("AvailabilityZone")
                         .withParameterValue(pickAvailabilityZone(aws).zoneName)
@@ -157,7 +160,7 @@ class DataCenterFormula(
                             application = application,
                             ssh = ssh,
                             config = configs[i],
-                            blockStorage = blockStorage
+                            computer = computer
                         ),
                         nodeIndex = i,
                         sharedHome = sharedHome

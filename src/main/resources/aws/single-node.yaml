@@ -9,6 +9,8 @@ Parameters:
     Type: String
   Ami:
     Type: String
+  JiraInstanceType:
+    Type: String
 Resources:
   Database:
     Type: AWS::EC2::Instance
@@ -34,7 +36,7 @@ Resources:
   JIRA:
     Type: AWS::EC2::Instance
     Properties:
-      InstanceType: c5d.9xlarge
+      InstanceType: !Ref JiraInstanceType
       SecurityGroupIds:
         - Ref: SshSecurityGroup
         - Ref: TomcatSecurityGroup
