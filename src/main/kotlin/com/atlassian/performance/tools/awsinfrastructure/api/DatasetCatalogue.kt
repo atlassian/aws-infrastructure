@@ -19,8 +19,8 @@ class DatasetCatalogue {
             Regions.EU_CENTRAL_1
         ),
         label = "2M issues",
-        databaseDownload = ofMinutes(16),
-        jiraHomeDownload = ofMinutes(16)
+        databaseDownload = ofMinutes(17),
+        jiraHomeDownload = ofMinutes(18)
     )
 
     internal fun largeJiraWithoutBackups(): Dataset = custom(
@@ -29,8 +29,8 @@ class DatasetCatalogue {
             Regions.EU_WEST_1
         ),
         label = "2M issues (without backups)",
-        databaseDownload = ofMinutes(12),
-        jiraHomeDownload = ofMinutes(12)
+        databaseDownload = ofMinutes(17),
+        jiraHomeDownload = ofMinutes(18)
     )
 
     fun custom(
