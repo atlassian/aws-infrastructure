@@ -29,7 +29,7 @@ configurations.all {
 
 dependencies {
     api("com.atlassian.performance.tools:infrastructure:[2.2.0,3.0.0)")
-    api("com.atlassian.performance.tools:aws-resources:[1.0.0,2.0.0)")
+    api("com.atlassian.performance.tools:aws-resources:[1.1.1,2.0.0)")
     api("com.atlassian.performance.tools:jira-actions:[2.0.0,3.0.0)")
 
     implementation("com.atlassian.performance.tools:virtual-users:[2.0.0,3.0.0)")
