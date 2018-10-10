@@ -72,7 +72,7 @@ class DataCenterFormula(
         key: Future<SshKey>,
         roleProfile: String,
         aws: Aws
-    ): ProvisionedJira {
+    ): ProvisionedJira = time("provision Jira Data Center") {
         logger.info("Setting up Jira...")
 
         val executor = Executors.newCachedThreadPool(
@@ -218,7 +218,7 @@ class DataCenterFormula(
             jmxClients = jiraNodes.mapIndexed { i, node -> configs[i].remoteJmx.getClient(node.publicIpAddress) }
         )
         logger.info("$jira is set up, will expire ${jiraStack.expiry}")
-        return ProvisionedJira(
+        return@time ProvisionedJira(
             jira = jira,
             resource = DependentResources(
                 user = provisionedLoadBalancer.resource,

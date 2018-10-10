@@ -61,7 +61,7 @@ class StandaloneFormula(
         key: Future<SshKey>,
         roleProfile: String,
         aws: Aws
-    ): ProvisionedJira {
+    ): ProvisionedJira = time("provision Jira Server") {
         logger.info("Setting up Jira...")
 
         val executor = Executors.newFixedThreadPool(
@@ -156,6 +156,6 @@ class StandaloneFormula(
             jmxClients = listOf(config.remoteJmx.getClient(jiraIp))
         )
         logger.info("$jira is set up, will expire ${jiraStack.expiry}")
-        return ProvisionedJira(jira = jira, resource = jiraStack)
+        return@time ProvisionedJira(jira = jira, resource = jiraStack)
     }
 }
