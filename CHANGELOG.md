@@ -27,6 +27,9 @@ Dropping a requirement of a major version of a dependency is a new contract.
 - Support different hardware specifications for Jira nodes.
 - Support fast block storage for Jira nodes. Resolve [JPERF-164] and [JPERF-120].
 
+## Fixed
+- Improve logging to find the SSH login and JPT-issued-commands more easily.
+
 ## Deprecated
 - Deprecate formula constructors, which don't enforce a computer choice.
 

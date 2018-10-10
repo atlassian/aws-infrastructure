@@ -12,6 +12,7 @@ import com.atlassian.performance.tools.infrastructure.api.jira.SetenvSh
 import com.atlassian.performance.tools.infrastructure.api.jvm.JavaDevelopmentKit
 import com.atlassian.performance.tools.infrastructure.api.jvm.OracleJDK
 import com.atlassian.performance.tools.infrastructure.api.os.Ubuntu
+import com.atlassian.performance.tools.jvmtasks.api.TaskTimer
 import com.atlassian.performance.tools.ssh.api.Ssh
 import com.atlassian.performance.tools.ssh.api.SshConnection
 import org.apache.logging.log4j.LogManager
@@ -40,7 +41,9 @@ internal class StandaloneNodeFormula(
         ssh.newConnection().use { connection ->
             computer.setUp(connection)
             val jiraArchiveName = application.download(connection, ".")
-            val jiraHome = jiraHomeSource.download(connection)
+            val jiraHome = TaskTimer.time("download Jira home") {
+                jiraHomeSource.download(connection)
+            }
             val unpackedProduct = getUnpackedProductName(connection, jiraArchiveName)
 
             replaceDbconfigUrl(connection, "$jiraHome/dbconfig.xml")

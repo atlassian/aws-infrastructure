@@ -24,6 +24,7 @@ import com.atlassian.performance.tools.jvmtasks.api.TaskTimer.time
 import com.atlassian.performance.tools.ssh.api.Ssh
 import com.atlassian.performance.tools.ssh.api.SshHost
 import com.google.common.util.concurrent.ThreadFactoryBuilder
+import org.apache.logging.log4j.CloseableThreadContext
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.time.Duration
@@ -146,8 +147,13 @@ class DataCenterFormula(
         }
 
         val nodeFormulas = jiraNodes
+            .asSequence()
             .map { it.publicIpAddress }
-            .onEach { key.get().file.facilitateSsh(it) }
+            .onEach { ip ->
+                CloseableThreadContext.push("a jira node").use {
+                    key.get().file.facilitateSsh(ip)
+                }
+            }
             .map { Ssh(SshHost(it, "ubuntu", keyPath), connectivityPatience = 5) }
             .mapIndexed { i: Int, ssh: Ssh ->
                 DiagnosableNodeFormula(
@@ -167,6 +173,7 @@ class DataCenterFormula(
                     )
                 )
             }
+            .toList()
 
         val databaseHost = SshHost(databaseIp, "ubuntu", keyPath)
         val databaseSsh = Ssh(databaseHost, connectivityPatience = 5)

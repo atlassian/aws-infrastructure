@@ -8,44 +8,81 @@ import org.apache.logging.log4j.core.config.AbstractConfiguration
 import org.apache.logging.log4j.core.config.ConfigurationSource
 import org.apache.logging.log4j.core.config.LoggerConfig
 import org.apache.logging.log4j.core.layout.PatternLayout
+import java.nio.file.Path
+import java.nio.file.Paths
 
 internal class LogConfiguration(
     private val workspace: TaskWorkspace
 ) : AbstractConfiguration(null, ConfigurationSource.NULL_SOURCE) {
+
     override fun doConfigure() {
-        val loggerConfig = LoggerConfig(
-            "com.atlassian.performance.tools.awsinfrastructure",
-            Level.DEBUG,
-            false
-        )
-        val logPath = workspace.directory.resolve("aws-infra.log")
-        loggerConfig.addAppender(
-            KFileAppenderBuilder()
-                .withName("file")
-                .withLayout(layout("%d{ISO8601}{UTC}Z %-5level %x [%logger{1}] %msg%n"))
-                .withFileName(logPath.toAbsolutePath().toString())
-                .withAppend(false)
-                .build(),
-            Level.DEBUG,
-            null
-        )
-        loggerConfig.addAppender(
-            KConsoleAppenderBuilder()
-                .withName("console")
-                .withLayout(layout("%d{ABSOLUTE} %highlight{%-5level} %x %msg%n"))
-                .build(),
-            Level.INFO,
-            null
-        )
-        addLogger(loggerConfig.name, loggerConfig)
+        listOf(
+            logToFile(
+                name = "com.atlassian.performance.tools.awsinfrastructure",
+                path = Paths.get("aws-infra.log")
+            ).also { log ->
+                log.addAppender(
+                    KConsoleAppenderBuilder()
+                        .withName("console")
+                        .withLayout(layout("%d{ABSOLUTE} %highlight{%-5level} %x %msg%n"))
+                        .build(),
+                    Level.INFO,
+                    null
+                )
+            },
+            logToFile(
+                name = "com.atlassian.performance.tools.jvmtasks.api.TaskTimer",
+                path = Paths.get("timing.log"),
+                pattern = "%d{ISO8601}{UTC}Z <%t> %x %msg%n"
+            ),
+            logToFile(
+                name = "com.atlassian.performance.tools.ssh",
+                path = Paths.get("ssh.log")
+            ),
+            logToFile(
+                name = "com.atlassian.performance.tools.aws.api.SshKeyFile",
+                path = Paths.get("ssh-login.log")
+            ),
+            logToFile(
+                name = "com.atlassian.performance.tools",
+                path = Paths.get("detailed.log")
+            )
+        ).forEach { addLogger(it.name, it) }
     }
 
-    private fun layout(pattern: String): PatternLayout {
-        return PatternLayout.newBuilder()
-            .withPattern(pattern)
-            .withConfiguration(this)
-            .build()
+    private fun logToFile(
+        name: String,
+        path: Path,
+        pattern: String = "%d{ISO8601}{UTC}Z %-5level <%t> %x [%logger] %msg%n"
+    ): LoggerConfig {
+        val log = LoggerConfig(
+            name,
+            Level.DEBUG,
+            true
+        )
+        val absolutePath = workspace
+            .directory
+            .resolve(path)
+            .toAbsolutePath()
+        log.addAppender(
+            KFileAppenderBuilder()
+                .withName(absolutePath.fileName.toString())
+                .withLayout(layout(pattern))
+                .withFileName(absolutePath.toString())
+                .withAppend(true)
+                .build(),
+            Level.DEBUG,
+            null
+        )
+        return log
     }
+
+    private fun layout(
+        pattern: String
+    ): PatternLayout = PatternLayout.newBuilder()
+        .withPattern(pattern)
+        .withConfiguration(this)
+        .build()
 }
 
 private class KFileAppenderBuilder : FileAppender.Builder<KFileAppenderBuilder>()

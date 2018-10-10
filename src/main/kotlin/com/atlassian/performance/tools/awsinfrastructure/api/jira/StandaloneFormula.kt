@@ -18,6 +18,7 @@ import com.atlassian.performance.tools.jvmtasks.api.TaskTimer.time
 import com.atlassian.performance.tools.ssh.api.Ssh
 import com.atlassian.performance.tools.ssh.api.SshHost
 import com.google.common.util.concurrent.ThreadFactoryBuilder
+import org.apache.logging.log4j.CloseableThreadContext
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.net.URI
@@ -122,7 +123,9 @@ class StandaloneFormula(
 
         val ssh = Ssh(SshHost(jiraIp, "ubuntu", keyPath), connectivityPatience = 5)
 
-        key.get().file.facilitateSsh(jiraIp)
+        CloseableThreadContext.push("Jira node").use {
+            key.get().file.facilitateSsh(jiraIp)
+        }
         val nodeFormula = StandaloneNodeFormula(
             config = config,
             jiraHomeSource = jiraHomeSource,

@@ -11,4 +11,6 @@ internal class DiagnosableNodeFormula(
             throw Exception("Failed to provision ${delegate.name}", e)
         }
     }
+
+    override fun toString(): String = delegate.name
 }
