@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit
 
 class DataCenterFormulaIT {
     private val workspace = taskWorkspace.isolateTest(javaClass.simpleName)
-    private val dataset = DatasetCatalogue().largeJiraWithoutBackups()
+    private val dataset = DatasetCatalogue().largeJira()
 
     @Test
     fun shouldProvisionDataCenter() {

@@ -13,22 +13,12 @@ import java.time.Duration.ofMinutes
 
 class DatasetCatalogue {
 
-    fun largeJira() = custom(
-        location = StorageLocation(
-            URI("s3://jpt-custom-datasets-storage-a008820-datasetbucket-dah44h6l1l8p/dataset-6aa68633-3655-4c51-b344-d8a13cfb3fd0"),
-            Regions.EU_CENTRAL_1
-        ),
-        label = "2M issues",
-        databaseDownload = ofMinutes(17),
-        jiraHomeDownload = ofMinutes(18)
-    )
-
-    internal fun largeJiraWithoutBackups(): Dataset = custom(
+    fun largeJira(): Dataset = custom(
         location = StorageLocation(
             URI("s3://jpt-custom-datasets-storage-a008820-datasetbucket-1sjxdtrv5hdhj/large-jira-without-backups"),
             Regions.EU_WEST_1
         ),
-        label = "2M issues (without backups)",
+        label = "2M issues",
         databaseDownload = ofMinutes(17),
         jiraHomeDownload = ofMinutes(18)
     )

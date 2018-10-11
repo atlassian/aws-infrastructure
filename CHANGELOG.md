@@ -29,6 +29,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 
 ## Fixed
 - Improve logging to find the SSH login and JPT-issued-commands more easily.
+- Speed up Jira home provisioning for the `largeJira` dataset by removing the Jira backups.
 
 ## Deprecated
 - Deprecate formula constructors, which don't enforce a computer choice.
