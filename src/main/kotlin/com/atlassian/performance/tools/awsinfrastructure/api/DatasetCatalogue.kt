@@ -15,7 +15,8 @@ class DatasetCatalogue {
 
     fun largeJira(): Dataset = custom(
         location = StorageLocation(
-            URI("s3://jpt-custom-datasets-storage-a008820-datasetbucket-1sjxdtrv5hdhj/large-jira-without-backups"),
+            URI("s3://jpt-custom-datasets-storage-a008820-datasetbucket-1sjxdtrv5hdhj/")
+                .resolve("dataset-d4684761-116b-49ae-9cce-e45cecdcae2a"),
             Regions.EU_WEST_1
         ),
         label = "2M issues",

@@ -5,6 +5,7 @@ import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.
 import com.atlassian.performance.tools.awsinfrastructure.api.DatasetCatalogue
 import com.atlassian.performance.tools.ssh.api.Ssh
 import org.junit.Test
+import java.util.*
 
 class AwsDatasetIT {
 
@@ -17,7 +18,7 @@ class AwsDatasetIT {
             .modify(
                 aws = aws,
                 workspace = workspace,
-                newDatasetName = "large-jira-without-backups"
+                newDatasetName = "dataset-${UUID.randomUUID()}"
             ) { infrastructure ->
                 val jiraHome = infrastructure.jira.jiraHome
                 val backupPath = "${jiraHome.location}/export"
