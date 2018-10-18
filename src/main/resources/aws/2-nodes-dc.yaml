@@ -68,7 +68,7 @@ Resources:
         - Ref: RmiSecurityGroup
         - Ref: TomcatSecurityGroup
         - Ref: SubnetSecurityGroup
-      InstanceType: c5d.9xlarge
+      InstanceType: !Ref JiraInstanceType
       SubnetId:
         Ref: Subnet
       KeyName:

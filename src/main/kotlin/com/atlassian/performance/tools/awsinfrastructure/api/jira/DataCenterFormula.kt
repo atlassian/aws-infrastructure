@@ -33,6 +33,7 @@ import java.util.concurrent.Future
 
 /**
  * @param [configs] applied to nodes in the same order as they are provisioned and started
+ * @param [computer] hardware specs used by the Jira nodes and the shared home node
  */
 class DataCenterFormula(
     private val configs: List<JiraNodeConfig>,
