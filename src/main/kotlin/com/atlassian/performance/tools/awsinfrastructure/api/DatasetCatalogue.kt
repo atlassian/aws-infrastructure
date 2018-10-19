@@ -21,7 +21,7 @@ class DatasetCatalogue {
         ),
         label = "2M issues",
         databaseDownload = ofMinutes(17),
-        jiraHomeDownload = ofMinutes(18)
+        jiraHomeDownload = ofMinutes(21)
     )
 
     fun custom(
