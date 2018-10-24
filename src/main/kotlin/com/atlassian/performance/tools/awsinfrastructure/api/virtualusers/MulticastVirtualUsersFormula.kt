@@ -2,6 +2,10 @@ package com.atlassian.performance.tools.awsinfrastructure.api.virtualusers
 
 import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
+import com.atlassian.performance.tools.infrastructure.api.browser.Browser
+import com.atlassian.performance.tools.infrastructure.api.browser.Chrome
+import com.atlassian.performance.tools.infrastructure.api.splunk.DisabledSplunkForwarder
+import com.atlassian.performance.tools.infrastructure.api.splunk.SplunkForwarder
 import com.atlassian.performance.tools.infrastructure.api.virtualusers.MulticastVirtualUsers
 import com.atlassian.performance.tools.infrastructure.api.virtualusers.ResultsTransport
 import com.atlassian.performance.tools.infrastructure.api.virtualusers.SshVirtualUsers
@@ -12,8 +16,23 @@ import java.util.concurrent.Future
 
 class MulticastVirtualUsersFormula(
     private val shadowJar: File,
-    private val nodes: Int
+    private val nodes: Int,
+    private val splunkForwarder: SplunkForwarder,
+    private val browser: Browser
 ) : VirtualUsersFormula<MulticastVirtualUsers<SshVirtualUsers>> {
+
+    @Deprecated(
+        message = "Use the primary constructor"
+    )
+    constructor(
+        shadowJar: File,
+        nodes: Int = 1
+    ) : this(
+        shadowJar = shadowJar,
+        nodes = nodes,
+        splunkForwarder = DisabledSplunkForwarder(),
+        browser = Chrome()
+    )
 
     override fun provision(
         investment: Investment,
@@ -35,7 +54,9 @@ class MulticastVirtualUsersFormula(
                 executor.submitWithLogContext("provision virtual users $nodeOrder") {
                     StackVirtualUsersFormula(
                         nodeOrder = nodeOrder,
-                        shadowJar = shadowJar
+                        shadowJar = shadowJar,
+                        splunkForwarder = splunkForwarder,
+                        browser = browser
                     ).provision(
                         investment = investment.copy(reuseKey = { investment.reuseKey() + nodeOrder }),
                         shadowJarTransport = shadowJarTransport,

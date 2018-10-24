@@ -4,6 +4,8 @@ import com.amazonaws.services.cloudformation.model.Parameter
 import com.amazonaws.services.ec2.model.Tag
 import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.virtualusers.UbuntuVirtualUsersRuntime
+import com.atlassian.performance.tools.infrastructure.api.browser.Browser
+import com.atlassian.performance.tools.infrastructure.api.browser.Chrome
 import com.atlassian.performance.tools.infrastructure.api.splunk.DisabledSplunkForwarder
 import com.atlassian.performance.tools.infrastructure.api.splunk.SplunkForwarder
 import com.atlassian.performance.tools.infrastructure.api.virtualusers.ResultsTransport
@@ -22,7 +24,8 @@ import java.util.concurrent.Future
 class StackVirtualUsersFormula(
     private val nodeOrder: Int = 1,
     private val shadowJar: File,
-    private val splunkForwarder: SplunkForwarder
+    private val splunkForwarder: SplunkForwarder,
+    private val browser: Browser
 ) : VirtualUsersFormula<SshVirtualUsers> {
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
@@ -37,7 +40,22 @@ class StackVirtualUsersFormula(
     ) : this(
         nodeOrder = nodeOrder,
         shadowJar = shadowJar,
-        splunkForwarder = DisabledSplunkForwarder()
+        splunkForwarder = DisabledSplunkForwarder(),
+        browser = Chrome()
+    )
+
+    @Deprecated(
+        message = "Use the primary constructor"
+    )
+    constructor(
+        nodeOrder: Int = 1,
+        shadowJar: File,
+        splunkForwarder: SplunkForwarder
+    ) : this(
+        nodeOrder = nodeOrder,
+        shadowJar = shadowJar,
+        splunkForwarder = splunkForwarder,
+        browser = Chrome()
     )
 
     override fun provision(
@@ -79,7 +97,8 @@ class StackVirtualUsersFormula(
         val jarPath = UbuntuVirtualUsersRuntime().prepareForExecution(
             virtualUsersSsh,
             shadowJar,
-            shadowJarTransport
+            shadowJarTransport,
+            browser
         )
         virtualUsersSsh.newConnection().use {
             it.execute("mkdir splunkforward")

@@ -4,6 +4,8 @@ import com.amazonaws.services.ec2.model.IamInstanceProfileSpecification
 import com.amazonaws.services.ec2.model.InstanceType
 import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.virtualusers.UbuntuVirtualUsersRuntime
+import com.atlassian.performance.tools.infrastructure.api.browser.Browser
+import com.atlassian.performance.tools.infrastructure.api.browser.Chrome
 import com.atlassian.performance.tools.infrastructure.api.virtualusers.ResultsTransport
 import com.atlassian.performance.tools.infrastructure.api.virtualusers.SshVirtualUsers
 import org.apache.logging.log4j.LogManager
@@ -13,8 +15,22 @@ import java.util.concurrent.Future
 
 class Ec2VirtualUsersFormula(
     private val nodeOrder: Int = 1,
-    private val shadowJar: File
+    private val shadowJar: File,
+    private val browser: Browser
 ) : VirtualUsersFormula<SshVirtualUsers> {
+
+    @Deprecated(
+        message = "Use the primary constructor"
+    )
+    constructor(
+        nodeOrder: Int = 1,
+        shadowJar: File
+    ) : this(
+        nodeOrder = nodeOrder,
+        shadowJar = shadowJar,
+        browser = Chrome()
+    )
+
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
     private val name: String = "virtual-user-node-$nodeOrder"
@@ -30,7 +46,7 @@ class Ec2VirtualUsersFormula(
         logger.info("Setting up $name...")
         val sshKey = key.get()
         val (ssh, resource) = allocateInstance(aws.awaitingEc2, roleProfile, sshKey, investment)
-        val jarPath = UbuntuVirtualUsersRuntime().prepareForExecution(ssh, shadowJar, shadowJarTransport)
+        val jarPath = UbuntuVirtualUsersRuntime().prepareForExecution(ssh, shadowJar, shadowJarTransport, browser)
         logger.info("$name is ready to apply load")
         return ProvisionedVirtualUsers(
             virtualUsers = SshVirtualUsers(

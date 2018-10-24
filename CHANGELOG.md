@@ -24,9 +24,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 [Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-1.2.1
 
 ### Added
+- Chromium support. Resolve [JPERF-238].
 - Provision Jira Service Desk. Resolve [JPERF-167].
 
 [JPERF-167]: https://ecosystem.atlassian.net/browse/JPERF-167
+[JPERF-238]: https://ecosystem.atlassian.net/browse/JPERF-238
 
 ## [1.2.1] - 2018-10-19
 [1.2.1]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-1.2.1%0Drelease-1.2.0
