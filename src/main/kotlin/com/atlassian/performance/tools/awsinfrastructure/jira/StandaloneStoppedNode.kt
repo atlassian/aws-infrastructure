@@ -2,6 +2,7 @@ package com.atlassian.performance.tools.awsinfrastructure.jira
 
 import com.atlassian.performance.tools.aws.api.Storage
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.StartedNode
+import com.atlassian.performance.tools.infrastructure.api.jira.JiraLaunchTimeouts
 import com.atlassian.performance.tools.infrastructure.api.jvm.OracleJDK
 import com.atlassian.performance.tools.infrastructure.api.os.MonitoringProcess
 import com.atlassian.performance.tools.infrastructure.api.os.OsMetric
@@ -22,6 +23,7 @@ internal data class StandaloneStoppedNode(
     private val resultsTransport: Storage,
     private val unpackedProduct: String,
     private val osMetrics: List<OsMetric>,
+    private val launchTimeouts: JiraLaunchTimeouts,
     override val ssh: Ssh
 ) : StoppedNode {
     private val logger: Logger = LogManager.getLogger(this::class.java)
@@ -76,18 +78,15 @@ internal data class StandaloneStoppedNode(
         ssh: SshConnection
     ) {
         val upgradesEndpoint = URI("http://admin:admin@localhost:8080/rest/api/2/upgrade")
-        val maxOfflineTime = ofMinutes(8)
-        val maxInitTime = ofMinutes(2)
-        val maxUpgradeTime = ofMinutes(8)
         waitForStatusToChange(
             statusQuo = "000",
-            timeout = maxOfflineTime,
+            timeout = launchTimeouts.offlineTimeout,
             ssh = ssh,
             uri = upgradesEndpoint
         )
         waitForStatusToChange(
             statusQuo = "503",
-            timeout = maxInitTime,
+            timeout = launchTimeouts.initTimeout,
             ssh = ssh,
             uri = upgradesEndpoint
         )
@@ -97,7 +96,7 @@ internal data class StandaloneStoppedNode(
         )
         waitForStatusToChange(
             statusQuo = "303",
-            timeout = maxUpgradeTime,
+            timeout = launchTimeouts.upgradeTimeout,
             ssh = ssh,
             uri = upgradesEndpoint
         )

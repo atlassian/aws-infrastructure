@@ -80,7 +80,8 @@ internal class StandaloneNodeFormula(
                 resultsTransport = resultsTransport,
                 unpackedProduct = unpackedProduct,
                 osMetrics = osMetrics,
-                ssh = ssh
+                ssh = ssh,
+                launchTimeouts = config.launchTimeouts
             )
         }
     }

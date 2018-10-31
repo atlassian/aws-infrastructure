@@ -23,6 +23,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-1.3.0
 
+### Added
+- Respect `JiraNodeConfig.launchTimeouts` in `StandaloneFormula` and `DataCenterFormula` which resolves [JPERF-216]
+
+[JPERF-216]: https://ecosystem.atlassian.net/browse/JPERF-216
+
 ## [1.3.0] - 2018-10-26
 [1.3.0]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-1.3.0%0Drelease-1.2.1
 
