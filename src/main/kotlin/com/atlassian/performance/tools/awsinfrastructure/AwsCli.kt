@@ -7,8 +7,8 @@ import java.time.Duration
 
 internal class AwsCli {
     fun ensureAwsCli(ssh: SshConnection) {
-        Ubuntu().install(ssh, listOf("zip", "python"), Duration.ofMinutes(3))
         if (!ssh.safeExecute("aws --version").isSuccessful()) {
+            Ubuntu().install(ssh, listOf("zip", "python"), Duration.ofMinutes(3))
             ssh.execute(
                 cmd = "curl --silent https://s3.amazonaws.com/aws-cli/awscli-bundle-1.15.51.zip -o awscli-bundle.zip",
                 timeout = Duration.ofSeconds(50)

@@ -23,6 +23,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-1.4.0
 
+### Fixed
+- Reduce apt-get usage in `AwsCli`. Mitigate [JPERF-219].
+
+[JPERF-219]: https://ecosystem.atlassian.net/browse/JPERF-219
+
 ## [1.4.0] - 2018-10-31
 [1.4.0]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-1.4.0%0Drelease-1.3.0
 
