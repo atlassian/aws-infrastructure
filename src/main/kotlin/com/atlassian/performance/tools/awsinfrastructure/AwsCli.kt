@@ -14,7 +14,10 @@ internal class AwsCli {
                 timeout = Duration.ofSeconds(50)
             )
             ssh.execute("unzip -n -q awscli-bundle.zip")
-            ssh.execute("sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws")
+            ssh.execute(
+                cmd = "sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws",
+                timeout = Duration.ofSeconds(60)
+            )
         }
     }
 

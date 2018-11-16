@@ -25,8 +25,10 @@ Dropping a requirement of a major version of a dependency is a new contract.
 
 ### Fixed
 - Reduce apt-get usage in `AwsCli`. Mitigate [JPERF-219].
+- Increase awscli-bundle install timeout. Fix [JPERF-266].
 
 [JPERF-219]: https://ecosystem.atlassian.net/browse/JPERF-219
+[JPERF-266]: https://ecosystem.atlassian.net/browse/JPERF-266
 
 ## [1.4.0] - 2018-10-31
 [1.4.0]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-1.4.0%0Drelease-1.3.0
