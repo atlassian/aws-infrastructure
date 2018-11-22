@@ -48,28 +48,23 @@ class DataCenterFormula(
 ) : JiraFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
-    @Deprecated(
-        message = "Use the primary constructor"
-    )
     constructor(
-        configs: List<JiraNodeConfig> = JiraNodeConfig(
-            name = "jira-node",
-            jvmArgs = JiraJvmArgs(),
-            launchTimeouts = JiraLaunchTimeouts(
-                offlineTimeout = Duration.ofMinutes(8),
-                initTimeout = Duration.ofMinutes(4),
-                upgradeTimeout = Duration.ofMinutes(8),
-                unresponsivenessTimeout = Duration.ofMinutes(4)
-            )
-        ).clone(times = 2),
-        loadBalancerFormula: LoadBalancerFormula = ElasticLoadBalancerFormula(),
         apps: Apps,
         application: ApplicationStorage,
         jiraHomeSource: JiraHomeSource,
         database: Database
     ) : this(
-        configs = configs,
-        loadBalancerFormula = loadBalancerFormula,
+        configs = JiraNodeConfig(
+                name = "jira-node",
+                jvmArgs = JiraJvmArgs(),
+                launchTimeouts = JiraLaunchTimeouts(
+                        offlineTimeout = Duration.ofMinutes(8),
+                        initTimeout = Duration.ofMinutes(4),
+                        upgradeTimeout = Duration.ofMinutes(8),
+                        unresponsivenessTimeout = Duration.ofMinutes(4)
+                )
+        ).clone(times = 2),
+        loadBalancerFormula = ElasticLoadBalancerFormula(),
         apps = apps,
         application = application,
         jiraHomeSource = jiraHomeSource,

@@ -37,15 +37,17 @@ class StandaloneFormula(
     private val computer: Computer
 ) : JiraFormula {
 
-    @Deprecated(
-        message = "Use the primary constructor"
-    )
     constructor (
         apps: Apps,
         application: ApplicationStorage,
         jiraHomeSource: JiraHomeSource,
-        database: Database,
-        config: JiraNodeConfig = JiraNodeConfig(
+        database: Database
+    ) : this(
+        apps = apps,
+        application = application,
+        jiraHomeSource = jiraHomeSource,
+        database = database,
+        config = JiraNodeConfig(
             name = "jira-node",
             jvmArgs = JiraJvmArgs(),
             launchTimeouts = JiraLaunchTimeouts(
@@ -54,13 +56,7 @@ class StandaloneFormula(
                 upgradeTimeout = Duration.ofMinutes(8),
                 unresponsivenessTimeout = Duration.ofMinutes(4)
             )
-        )
-    ) : this(
-        apps = apps,
-        application = application,
-        jiraHomeSource = jiraHomeSource,
-        database = database,
-        config = config,
+        ),
         computer = C4EightExtraLargeElastic()
     )
 

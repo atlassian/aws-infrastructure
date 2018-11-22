@@ -34,10 +34,6 @@ class DataCenterFormulaIT {
             prefix = nonce
         )
         val dcFormula = DataCenterFormula(
-            apps = Apps(listOf(NoApp())),
-            application = JiraSoftwareStorage("7.2.0"),
-            database = dataset.database,
-            jiraHomeSource = dataset.jiraHomeSource,
             configs = JiraNodeConfig(
                 name = "jira-node",
                 jvmArgs = JiraJvmArgs(),
@@ -49,6 +45,10 @@ class DataCenterFormulaIT {
                 )
             ).clone(2),
             loadBalancerFormula = ElasticLoadBalancerFormula(),
+            apps = Apps(listOf(NoApp())),
+            application = JiraSoftwareStorage("7.2.0"),
+            jiraHomeSource = dataset.jiraHomeSource,
+            database = dataset.database,
             computer = C5NineExtraLargeEphemeral()
         )
 

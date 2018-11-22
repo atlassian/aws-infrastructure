@@ -21,12 +21,9 @@ class MulticastVirtualUsersFormula(
     private val browser: Browser
 ) : VirtualUsersFormula<MulticastVirtualUsers<SshVirtualUsers>> {
 
-    @Deprecated(
-        message = "Use the primary constructor"
-    )
     constructor(
         shadowJar: File,
-        nodes: Int = 1
+        nodes: Int
     ) : this(
         shadowJar = shadowJar,
         nodes = nodes,

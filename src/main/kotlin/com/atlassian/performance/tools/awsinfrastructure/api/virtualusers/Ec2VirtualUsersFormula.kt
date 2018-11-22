@@ -19,14 +19,10 @@ class Ec2VirtualUsersFormula(
     private val browser: Browser
 ) : VirtualUsersFormula<SshVirtualUsers> {
 
-    @Deprecated(
-        message = "Use the primary constructor"
-    )
     constructor(
-        nodeOrder: Int = 1,
         shadowJar: File
     ) : this(
-        nodeOrder = nodeOrder,
+        nodeOrder = 1,
         shadowJar = shadowJar,
         browser = Chrome()
     )

@@ -36,6 +36,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 - Drop support for `infrastructure:2`
 - Drop support for `ssh:1`
 - Remove Kotlin data-class generated methods from API.
+- Remove all deprecated API.
 
 [JPERF-219]: https://ecosystem.atlassian.net/browse/JPERF-219
 [JPERF-266]: https://ecosystem.atlassian.net/browse/JPERF-266

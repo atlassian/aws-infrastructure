@@ -31,28 +31,20 @@ class StackVirtualUsersFormula(
 
     private val name: String = "virtual-user-node-$nodeOrder"
 
-    @Deprecated(
-        message = "Use the primary constructor"
-    )
     constructor(
-        nodeOrder: Int = 1,
         shadowJar: File
     ) : this(
-        nodeOrder = nodeOrder,
+        nodeOrder = 1,
         shadowJar = shadowJar,
         splunkForwarder = DisabledSplunkForwarder(),
         browser = Chrome()
     )
 
-    @Deprecated(
-        message = "Use the primary constructor"
-    )
     constructor(
-        nodeOrder: Int = 1,
         shadowJar: File,
         splunkForwarder: SplunkForwarder
     ) : this(
-        nodeOrder = nodeOrder,
+        nodeOrder = 1,
         shadowJar = shadowJar,
         splunkForwarder = splunkForwarder,
         browser = Chrome()
