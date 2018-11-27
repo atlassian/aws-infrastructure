@@ -51,7 +51,8 @@ class StandaloneFormula(
             launchTimeouts = JiraLaunchTimeouts(
                 offlineTimeout = Duration.ofMinutes(8),
                 initTimeout = Duration.ofMinutes(4),
-                upgradeTimeout = Duration.ofMinutes(8)
+                upgradeTimeout = Duration.ofMinutes(8),
+                unresponsivenessTimeout = Duration.ofMinutes(4)
             )
         )
     ) : this(
@@ -115,7 +116,7 @@ class StandaloneFormula(
         val machines = jiraStack.listMachines()
         val databaseIp = machines.single { it.tags.contains(Tag("jpt-database", "true")) }.publicIpAddress
         val databaseHost = SshHost(databaseIp, "ubuntu", keyPath)
-        val databaseSsh = Ssh(databaseHost)
+        val databaseSsh = Ssh(databaseHost, connectivityPatience = 4)
         val jiraIp = machines.single { it.tags.contains(Tag("jpt-jira", "true")) }.publicIpAddress
         val jiraAddress = URI("http://$jiraIp:8080/")
 

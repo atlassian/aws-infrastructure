@@ -22,7 +22,7 @@ class AwsDatasetIT {
             ) { infrastructure ->
                 val jiraHome = infrastructure.jira.jiraHome
                 val backupPath = "${jiraHome.location}/export"
-                Ssh(jiraHome.host)
+                Ssh(jiraHome.host, connectivityPatience = 4)
                     .newConnection()
                     .use { ssh ->
                         val listCommand = "ls -lh $backupPath"

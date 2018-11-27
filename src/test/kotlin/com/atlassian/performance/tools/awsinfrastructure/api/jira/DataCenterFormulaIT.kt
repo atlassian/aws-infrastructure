@@ -10,6 +10,8 @@ import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.Elasti
 import com.atlassian.performance.tools.awsinfrastructure.api.storage.JiraSoftwareStorage
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
 import com.atlassian.performance.tools.infrastructure.api.app.NoApp
+import com.atlassian.performance.tools.infrastructure.api.jira.JiraJvmArgs
+import com.atlassian.performance.tools.infrastructure.api.jira.JiraLaunchTimeouts
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
 import org.junit.Test
 import java.time.Duration
@@ -36,7 +38,16 @@ class DataCenterFormulaIT {
             application = JiraSoftwareStorage("7.2.0"),
             database = dataset.database,
             jiraHomeSource = dataset.jiraHomeSource,
-            configs = JiraNodeConfig().clone(2),
+            configs = JiraNodeConfig(
+                name = "jira-node",
+                jvmArgs = JiraJvmArgs(),
+                launchTimeouts = JiraLaunchTimeouts(
+                    offlineTimeout = Duration.ofMinutes(8),
+                    initTimeout = Duration.ofMinutes(4),
+                    upgradeTimeout = Duration.ofMinutes(8),
+                    unresponsivenessTimeout = Duration.ofMinutes(4)
+                )
+            ).clone(2),
             loadBalancerFormula = ElasticLoadBalancerFormula(),
             computer = C5NineExtraLargeEphemeral()
         )

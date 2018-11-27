@@ -58,7 +58,8 @@ class DataCenterFormula(
             launchTimeouts = JiraLaunchTimeouts(
                 offlineTimeout = Duration.ofMinutes(8),
                 initTimeout = Duration.ofMinutes(4),
-                upgradeTimeout = Duration.ofMinutes(8)
+                upgradeTimeout = Duration.ofMinutes(8),
+                unresponsivenessTimeout = Duration.ofMinutes(4)
             )
         ).clone(times = 2),
         loadBalancerFormula: LoadBalancerFormula = ElasticLoadBalancerFormula(),
@@ -131,7 +132,10 @@ class DataCenterFormula(
         val sharedHomeMachine = machines.single { it.tags.contains(Tag("jpt-shared-home", "true")) }
         val sharedHomeIp = sharedHomeMachine.publicIpAddress
         val sharedHomePrivateIp = sharedHomeMachine.privateIpAddress
-        val sharedHomeSsh = Ssh(SshHost(sharedHomeIp, "ubuntu", keyPath))
+        val sharedHomeSsh = Ssh(
+                host = SshHost(sharedHomeIp, "ubuntu", keyPath),
+                connectivityPatience = 4
+        )
         val futureLoadBalancer = executor.submitWithLogContext("provision load balancer") {
             loadBalancerFormula.provision(
                 investment = investment,

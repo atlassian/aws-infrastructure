@@ -25,15 +25,20 @@ Dropping a requirement of a major version of a dependency is a new contract.
 
 ### Added
 - Add support for other EC2 instance types. Resolve [JPERF-276].
- 
-[JPERF-276]: https://ecosystem.atlassian.net/browse/JPERF-276
+- Add support for `infrastructure:3`
+- Add support for `ssh:2`
 
 ### Fixed
 - Reduce apt-get usage in `AwsCli`. Mitigate [JPERF-219].
 - Increase awscli-bundle install timeout. Fix [JPERF-266].
 
+### Removed
+- Drop support for `infrastructure:2`
+- Drop support for `ssh:1`
+
 [JPERF-219]: https://ecosystem.atlassian.net/browse/JPERF-219
 [JPERF-266]: https://ecosystem.atlassian.net/browse/JPERF-266
+[JPERF-276]: https://ecosystem.atlassian.net/browse/JPERF-276
 
 ## [1.4.0] - 2018-10-31
 [1.4.0]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-1.4.0%0Drelease-1.3.0

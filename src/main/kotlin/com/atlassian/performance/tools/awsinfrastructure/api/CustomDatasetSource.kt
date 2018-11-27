@@ -89,10 +89,10 @@ data class CustomDatasetSource(
     private fun stopJira(host: SshHost) {
         val shutdownTomcat = "echo SHUTDOWN | nc localhost 8005"
         val waitForNoJavaProcess = "while ps -C java -o pid=; do sleep 5; done"
-        Ssh(host).newConnection().use { it.safeExecute("$shutdownTomcat && $waitForNoJavaProcess", Duration.ofMinutes(3)) }
+        Ssh(host, connectivityPatience = 4).newConnection().use { it.safeExecute("$shutdownTomcat && $waitForNoJavaProcess", Duration.ofMinutes(3)) }
     }
 
     private fun stopDockerContainers(host: SshHost) {
-        Ssh(host).newConnection().use { it.safeExecute("docker stop \$(docker ps -aq)") }
+        Ssh(host, connectivityPatience = 4).newConnection().use { it.safeExecute("docker stop \$(docker ps -aq)") }
     }
 }

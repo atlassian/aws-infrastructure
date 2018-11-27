@@ -90,7 +90,7 @@ class StackVirtualUsersFormula(
             .single { it.tags.contains(Tag("jpt-virtual-users", "true")) }
         val virtualUsersIp = virtualUsersMachine.publicIpAddress
         val virtualUsersHost = SshHost(virtualUsersIp, "ubuntu", key.get().file.path)
-        val virtualUsersSsh = Ssh(virtualUsersHost)
+        val virtualUsersSsh = Ssh(virtualUsersHost, connectivityPatience = 4)
 
         key.get().file.facilitateSsh(virtualUsersIp)
 
