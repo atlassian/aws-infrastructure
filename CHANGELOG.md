@@ -23,6 +23,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-1.4.0
 
+### Added
+- Add support for other EC2 instance types. Resolve [JPERF-276].
+ 
+[JPERF-276]: https://ecosystem.atlassian.net/browse/JPERF-276
+
 ### Fixed
 - Reduce apt-get usage in `AwsCli`. Mitigate [JPERF-219].
 - Increase awscli-bundle install timeout. Fix [JPERF-266].
