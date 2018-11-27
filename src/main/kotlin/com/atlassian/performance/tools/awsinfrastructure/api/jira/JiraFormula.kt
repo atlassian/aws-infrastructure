@@ -14,7 +14,11 @@ interface JiraFormula {
     ): ProvisionedJira
 }
 
-data class ProvisionedJira(
+class ProvisionedJira(
     val jira: Jira,
     val resource: Resource
-)
+) {
+    override fun toString(): String {
+        return "ProvisionedJira(jira=$jira, resource=$resource)"
+    }
+}

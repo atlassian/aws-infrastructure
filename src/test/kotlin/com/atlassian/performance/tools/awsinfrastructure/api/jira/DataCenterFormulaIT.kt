@@ -52,7 +52,7 @@ class DataCenterFormulaIT {
             computer = C5NineExtraLargeEphemeral()
         )
 
-        val (_, resource) = dcFormula.provision(
+        val resource = dcFormula.provision(
             investment = Investment(
                 useCase = "Test Data Center provisioning",
                 lifespan = lifespan
@@ -62,7 +62,7 @@ class DataCenterFormulaIT {
             key = CompletableFuture.completedFuture(keyFormula.provision()),
             roleProfile = aws.shortTermStorageAccess(),
             aws = aws
-        )
+        ).resource
 
         resource.release().get(1, TimeUnit.MINUTES)
     }

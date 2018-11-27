@@ -51,7 +51,7 @@ class StandaloneFormulaIT {
             computer = C5NineExtraLargeEphemeral()
         )
 
-        val (_, resource) = serverFormula.provision(
+        val resource = serverFormula.provision(
             investment = Investment(
                 useCase = "Test JSD Server provisioning",
                 lifespan = lifespan
@@ -61,7 +61,7 @@ class StandaloneFormulaIT {
             key = CompletableFuture.completedFuture(keyFormula.provision()),
             roleProfile = aws.shortTermStorageAccess(),
             aws = aws
-        )
+        ).resource
 
         resource.release().get(1, TimeUnit.MINUTES)
     }

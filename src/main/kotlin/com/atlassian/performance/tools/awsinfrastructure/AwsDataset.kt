@@ -33,7 +33,9 @@ internal class AwsDataset(
         newDatasetName: String,
         modification: (Infrastructure<*>) -> Unit
     ): Dataset {
-        val (infrastructure, resource) = provision(aws, workspace)
+        val provisionedInfrastructure = provision(aws, workspace)
+        val infrastructure = provisionedInfrastructure.infrastructure
+        val resource = provisionedInfrastructure.resource
         modify(infrastructure, modification)
         val newDataset = persist(infrastructure.jira, aws, newDatasetName)
         release(resource)

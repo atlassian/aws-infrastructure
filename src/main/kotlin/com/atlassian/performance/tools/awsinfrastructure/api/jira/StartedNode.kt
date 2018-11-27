@@ -7,7 +7,7 @@ import com.atlassian.performance.tools.infrastructure.api.os.MonitoringProcess
 import com.atlassian.performance.tools.ssh.api.Ssh
 import java.time.Duration
 
-data class StartedNode(
+class StartedNode(
     private val name: String,
     private val jiraHome: String,
     private val analyticLogs: String,
@@ -55,6 +55,18 @@ data class StartedNode(
                 timeout = Duration.ofMinutes(2)
             )
         }
+    }
+
+    internal fun copy(name: String, analyticLogs: String): StartedNode {
+        return StartedNode(
+            name = name,
+            jiraHome = this.jiraHome,
+            analyticLogs = analyticLogs,
+            resultsTransport = this.resultsTransport,
+            unpackedProduct = this.unpackedProduct,
+            monitoringProcesses = this.monitoringProcesses,
+            ssh = this.ssh
+        )
     }
 
     override fun toString() = name

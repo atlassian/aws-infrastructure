@@ -87,7 +87,11 @@ class InfrastructureFormula<out T : VirtualUsers>(
     }
 }
 
-data class ProvisionedInfrastructure<out T : VirtualUsers>(
+class ProvisionedInfrastructure<out T : VirtualUsers>(
     val infrastructure: Infrastructure<T>,
     val resource: Resource
-)
+) {
+    override fun toString(): String {
+        return "ProvisionedInfrastructure(infrastructure=$infrastructure, resource=$resource)"
+    }
+}

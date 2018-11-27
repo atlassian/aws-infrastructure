@@ -13,7 +13,7 @@ import org.apache.logging.log4j.Logger
 import java.nio.file.Path
 import java.util.concurrent.Executors
 
-data class Infrastructure<out T : VirtualUsers>(
+class Infrastructure<out T : VirtualUsers>(
     val virtualUsers: T,
     val jira: Jira,
     private val resultsTransport: Storage,
@@ -58,6 +58,10 @@ data class Infrastructure<out T : VirtualUsers>(
         val results = resultsTransport.download(target)
         logger.info("Results are downloaded")
         return results
+    }
+
+    override fun toString(): String {
+        return "Infrastructure(virtualUsers=$virtualUsers, jira=$jira, resultsTransport=$resultsTransport, sshKey=$sshKey)"
     }
 }
 

@@ -13,7 +13,7 @@ import java.util.concurrent.Executors
 import javax.json.Json
 import javax.json.JsonObject
 
-data class CustomDatasetSource(
+class CustomDatasetSource(
     val jiraHome: RemoteLocation,
     val database: RemoteLocation
 ) {
@@ -94,5 +94,9 @@ data class CustomDatasetSource(
 
     private fun stopDockerContainers(host: SshHost) {
         Ssh(host, connectivityPatience = 4).newConnection().use { it.safeExecute("docker stop \$(docker ps -aq)") }
+    }
+
+    override fun toString(): String {
+        return "CustomDatasetSource(jiraHome=$jiraHome, database=$database)"
     }
 }

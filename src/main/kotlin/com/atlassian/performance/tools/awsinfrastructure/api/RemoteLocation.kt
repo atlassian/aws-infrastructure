@@ -12,7 +12,7 @@ import java.time.Duration
 import javax.json.Json
 import javax.json.JsonObject
 
-data class RemoteLocation(val host: SshHost, val location: String) {
+class RemoteLocation(val host: SshHost, val location: String) {
 
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
@@ -61,5 +61,9 @@ data class RemoteLocation(val host: SshHost, val location: String) {
                 localDestination = localDestination
             )
         }
+    }
+
+    override fun toString(): String {
+        return "RemoteLocation(host=$host, location='$location')"
     }
 }

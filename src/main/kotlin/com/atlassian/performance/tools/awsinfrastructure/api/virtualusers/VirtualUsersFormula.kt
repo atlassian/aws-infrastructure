@@ -16,7 +16,11 @@ interface VirtualUsersFormula<out T : VirtualUsers> {
     ): ProvisionedVirtualUsers<T>
 }
 
-data class ProvisionedVirtualUsers<out T : VirtualUsers>(
+class ProvisionedVirtualUsers<out T : VirtualUsers>(
     val virtualUsers: T,
     val resource: Resource
-)
+) {
+    override fun toString(): String {
+        return "ProvisionedVirtualUsers(virtualUsers=$virtualUsers, resource=$resource)"
+    }
+}
