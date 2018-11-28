@@ -113,7 +113,7 @@ internal data class StandaloneStoppedNode(
         while (true) {
             val currentStatus = ssh.safeExecute(
                 cmd = "curl --silent --write-out '%{http_code}' --output /dev/null -X GET $uri",
-                timeout = ofMinutes(4)
+                timeout = launchTimeouts.unresponsivenessTimeout
             ).output
             if (currentStatus != statusQuo) {
                 break
