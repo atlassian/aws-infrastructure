@@ -35,7 +35,7 @@ dependencies {
     api("com.atlassian.performance.tools:aws-resources:[1.1.1,2.0.0)")
     api("com.atlassian.performance.tools:jira-actions:[2.0.0,3.0.0)")
     api("com.atlassian.performance.tools:ssh:[2.0.0,3.0.0)")
-    api("com.atlassian.performance.tools:virtual-users:[2.0.0,3.0.0)")
+    api("com.atlassian.performance.tools:virtual-users:[3.3.0,4.0.0)")
 
     implementation("com.atlassian.performance.tools:jvm-tasks:[1.0.0,2.0.0)")
     implementation("com.atlassian.performance.tools:workspace:[2.0.0,3.0.0)")

@@ -19,7 +19,7 @@ com.atlassian.performance.tools:jira-actions:2.3.0
 com.atlassian.performance.tools:jira-software-actions:1.3.0
 com.atlassian.performance.tools:jvm-tasks:1.0.0
 com.atlassian.performance.tools:ssh:2.1.0
-com.atlassian.performance.tools:virtual-users:2.4.0
+com.atlassian.performance.tools:virtual-users:3.3.0
 com.atlassian.performance.tools:workspace:2.0.0
 com.fasterxml.jackson.core:jackson-annotations:2.6.0
 com.fasterxml.jackson.core:jackson-core:2.9.4
