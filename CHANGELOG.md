@@ -25,7 +25,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 
 ### Added
 - Add support for other EC2 instance types. Resolve [JPERF-276].
-- Add support for `infrastructure:3`.
+- Add support for `infrastructure:4`.
 - Add support for `ssh:2`.
 - Add support for `virtual-users:3`.
 - Respect the `JiraLaunchTimeouts.unresponsivenessTimeout` in `StandaloneStoppedNode`. Resolve [JPERF-271]. 
