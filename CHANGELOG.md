@@ -21,7 +21,10 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-1.4.0
+[Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-2.0.0
+
+## [2.0.0] - 2018-11-28
+[2.0.0]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-2.0.0%0Drelease-1.4.0
 
 ### Added
 - Add support for other EC2 instance types. Resolve [JPERF-276].
