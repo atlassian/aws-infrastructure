@@ -25,21 +25,26 @@ Dropping a requirement of a major version of a dependency is a new contract.
 
 ### Added
 - Add support for other EC2 instance types. Resolve [JPERF-276].
-- Add support for `infrastructure:3`
-- Add support for `ssh:2`
+- Add support for `infrastructure:3`.
+- Add support for `ssh:2`.
+- Add support for `virtual-users:3`.
 - Respect the `JiraLaunchTimeouts.unresponsivenessTimeout` in `StandaloneStoppedNode`. Resolve [JPERF-271]. 
 
 ### Fixed
 - Reduce apt-get usage in `AwsCli`. Mitigate [JPERF-219].
 - Increase awscli-bundle install timeout. Fix [JPERF-266].
+- Cease to rewrite `VirtualUserOptions` parameters, allowing `aws-infrastructure` to forward new parameters
+  without releasing new rewrite code every time `virtual-users` releases a new parameter. Resolve [JPERF-252].
 
 ### Removed
-- Drop support for `infrastructure:2`
-- Drop support for `ssh:1`
+- Drop support for `infrastructure:2`.
+- Drop support for `ssh:1`.
+- Drop support for `virtual-users:2`.
 - Remove Kotlin data-class generated methods from API.
 - Remove all deprecated API.
 
 [JPERF-219]: https://ecosystem.atlassian.net/browse/JPERF-219
+[JPERF-252]: https://ecosystem.atlassian.net/browse/JPERF-252
 [JPERF-266]: https://ecosystem.atlassian.net/browse/JPERF-266
 [JPERF-271]: https://ecosystem.atlassian.net/browse/JPERF-271
 [JPERF-276]: https://ecosystem.atlassian.net/browse/JPERF-276
