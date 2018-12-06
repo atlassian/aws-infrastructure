@@ -23,6 +23,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-2.1.0
 
+### Fixed
+- Provision stacks in dedicated VPCs. Resolve [JPERF-292].
+
+[JPERF-292]: https://ecosystem.atlassian.net/browse/JPERF-292
+
 ## [2.1.0] - 2018-12-06
 [2.1.0]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-2.1.0%0Drelease-2.0.0
 

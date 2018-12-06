@@ -9,6 +9,7 @@ import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C4EightExt
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
 import com.atlassian.performance.tools.awsinfrastructure.api.storage.ApplicationStorage
 import com.atlassian.performance.tools.awsinfrastructure.jira.StandaloneNodeFormula
+import com.atlassian.performance.tools.awsinfrastructure.pickAvailabilityZone
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
 import com.atlassian.performance.tools.infrastructure.api.database.Database
@@ -96,7 +97,10 @@ class StandaloneFormula(
                         .withParameterValue(aws.defaultAmi),
                     Parameter()
                         .withParameterKey("JiraInstanceType")
-                        .withParameterValue(computer.instanceType.toString())
+                        .withParameterValue(computer.instanceType.toString()),
+                    Parameter()
+                        .withParameterKey("AvailabilityZone")
+                        .withParameterValue(aws.pickAvailabilityZone().zoneName)
                 ),
                 aws = aws
             ).provision()

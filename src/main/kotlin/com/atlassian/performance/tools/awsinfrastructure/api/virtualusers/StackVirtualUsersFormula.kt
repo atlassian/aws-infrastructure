@@ -3,6 +3,7 @@ package com.atlassian.performance.tools.awsinfrastructure.api.virtualusers
 import com.amazonaws.services.cloudformation.model.Parameter
 import com.amazonaws.services.ec2.model.Tag
 import com.atlassian.performance.tools.aws.api.*
+import com.atlassian.performance.tools.awsinfrastructure.pickAvailabilityZone
 import com.atlassian.performance.tools.awsinfrastructure.virtualusers.UbuntuVirtualUsersRuntime
 import com.atlassian.performance.tools.infrastructure.api.browser.Browser
 import com.atlassian.performance.tools.infrastructure.api.browser.Chrome
@@ -72,7 +73,10 @@ class StackVirtualUsersFormula(
                     .withParameterValue(roleProfile),
                 Parameter()
                     .withParameterKey("Ami")
-                    .withParameterValue(aws.defaultAmi)
+                    .withParameterValue(aws.defaultAmi),
+                Parameter()
+                    .withParameterKey("AvailabilityZone")
+                    .withParameterValue(aws.pickAvailabilityZone().zoneName)
             ),
             aws = aws
         ).provision()

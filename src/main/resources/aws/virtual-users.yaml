@@ -9,10 +9,59 @@ Parameters:
     Type: String
   Ami:
     Type: String
+  AvailabilityZone:
+    Type: AWS::EC2::AvailabilityZone::Name
 Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      CidrBlock: 10.0.0.0/24
+  Subnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      MapPublicIpOnLaunch: true
+      CidrBlock: 10.0.0.0/24
+      VpcId:
+        Ref: VPC
+      AvailabilityZone: !Ref AvailabilityZone
+      Tags:
+        - Key: Application
+          Value:
+            Ref: AWS::StackId
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+  SubnetRouteTableAssoc:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: RouteTable
+      SubnetId:
+        Ref: Subnet
+  InternetGatewayRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      RouteTableId:
+        Ref: RouteTable
+      GatewayId:
+        Ref: InternetGateway
+    DependsOn: AttachGateway
   VirtualUsers:
     Type: AWS::EC2::Instance
     Properties:
+      SubnetId:
+        Ref: Subnet
       InstanceType: c4.8xlarge
       SecurityGroupIds:
         - Ref: SshSecurityGroup
@@ -33,6 +82,8 @@ Resources:
   SshSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
+      VpcId:
+        Ref: VPC
       GroupDescription: Enables SSH access
       SecurityGroupIngress:
         -

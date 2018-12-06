@@ -15,6 +15,7 @@ import com.atlassian.performance.tools.awsinfrastructure.jira.DataCenterNodeForm
 import com.atlassian.performance.tools.awsinfrastructure.jira.DiagnosableNodeFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.StandaloneNodeFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.home.SharedHomeFormula
+import com.atlassian.performance.tools.awsinfrastructure.pickAvailabilityZone
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
 import com.atlassian.performance.tools.infrastructure.api.database.Database
@@ -108,7 +109,7 @@ class DataCenterFormula(
                         .withParameterValue(computer.instanceType.toString()),
                     Parameter()
                         .withParameterKey("AvailabilityZone")
-                        .withParameterValue(pickAvailabilityZone(aws).zoneName)
+                        .withParameterValue(aws.pickAvailabilityZone().zoneName)
                 ),
                 aws = aws
             ).provision()
@@ -235,18 +236,6 @@ class DataCenterFormula(
                 dependency = jiraStack
             )
         )
-    }
-
-    private fun pickAvailabilityZone(
-        aws: Aws
-    ): AvailabilityZone {
-        val zone = aws
-            .availabilityZones
-            .filter { it.zoneName != "eu-central-1c" }
-            .shuffled()
-            .first()
-        logger.debug("Picked $zone")
-        return zone
     }
 }
 

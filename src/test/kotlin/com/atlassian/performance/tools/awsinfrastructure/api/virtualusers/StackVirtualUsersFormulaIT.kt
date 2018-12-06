@@ -51,7 +51,6 @@ class StackVirtualUsersFormulaIT {
         )
 
         val listFiles = provisionedVirtualUsers.virtualUsers.ssh.newConnection().use { it.execute("ls") }
-        provisionedVirtualUsers.resource.release().get(1, TimeUnit.MINUTES)
         val files = listFiles.output
         assertThat(files, containsString(shadowJarName))
         val executeHelloWorld = provisionedVirtualUsers.virtualUsers.ssh.newConnection()
