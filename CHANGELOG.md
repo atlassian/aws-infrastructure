@@ -39,6 +39,15 @@ Dropping a requirement of a major version of a dependency is a new contract.
 
 [JPERF-305]: https://ecosystem.atlassian.net/browse/JPERF-305
 
+### Added
+- Add `DatasetCatalogue.largeJiraSeven` as a replacement for `DatasetCatalogue.largeJira`.
+- Add `DatasetCatalogue.largeJiraEight` dataset for Jira 8 which is necessary for [JPERF-307].
+
+## Deprecated
+- Deprecate `DatasetCatalogue.largeJira`.
+
+[JPERF-307]: https://ecosystem.atlassian.net/browse/JPERF-307
+
 ## [2.1.1] - 2018-12-06 🎅
 [2.1.1]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-2.1.1%0Drelease-2.1.0
 
