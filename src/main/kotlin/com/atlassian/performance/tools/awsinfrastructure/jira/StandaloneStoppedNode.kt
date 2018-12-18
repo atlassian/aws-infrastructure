@@ -3,7 +3,7 @@ package com.atlassian.performance.tools.awsinfrastructure.jira
 import com.atlassian.performance.tools.aws.api.Storage
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.StartedNode
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraLaunchTimeouts
-import com.atlassian.performance.tools.infrastructure.api.jvm.OracleJDK
+import com.atlassian.performance.tools.infrastructure.api.jvm.JavaDevelopmentKit
 import com.atlassian.performance.tools.infrastructure.api.os.MonitoringProcess
 import com.atlassian.performance.tools.infrastructure.api.os.OsMetric
 import com.atlassian.performance.tools.ssh.api.Ssh
@@ -24,11 +24,10 @@ internal data class StandaloneStoppedNode(
     private val unpackedProduct: String,
     private val osMetrics: List<OsMetric>,
     private val launchTimeouts: JiraLaunchTimeouts,
+    private val jdk: JavaDevelopmentKit,
     override val ssh: Ssh
 ) : StoppedNode {
     private val logger: Logger = LogManager.getLogger(this::class.java)
-
-    private val jdk = OracleJDK()
 
     override fun start(): StartedNode {
         logger.info("Starting '$name'...")
@@ -39,7 +38,7 @@ internal data class StandaloneStoppedNode(
                 monitoringProcesses.add(metric.startMonitoring(it))
             }
             startJira(it)
-            monitoringProcesses.add(jdk.jstat.startMonitoring(it, pid(it)))
+            monitoringProcesses.add(jdk.jstatMonitoring.startMonitoring(it, pid(it)))
             waitForUpgrades(it)
         }
 

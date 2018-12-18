@@ -9,8 +9,6 @@ import com.atlassian.performance.tools.infrastructure.api.jira.JiraGcLog
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
 import com.atlassian.performance.tools.infrastructure.api.jira.SetenvSh
-import com.atlassian.performance.tools.infrastructure.api.jvm.JavaDevelopmentKit
-import com.atlassian.performance.tools.infrastructure.api.jvm.OracleJDK
 import com.atlassian.performance.tools.infrastructure.api.os.Ubuntu
 import com.atlassian.performance.tools.jvmtasks.api.TaskTimer
 import com.atlassian.performance.tools.ssh.api.Ssh
@@ -30,7 +28,7 @@ internal class StandaloneNodeFormula(
     private val computer: Computer
 ) : NodeFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
-    private val jdk: JavaDevelopmentKit = OracleJDK()
+    private val jdk = config.jdk
     private val ubuntu: Ubuntu = Ubuntu()
 
     override val name = config.name
@@ -80,7 +78,8 @@ internal class StandaloneNodeFormula(
                 unpackedProduct = unpackedProduct,
                 osMetrics = osMetrics,
                 ssh = ssh,
-                launchTimeouts = config.launchTimeouts
+                launchTimeouts = config.launchTimeouts,
+                jdk = jdk
             )
         }
     }

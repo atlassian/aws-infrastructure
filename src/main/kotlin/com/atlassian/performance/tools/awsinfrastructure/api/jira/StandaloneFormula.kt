@@ -14,8 +14,6 @@ import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
 import com.atlassian.performance.tools.infrastructure.api.database.Database
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource
-import com.atlassian.performance.tools.infrastructure.api.jira.JiraJvmArgs
-import com.atlassian.performance.tools.infrastructure.api.jira.JiraLaunchTimeouts
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
 import com.atlassian.performance.tools.jvmtasks.api.TaskTimer.time
 import com.atlassian.performance.tools.ssh.api.Ssh
@@ -25,7 +23,6 @@ import org.apache.logging.log4j.CloseableThreadContext
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.net.URI
-import java.time.Duration
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 
@@ -48,16 +45,7 @@ class StandaloneFormula(
         application = application,
         jiraHomeSource = jiraHomeSource,
         database = database,
-        config = JiraNodeConfig(
-            name = "jira-node",
-            jvmArgs = JiraJvmArgs(),
-            launchTimeouts = JiraLaunchTimeouts(
-                offlineTimeout = Duration.ofMinutes(8),
-                initTimeout = Duration.ofMinutes(4),
-                upgradeTimeout = Duration.ofMinutes(8),
-                unresponsivenessTimeout = Duration.ofMinutes(4)
-            )
-        ),
+        config = JiraNodeConfig.Builder().build(),
         computer = C4EightExtraLargeElastic()
     )
 

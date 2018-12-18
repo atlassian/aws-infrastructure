@@ -23,6 +23,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-2.1.1
 
+### Added
+- Customise JDK Jira runs on. Resolve [JPERF-305].
+
+[JPERF-305]: https://ecosystem.atlassian.net/browse/JPERF-305
+
 ## [2.1.1] - 2018-12-06 🎅
 [2.1.1]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-2.1.1%0Drelease-2.1.0
 

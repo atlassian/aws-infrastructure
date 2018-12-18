@@ -31,7 +31,7 @@ configurations.all {
 }
 
 dependencies {
-    api("com.atlassian.performance.tools:infrastructure:[4.0.0,5.0.0)")
+    api("com.atlassian.performance.tools:infrastructure:[4.4.0,5.0.0)")
     api("com.atlassian.performance.tools:aws-resources:[1.1.1,2.0.0)")
     api("com.atlassian.performance.tools:jira-actions:[2.0.0,4.0.0)")
     api("com.atlassian.performance.tools:ssh:[2.0.0,3.0.0)")
