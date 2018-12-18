@@ -21,7 +21,10 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-2.1.1
+[Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-2.2.0
+
+## [2.2.0] - 2018-12-18
+[2.2.0]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-2.2.0%0Drelease-2.1.1
 
 ### Added
 - Customise JDK Jira runs on. Resolve [JPERF-305].
