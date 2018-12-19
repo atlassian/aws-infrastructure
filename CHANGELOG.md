@@ -23,6 +23,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-2.2.0
 
+### Added
+- Add profiler support. Resolve [JPERF-318].
+
+[JPERF-318]:https://ecosystem.atlassian.net/browse/JPERF-318
+
 ## [2.2.0] - 2018-12-18
 [2.2.0]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-2.2.0%0Drelease-2.1.1
 

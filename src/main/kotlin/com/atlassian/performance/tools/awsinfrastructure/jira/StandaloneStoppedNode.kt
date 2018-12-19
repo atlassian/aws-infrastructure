@@ -4,8 +4,9 @@ import com.atlassian.performance.tools.aws.api.Storage
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.StartedNode
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraLaunchTimeouts
 import com.atlassian.performance.tools.infrastructure.api.jvm.JavaDevelopmentKit
-import com.atlassian.performance.tools.infrastructure.api.os.MonitoringProcess
 import com.atlassian.performance.tools.infrastructure.api.os.OsMetric
+import com.atlassian.performance.tools.infrastructure.api.process.RemoteMonitoringProcess
+import com.atlassian.performance.tools.infrastructure.api.profiler.Profiler
 import com.atlassian.performance.tools.ssh.api.Ssh
 import com.atlassian.performance.tools.ssh.api.SshConnection
 import org.apache.logging.log4j.LogManager
@@ -25,21 +26,24 @@ internal data class StandaloneStoppedNode(
     private val osMetrics: List<OsMetric>,
     private val launchTimeouts: JiraLaunchTimeouts,
     private val jdk: JavaDevelopmentKit,
+    private val profiler: Profiler,
     override val ssh: Ssh
 ) : StoppedNode {
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
     override fun start(): StartedNode {
         logger.info("Starting '$name'...")
-        val monitoringProcesses = mutableListOf<MonitoringProcess>()
+        val monitoringProcesses = mutableListOf<RemoteMonitoringProcess>()
 
-        ssh.newConnection().use {
+        ssh.newConnection().use { ssh ->
             osMetrics.forEach { metric ->
-                monitoringProcesses.add(metric.startMonitoring(it))
+                monitoringProcesses.add(metric.start(ssh))
             }
-            startJira(it)
-            monitoringProcesses.add(jdk.jstatMonitoring.startMonitoring(it, pid(it)))
-            waitForUpgrades(it)
+            startJira(ssh)
+            val pid = pid(ssh)
+            monitoringProcesses.add(jdk.jstatMonitoring.start(ssh, pid))
+            profiler.start(ssh, pid)?.let { monitoringProcesses.add(it) }
+            waitForUpgrades(ssh)
         }
 
         logger.info("'$name' is started")
@@ -69,8 +73,8 @@ internal data class StandaloneStoppedNode(
 
     private fun pid(
         ssh: SshConnection
-    ): String {
-        return ssh.execute("cat $unpackedProduct/work/catalina.pid").output.trim()
+    ): Int {
+        return ssh.execute("cat $unpackedProduct/work/catalina.pid").output.trim().toInt()
     }
 
     private fun waitForUpgrades(

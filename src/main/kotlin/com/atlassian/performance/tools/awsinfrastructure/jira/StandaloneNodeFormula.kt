@@ -67,7 +67,7 @@ internal class StandaloneNodeFormula(
                 log4jPropertiesPath = "$unpackedProduct/atlassian-jira/WEB-INF/classes/log4j.properties"
             )
             config.splunkForwarder.run(connection, name, "/home/ubuntu/jirahome/log")
-
+            config.profiler.install(connection)
             logger.info("$name is set up")
 
             return StandaloneStoppedNode(
@@ -79,7 +79,8 @@ internal class StandaloneNodeFormula(
                 osMetrics = osMetrics,
                 ssh = ssh,
                 launchTimeouts = config.launchTimeouts,
-                jdk = jdk
+                jdk = jdk,
+                profiler = config.profiler
             )
         }
     }

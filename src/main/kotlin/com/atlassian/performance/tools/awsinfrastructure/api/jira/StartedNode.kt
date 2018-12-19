@@ -3,7 +3,7 @@ package com.atlassian.performance.tools.awsinfrastructure.api.jira
 import com.atlassian.performance.tools.aws.api.Storage
 import com.atlassian.performance.tools.awsinfrastructure.AwsCli
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraGcLog
-import com.atlassian.performance.tools.infrastructure.api.os.MonitoringProcess
+import com.atlassian.performance.tools.infrastructure.api.process.RemoteMonitoringProcess
 import com.atlassian.performance.tools.ssh.api.Ssh
 import java.time.Duration
 
@@ -13,14 +13,14 @@ class StartedNode(
     private val analyticLogs: String,
     private val resultsTransport: Storage,
     private val unpackedProduct: String,
-    private val monitoringProcesses: List<MonitoringProcess>,
+    private val monitoringProcesses: List<RemoteMonitoringProcess>,
     private val ssh: Ssh
 ) {
     private val resultsDirectory = "results"
 
     fun gatherResults() {
         ssh.newConnection().use { shell ->
-            monitoringProcesses.forEach { shell.stopProcess(it.process) }
+            monitoringProcesses.forEach { it.stop(shell) }
             val nodeResultsDirectory = "$resultsDirectory/'$name'"
             listOf(
                 "mkdir -p $nodeResultsDirectory",
@@ -32,7 +32,7 @@ class StartedNode(
                 "cp /var/log/cloud-init.log $nodeResultsDirectory",
                 "cp /var/log/cloud-init-output.log $nodeResultsDirectory"
             )
-                .plus(monitoringProcesses.map { "cp ${it.logFile} $nodeResultsDirectory" })
+                .plus(monitoringProcesses.map { "cp ${it.getResultPath()} $nodeResultsDirectory" })
                 .plus("find $nodeResultsDirectory -empty -type f -delete")
                 .forEach { shell.safeExecute(it) }
             AwsCli().upload(
