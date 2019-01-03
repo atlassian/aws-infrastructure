@@ -21,7 +21,10 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-2.3.0
+[Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-2.4.0
+
+## [2.4.0] - 2019-01-03
+[2.4.0]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-2.4.0%0Drelease-2.3.0
 
 ### Added
 - Add an option to customise stack creation timeout for Jira. Resolve [JPERF-332]
