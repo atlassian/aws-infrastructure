@@ -1,7 +1,6 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
 import com.amazonaws.services.cloudformation.model.Parameter
-import com.amazonaws.services.ec2.model.AvailabilityZone
 import com.amazonaws.services.ec2.model.Tag
 import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
@@ -20,8 +19,6 @@ import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
 import com.atlassian.performance.tools.infrastructure.api.database.Database
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource
-import com.atlassian.performance.tools.infrastructure.api.jira.JiraJvmArgs
-import com.atlassian.performance.tools.infrastructure.api.jira.JiraLaunchTimeouts
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig.Builder
 import com.atlassian.performance.tools.jvmtasks.api.TaskTimer.time
