@@ -52,23 +52,11 @@ internal class AwsDataset(
                 useCase = "Clean backups from a dataset",
                 lifespan = Duration.ofMinutes(50)
             ),
-            jiraFormula = StandaloneFormula(
-                apps = Apps(listOf(NoApp())),
+            jiraFormula = StandaloneFormula.Builder(
                 database = dataset.database,
                 jiraHomeSource = dataset.jiraHomeSource,
-                application = JiraSoftwareStorage("7.2.0"),
-                config = JiraNodeConfig(
-                    name = "jira-node",
-                    jvmArgs = JiraJvmArgs(),
-                    launchTimeouts = JiraLaunchTimeouts(
-                        offlineTimeout = Duration.ofMinutes(8),
-                        initTimeout = Duration.ofMinutes(4),
-                        upgradeTimeout = Duration.ofMinutes(8),
-                        unresponsivenessTimeout = Duration.ofMinutes(4)
-                    )
-                ),
-                computer = C5NineExtraLargeEphemeral()
-            ),
+                application = JiraSoftwareStorage("7.2.0")
+            ).computer(C5NineExtraLargeEphemeral()).build(),
             virtualUsersFormula = AbsentVirtualUsersFormula(),
             aws = aws
         )

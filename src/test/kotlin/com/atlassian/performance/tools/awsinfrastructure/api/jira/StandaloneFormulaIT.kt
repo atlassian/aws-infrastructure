@@ -7,11 +7,6 @@ import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.
 import com.atlassian.performance.tools.awsinfrastructure.api.DatasetCatalogue
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C5NineExtraLargeEphemeral
 import com.atlassian.performance.tools.awsinfrastructure.api.storage.JiraServiceDeskStorage
-import com.atlassian.performance.tools.infrastructure.api.app.Apps
-import com.atlassian.performance.tools.infrastructure.api.app.NoApp
-import com.atlassian.performance.tools.infrastructure.api.jira.JiraJvmArgs
-import com.atlassian.performance.tools.infrastructure.api.jira.JiraLaunchTimeouts
-import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
 import org.junit.Test
 import java.time.Duration
 import java.util.*
@@ -33,23 +28,12 @@ class StandaloneFormulaIT {
             lifespan = lifespan,
             prefix = nonce
         )
-        val serverFormula = StandaloneFormula(
-            apps = Apps(listOf(NoApp())),
+        val serverFormula = StandaloneFormula.Builder(
             application = JiraServiceDeskStorage("3.9.8"),
             database = dataset.database,
-            jiraHomeSource = dataset.jiraHomeSource,
-            config = JiraNodeConfig(
-                name = "jira-node",
-                jvmArgs = JiraJvmArgs(),
-                launchTimeouts = JiraLaunchTimeouts(
-                    offlineTimeout = Duration.ofMinutes(8),
-                    initTimeout = Duration.ofMinutes(4),
-                    upgradeTimeout = Duration.ofMinutes(8),
-                    unresponsivenessTimeout = Duration.ofMinutes(4)
-                )
-            ),
-            computer = C5NineExtraLargeEphemeral()
-        )
+            jiraHomeSource = dataset.jiraHomeSource
+        ).computer(C5NineExtraLargeEphemeral())
+            .build()
 
         val resource = serverFormula.provision(
             investment = Investment(

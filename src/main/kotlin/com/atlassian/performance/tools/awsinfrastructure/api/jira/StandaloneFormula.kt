@@ -23,18 +23,39 @@ import org.apache.logging.log4j.CloseableThreadContext
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.net.URI
+import java.time.Duration
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 
-class StandaloneFormula(
+class StandaloneFormula private constructor(
     private val apps: Apps,
     private val application: ApplicationStorage,
     private val jiraHomeSource: JiraHomeSource,
     private val database: Database,
     private val config: JiraNodeConfig,
-    private val computer: Computer
+    private val computer: Computer,
+    private val stackCreationTimeout: Duration
 ) : JiraFormula {
 
+    @Deprecated(message = "Use StandaloneFormula.Builder instead.")
+    constructor(
+        apps: Apps,
+        application: ApplicationStorage,
+        jiraHomeSource: JiraHomeSource,
+        database: Database,
+        config: JiraNodeConfig,
+        computer: Computer
+    ) : this(
+        apps = apps,
+        application = application,
+        jiraHomeSource = jiraHomeSource,
+        database = database,
+        config = config,
+        computer = computer,
+        stackCreationTimeout = Duration.ofMinutes(30)
+    )
+
+    @Deprecated(message = "Use StandaloneFormula.Builder instead.")
     constructor (
         apps: Apps,
         application: ApplicationStorage,
@@ -46,7 +67,8 @@ class StandaloneFormula(
         jiraHomeSource = jiraHomeSource,
         database = database,
         config = JiraNodeConfig.Builder().build(),
-        computer = C4EightExtraLargeElastic()
+        computer = C4EightExtraLargeElastic(),
+        stackCreationTimeout = Duration.ofMinutes(30)
     )
 
     private val logger: Logger = LogManager.getLogger(this::class.java)
@@ -90,7 +112,8 @@ class StandaloneFormula(
                         .withParameterKey("AvailabilityZone")
                         .withParameterValue(aws.pickAvailabilityZone().zoneName)
                 ),
-                aws = aws
+                aws = aws,
+                pollingTimeout = stackCreationTimeout
             ).provision()
         }
 
@@ -157,5 +180,32 @@ class StandaloneFormula(
         )
         logger.info("$jira is set up, will expire ${jiraStack.expiry}")
         return@time ProvisionedJira(jira = jira, resource = jiraStack)
+    }
+
+    class Builder(
+        private val application: ApplicationStorage,
+        private val jiraHomeSource: JiraHomeSource,
+        private val database: Database
+    ) {
+        private var config: JiraNodeConfig = JiraNodeConfig.Builder().build()
+        private var apps: Apps = Apps(emptyList())
+        private var computer: Computer = C4EightExtraLargeElastic()
+        private var stackCreationTimeout: Duration = Duration.ofMinutes(30)
+
+        fun config(config: JiraNodeConfig): Builder = apply { this.config = config }
+        fun apps(apps: Apps): Builder = apply { this.apps = apps }
+        fun computer(computer: Computer): Builder = apply { this.computer = computer }
+        fun stackCreationTimeout(stackCreationTimeout: Duration): Builder =
+            apply { this.stackCreationTimeout = stackCreationTimeout }
+
+        fun build(): StandaloneFormula = StandaloneFormula(
+            apps = apps,
+            application = application,
+            jiraHomeSource = jiraHomeSource,
+            database = database,
+            config = config,
+            computer = computer,
+            stackCreationTimeout = stackCreationTimeout
+        )
     }
 }

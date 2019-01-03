@@ -5,15 +5,9 @@ import com.atlassian.performance.tools.aws.api.SshKeyFormula
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime
 import com.atlassian.performance.tools.awsinfrastructure.api.DatasetCatalogue
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C5NineExtraLargeEphemeral
-import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.ElasticLoadBalancerFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.storage.JiraSoftwareStorage
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
-import com.atlassian.performance.tools.infrastructure.api.app.Apps
-import com.atlassian.performance.tools.infrastructure.api.app.NoApp
 import com.atlassian.performance.tools.infrastructure.api.dataset.Dataset
-import com.atlassian.performance.tools.infrastructure.api.jira.JiraJvmArgs
-import com.atlassian.performance.tools.infrastructure.api.jira.JiraLaunchTimeouts
-import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
 import com.atlassian.performance.tools.workspace.api.TaskWorkspace
 import com.atlassian.performance.tools.workspace.api.TestWorkspace
 import com.google.common.util.concurrent.ThreadFactoryBuilder
@@ -76,24 +70,12 @@ class DataCenterFormulaIT {
                 lifespan = lifespan,
                 prefix = nonce
             )
-            val dcFormula = DataCenterFormula(
-                configs = JiraNodeConfig(
-                    name = "jira-node",
-                    jvmArgs = JiraJvmArgs(),
-                    launchTimeouts = JiraLaunchTimeouts(
-                        offlineTimeout = Duration.ofMinutes(8),
-                        initTimeout = Duration.ofMinutes(4),
-                        upgradeTimeout = Duration.ofMinutes(8),
-                        unresponsivenessTimeout = Duration.ofMinutes(4)
-                    )
-                ).clone(2),
-                loadBalancerFormula = ElasticLoadBalancerFormula(),
-                apps = Apps(listOf(NoApp())),
+            val dcFormula = DataCenterFormula.Builder(
                 application = JiraSoftwareStorage(jiraVersion),
                 jiraHomeSource = dataset.jiraHomeSource,
-                database = dataset.database,
-                computer = C5NineExtraLargeEphemeral()
-            )
+                database = dataset.database
+            ).computer(C5NineExtraLargeEphemeral())
+                .build()
 
             val resource = dcFormula.provision(
                 investment = Investment(

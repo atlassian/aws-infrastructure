@@ -23,6 +23,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-2.3.0
 
+### Added
+- Add an option to customise stack creation timeout for Jira. Resolve [JPERF-332]
+
+[JPERF-332]:https://ecosystem.atlassian.net/browse/JPERF-332
+
 ## [2.3.0] - 2018-12-21
 [2.3.0]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-2.3.0%0Drelease-2.2.0
 

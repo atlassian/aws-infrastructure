@@ -20,7 +20,6 @@ import com.atlassian.performance.tools.infrastructure.api.app.Apps
 import com.atlassian.performance.tools.infrastructure.api.database.Database
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
-import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig.Builder
 import com.atlassian.performance.tools.jvmtasks.api.TaskTimer.time
 import com.atlassian.performance.tools.ssh.api.Ssh
 import com.atlassian.performance.tools.ssh.api.SshHost
@@ -36,30 +35,53 @@ import java.util.concurrent.Future
  * @param [configs] applied to nodes in the same order as they are provisioned and started
  * @param [computer] hardware specs used by the Jira nodes and the shared home node
  */
-class DataCenterFormula(
+class DataCenterFormula private constructor(
     private val configs: List<JiraNodeConfig>,
     private val loadBalancerFormula: LoadBalancerFormula,
     private val apps: Apps,
     private val application: ApplicationStorage,
     private val jiraHomeSource: JiraHomeSource,
     private val database: Database,
-    private val computer: Computer
+    private val computer: Computer,
+    private val stackCreationTimeout: Duration
 ) : JiraFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
+    @Deprecated(message = "Use DataCenterFormula.Builder instead.")
+    constructor(
+        configs: List<JiraNodeConfig>,
+        loadBalancerFormula: LoadBalancerFormula,
+        apps: Apps,
+        application: ApplicationStorage,
+        jiraHomeSource: JiraHomeSource,
+        database: Database,
+        computer: Computer
+    ) : this(
+        configs = configs,
+        loadBalancerFormula = loadBalancerFormula,
+        apps = apps,
+        application = application,
+        jiraHomeSource = jiraHomeSource,
+        database = database,
+        computer = computer,
+        stackCreationTimeout = Duration.ofMinutes(30)
+    )
+
+    @Deprecated(message = "Use DataCenterFormula.Builder instead.")
     constructor(
         apps: Apps,
         application: ApplicationStorage,
         jiraHomeSource: JiraHomeSource,
         database: Database
     ) : this(
-        configs = (1..2).map { Builder().name("jira-node-$it").build() },
+        configs = (1..2).map { JiraNodeConfig.Builder().name("jira-node-$it").build() },
         loadBalancerFormula = ElasticLoadBalancerFormula(),
         apps = apps,
         application = application,
         jiraHomeSource = jiraHomeSource,
         database = database,
-        computer = C4EightExtraLargeElastic()
+        computer = C4EightExtraLargeElastic(),
+        stackCreationTimeout = Duration.ofMinutes(30)
     )
 
     override fun provision(
@@ -100,7 +122,8 @@ class DataCenterFormula(
                         .withParameterKey("AvailabilityZone")
                         .withParameterValue(aws.pickAvailabilityZone().zoneName)
                 ),
-                aws = aws
+                aws = aws,
+                pollingTimeout = stackCreationTimeout
             ).provision()
         }
 
@@ -118,8 +141,8 @@ class DataCenterFormula(
         val sharedHomeIp = sharedHomeMachine.publicIpAddress
         val sharedHomePrivateIp = sharedHomeMachine.privateIpAddress
         val sharedHomeSsh = Ssh(
-                host = SshHost(sharedHomeIp, "ubuntu", keyPath),
-                connectivityPatience = 4
+            host = SshHost(sharedHomeIp, "ubuntu", keyPath),
+            connectivityPatience = 4
         )
         val futureLoadBalancer = executor.submitWithLogContext("provision load balancer") {
             loadBalancerFormula.provision(
@@ -224,6 +247,42 @@ class DataCenterFormula(
                 user = provisionedLoadBalancer.resource,
                 dependency = jiraStack
             )
+        )
+    }
+
+    class Builder(
+        private val application: ApplicationStorage,
+        private val jiraHomeSource: JiraHomeSource,
+        private val database: Database
+    ) {
+        private var configs: List<JiraNodeConfig> = (1..2).map { JiraNodeConfig.Builder().name("jira-node-$it").build() }
+        private var loadBalancerFormula: LoadBalancerFormula = ElasticLoadBalancerFormula()
+        private var apps: Apps = Apps(emptyList())
+        private var computer: Computer = C4EightExtraLargeElastic()
+        private var stackCreationTimeout: Duration = Duration.ofMinutes(30)
+
+        fun configs(configs: List<JiraNodeConfig>): Builder = apply { this.configs = configs }
+
+        fun loadBalancerFormula(loadBalancerFormula: LoadBalancerFormula): Builder =
+            apply { this.loadBalancerFormula = loadBalancerFormula }
+
+        fun apps(apps: Apps): Builder = apply { this.apps = apps }
+
+        fun computer(computer: Computer): Builder = apply { this.computer = computer }
+
+        fun stackCreationTimeout(stackCreationTimeout: Duration): Builder =
+            apply { this.stackCreationTimeout = stackCreationTimeout }
+
+        fun build(): DataCenterFormula = DataCenterFormula(
+            configs = configs,
+            loadBalancerFormula = loadBalancerFormula,
+            apps = apps,
+            application = application,
+            jiraHomeSource = jiraHomeSource,
+            database = database,
+            computer = computer,
+            stackCreationTimeout = stackCreationTimeout
+
         )
     }
 }
