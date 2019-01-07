@@ -32,9 +32,9 @@ class StackVirtualUsersFormulaIT {
             lifespan = lifespan,
             prefix = nonce
         )
-        val virtualUsersFormula = StackVirtualUsersFormula(
+        val virtualUsersFormula = StackVirtualUsersFormula.Builder(
             shadowJar = File(this.javaClass.getResource(shadowJar).toURI())
-        )
+        ).build()
 
         val provisionedVirtualUsers = virtualUsersFormula.provision(
             investment = Investment(

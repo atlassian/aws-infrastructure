@@ -23,6 +23,14 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-2.4.0
 
+### Added
+- Add an option to customise stack creation timeout for virtual users. Resolve [JPERF-336]
+
+### Deprecated
+- Deprecate `StackVirtualUsers` constructors in favour of builder.
+
+[JPERF-336]:https://ecosystem.atlassian.net/browse/JPERF-336
+
 ## [2.4.0] - 2019-01-03
 [2.4.0]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-2.4.0%0Drelease-2.3.0
 

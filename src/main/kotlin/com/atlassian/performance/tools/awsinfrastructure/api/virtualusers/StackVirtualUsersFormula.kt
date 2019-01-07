@@ -17,30 +17,49 @@ import com.atlassian.performance.tools.ssh.api.SshHost
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.io.File
+import java.time.Duration
 import java.util.concurrent.Future
 
 /**
  * @param [splunkForwarder] Forwards logs from `/home/ubuntu/splunkforward`.
  */
-class StackVirtualUsersFormula(
+class StackVirtualUsersFormula private constructor(
     private val nodeOrder: Int = 1,
     private val shadowJar: File,
     private val splunkForwarder: SplunkForwarder,
-    private val browser: Browser
+    private val browser: Browser,
+    private val stackCreationTimeout: Duration
 ) : VirtualUsersFormula<SshVirtualUsers> {
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
     private val name: String = "virtual-user-node-$nodeOrder"
 
+    @Deprecated(message = "Use StackVirtualUsersFormula.Builder instead.")
+    constructor(
+        nodeOrder: Int = 1,
+        shadowJar: File,
+        splunkForwarder: SplunkForwarder,
+        browser: Browser
+    ) : this (
+        nodeOrder = nodeOrder,
+        shadowJar = shadowJar,
+        splunkForwarder = splunkForwarder,
+        browser = browser,
+        stackCreationTimeout = Duration.ofMinutes(30)
+    )
+
+    @Deprecated(message = "Use StackVirtualUsersFormula.Builder instead.")
     constructor(
         shadowJar: File
     ) : this(
         nodeOrder = 1,
         shadowJar = shadowJar,
         splunkForwarder = DisabledSplunkForwarder(),
-        browser = Chrome()
+        browser = Chrome(),
+        stackCreationTimeout = Duration.ofMinutes(30)
     )
 
+    @Deprecated(message = "Use StackVirtualUsersFormula.Builder instead.")
     constructor(
         shadowJar: File,
         splunkForwarder: SplunkForwarder
@@ -48,7 +67,8 @@ class StackVirtualUsersFormula(
         nodeOrder = 1,
         shadowJar = shadowJar,
         splunkForwarder = splunkForwarder,
-        browser = Chrome()
+        browser = Chrome(),
+        stackCreationTimeout = Duration.ofMinutes(30)
     )
 
     override fun provision(
@@ -78,7 +98,8 @@ class StackVirtualUsersFormula(
                     .withParameterKey("AvailabilityZone")
                     .withParameterValue(aws.pickAvailabilityZone().zoneName)
             ),
-            aws = aws
+            aws = aws,
+            pollingTimeout = stackCreationTimeout
         ).provision()
 
         val virtualUsersMachine = virtualUsersStack
@@ -110,6 +131,28 @@ class StackVirtualUsersFormula(
                 ssh = virtualUsersSsh
             ),
             resource = virtualUsersStack
+        )
+    }
+
+    class Builder(
+        private val shadowJar: File
+    ) {
+        private var nodeOrder: Int = 1
+        private var splunkForwarder: SplunkForwarder = DisabledSplunkForwarder()
+        private var browser: Browser = Chrome()
+        private var stackCreationTimeout: Duration = Duration.ofMinutes(30)
+
+        fun nodeOrder(nodeOrder: Int): Builder = apply { this.nodeOrder = nodeOrder}
+        fun splunkForwarder(splunkForwarder: SplunkForwarder): Builder = apply { this.splunkForwarder = splunkForwarder}
+        fun browser(browser: Browser): Builder = apply { this.browser = browser}
+        fun stackCreationTimeout(stackCreationTimeout: Duration): Builder = apply { this.stackCreationTimeout = stackCreationTimeout}
+
+        fun build(): StackVirtualUsersFormula = StackVirtualUsersFormula(
+            nodeOrder = nodeOrder,
+            shadowJar = shadowJar,
+            splunkForwarder = splunkForwarder,
+            browser = browser,
+            stackCreationTimeout = stackCreationTimeout
         )
     }
 }
