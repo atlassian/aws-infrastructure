@@ -10,6 +10,8 @@ import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
 import com.atlassian.performance.tools.infrastructure.api.jira.SetenvSh
 import com.atlassian.performance.tools.infrastructure.api.os.Ubuntu
+import com.atlassian.performance.tools.jvmtasks.api.Backoff
+import com.atlassian.performance.tools.jvmtasks.api.IdempotentAction
 import com.atlassian.performance.tools.jvmtasks.api.TaskTimer
 import com.atlassian.performance.tools.ssh.api.Ssh
 import com.atlassian.performance.tools.ssh.api.SshConnection
@@ -54,7 +56,7 @@ internal class StandaloneNodeFormula(
             )
             connection.execute("echo jira.home=`realpath $jiraHome` > $unpackedProduct/atlassian-jira/WEB-INF/classes/jira-application.properties")
             connection.execute("echo jira.autoexport=false > $jiraHome/jira-config.properties")
-            connection.execute("wget -q https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.40.tar.gz")
+            downloadMysqlConnector("https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.40.tar.gz", connection)
             connection.execute("tar -xzf mysql-connector-java-5.1.40.tar.gz")
             connection.execute("cp mysql-connector-java-5.1.40/mysql-connector-java-5.1.40-bin.jar $unpackedProduct/lib")
             AwsCli().download(pluginsTransport.location, connection, target = "$jiraHome/plugins/installed-plugins")
@@ -119,4 +121,25 @@ internal class StandaloneNodeFormula(
         connection.execute("tar -xf /home/ubuntu.tar")
         connection.execute("sudo rm /home/ubuntu.tar")
     }
+
+    private fun downloadMysqlConnector(
+        url: String,
+        connection: SshConnection
+    ) {
+        IdempotentAction(
+            description = "Download MySQL connector",
+            action = {
+                connection.execute("wget -q $url")
+            }
+        ).retry(
+            maxAttempts = 3,
+            backoff = StaticBackoff(Duration.ofSeconds(5))
+        )
+    }
+}
+
+private class StaticBackoff(
+    private val backOff: Duration
+) : Backoff {
+    override fun backOff(attempt: Int): Duration = backOff
 }

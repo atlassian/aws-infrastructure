@@ -42,6 +42,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 
 [JPERF-332]:https://ecosystem.atlassian.net/browse/JPERF-332
 
+### Fixed
+- Attempt to download MySQL connector multiple times to make this procedure more reliable. Resolve [JPERF-342].
+
+[JPERF-342]: https://ecosystem.atlassian.net/browse/JPERF-342
+
 ## [2.3.0] - 2018-12-21
 [2.3.0]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-2.3.0%0Drelease-2.2.0
 
