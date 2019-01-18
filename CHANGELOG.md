@@ -21,7 +21,15 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-2.5.0
+[Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-2.5.1
+
+## [2.5.1] - 2019-01-18
+[2.5.1]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-2.5.1%0Drelease-2.5.0
+
+### Fixed
+- Attempt to download MySQL connector multiple times to make this procedure more reliable. Resolve [JPERF-342].
+
+[JPERF-342]: https://ecosystem.atlassian.net/browse/JPERF-342
 
 ## [2.5.0] - 2019-01-07
 [2.5.0]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-2.5.0%0Drelease-2.4.0
@@ -41,11 +49,6 @@ Dropping a requirement of a major version of a dependency is a new contract.
 - Add an option to customise stack creation timeout for Jira. Resolve [JPERF-332]
 
 [JPERF-332]:https://ecosystem.atlassian.net/browse/JPERF-332
-
-### Fixed
-- Attempt to download MySQL connector multiple times to make this procedure more reliable. Resolve [JPERF-342].
-
-[JPERF-342]: https://ecosystem.atlassian.net/browse/JPERF-342
 
 ## [2.3.0] - 2018-12-21
 [2.3.0]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-2.3.0%0Drelease-2.2.0
