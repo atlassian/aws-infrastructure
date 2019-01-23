@@ -1,6 +1,9 @@
 package com.atlassian.performance.tools.awsinfrastructure.api
 
 import com.atlassian.performance.tools.aws.api.*
+import com.atlassian.performance.tools.awsinfrastructure.Network
+import com.atlassian.performance.tools.awsinfrastructure.NetworkFormula
+import com.atlassian.performance.tools.awsinfrastructure.api.jira.DataCenterFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.JiraFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.virtualusers.VirtualUsersFormula
 import com.atlassian.performance.tools.awsinfrastructure.virtualusers.S3ResultsTransport
@@ -10,6 +13,12 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder
 import java.nio.file.Path
 import java.util.concurrent.Executors
 
+/**
+ * Groups [jiraFormula] and [virtualUsersFormula] into one unit, with a common lifecycle.
+ *
+ * Overrides some components to share the same network:
+ * - [DataCenterFormula]
+ */
 class InfrastructureFormula<out T : VirtualUsers>(
     private val investment: Investment,
     private val jiraFormula: JiraFormula,
@@ -24,8 +33,7 @@ class InfrastructureFormula<out T : VirtualUsers>(
         val resultsStorage = aws.resultsStorage(nonce)
         val roleProfile = aws.shortTermStorageAccess()
 
-        val executor = Executors.newFixedThreadPool(
-            3,
+        val executor = Executors.newCachedThreadPool(
             ThreadFactoryBuilder()
                 .setNameFormat("provisioning-thread-%d")
                 .build()
@@ -38,9 +46,13 @@ class InfrastructureFormula<out T : VirtualUsers>(
                 lifespan = investment.lifespan
             ).provision()
         }
+        val networkProvisioning = executor.submitWithLogContext("network") {
+            NetworkFormula(investment, aws).provision()
+        }
 
+        val network = networkProvisioning.get()
         val provisionJira = executor.submitWithLogContext("jira") {
-            jiraFormula.provision(
+            overrideJiraNetwork(network).provision(
                 investment = investment,
                 pluginsTransport = aws.jiraStorage(nonce),
                 resultsTransport = resultsStorage,
@@ -84,6 +96,13 @@ class InfrastructureFormula<out T : VirtualUsers>(
                 )
             )
         )
+    }
+
+    private fun overrideJiraNetwork(
+        network: Network
+    ): JiraFormula = when (jiraFormula) {
+        is DataCenterFormula -> DataCenterFormula.Builder(jiraFormula).network(network).build()
+        else -> jiraFormula
     }
 }
 

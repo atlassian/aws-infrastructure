@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: A network for clustered services
+Parameters:
+  AvailabilityZone:
+    Type: AWS::EC2::AvailabilityZone::Name
+Resources:
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      CidrBlock: 10.0.0.0/24
+  TheOnlySubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      MapPublicIpOnLaunch: true
+      CidrBlock: 10.0.0.0/24
+      VpcId: !Ref Vpc
+      AvailabilityZone: !Ref AvailabilityZone
+      Tags:
+        - Key: Application
+          Value:
+            Ref: AWS::StackId
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref Vpc
+      InternetGatewayId: !Ref InternetGateway
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+  SubnetRouteTableAssoc:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: RouteTable
+      SubnetId:
+        Ref: TheOnlySubnet
+  InternetGatewayRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      RouteTableId:
+        Ref: RouteTable
+      GatewayId:
+        Ref: InternetGateway
+    DependsOn: AttachGateway

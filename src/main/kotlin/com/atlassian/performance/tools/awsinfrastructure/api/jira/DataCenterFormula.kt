@@ -3,6 +3,8 @@ package com.atlassian.performance.tools.awsinfrastructure.api.jira
 import com.amazonaws.services.cloudformation.model.Parameter
 import com.amazonaws.services.ec2.model.Tag
 import com.atlassian.performance.tools.aws.api.*
+import com.atlassian.performance.tools.awsinfrastructure.Network
+import com.atlassian.performance.tools.awsinfrastructure.NetworkFormula
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
 import com.atlassian.performance.tools.awsinfrastructure.api.RemoteLocation
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C4EightExtraLargeElastic
@@ -14,7 +16,6 @@ import com.atlassian.performance.tools.awsinfrastructure.jira.DataCenterNodeForm
 import com.atlassian.performance.tools.awsinfrastructure.jira.DiagnosableNodeFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.StandaloneNodeFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.home.SharedHomeFormula
-import com.atlassian.performance.tools.awsinfrastructure.pickAvailabilityZone
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
 import com.atlassian.performance.tools.infrastructure.api.database.Database
@@ -43,7 +44,8 @@ class DataCenterFormula private constructor(
     private val jiraHomeSource: JiraHomeSource,
     private val database: Database,
     private val computer: Computer,
-    private val stackCreationTimeout: Duration
+    private val stackCreationTimeout: Duration,
+    private val overriddenNetwork: Network? = null
 ) : JiraFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
@@ -99,7 +101,7 @@ class DataCenterFormula private constructor(
                 .setNameFormat("data-center-provisioning-thread-%d")
                 .build()
         )
-
+        val network = overriddenNetwork ?: NetworkFormula(investment, aws).provision()
         val template = TemplateBuilder("2-nodes-dc.yaml").adaptTo(configs)
         val stackProvisioning = executor.submitWithLogContext("provision stack") {
             StackFormula(
@@ -119,8 +121,11 @@ class DataCenterFormula private constructor(
                         .withParameterKey("JiraInstanceType")
                         .withParameterValue(computer.instanceType.toString()),
                     Parameter()
-                        .withParameterKey("AvailabilityZone")
-                        .withParameterValue(aws.pickAvailabilityZone().zoneName)
+                        .withParameterKey("Vpc")
+                        .withParameterValue(network.vpc.vpcId),
+                    Parameter()
+                        .withParameterKey("Subnet")
+                        .withParameterValue(network.subnet.subnetId)
                 ),
                 aws = aws,
                 pollingTimeout = stackCreationTimeout
@@ -148,8 +153,8 @@ class DataCenterFormula private constructor(
             loadBalancerFormula.provision(
                 investment = investment,
                 instances = jiraNodes,
-                subnet = jiraStack.findSubnet("Subnet"),
-                vpc = jiraStack.findVpc("VPC"),
+                subnet = network.subnet,
+                vpc = network.vpc,
                 key = key.get(),
                 aws = aws
             )
@@ -260,6 +265,22 @@ class DataCenterFormula private constructor(
         private var apps: Apps = Apps(emptyList())
         private var computer: Computer = C4EightExtraLargeElastic()
         private var stackCreationTimeout: Duration = Duration.ofMinutes(30)
+        private var network: Network? = null
+
+        internal constructor(
+            formula: DataCenterFormula
+        ) : this(
+            application = formula.application,
+            jiraHomeSource = formula.jiraHomeSource,
+            database = formula.database
+        ) {
+            configs = formula.configs
+            loadBalancerFormula = formula.loadBalancerFormula
+            apps = formula.apps
+            computer = formula.computer
+            stackCreationTimeout = formula.stackCreationTimeout
+            network = formula.overriddenNetwork
+        }
 
         fun configs(configs: List<JiraNodeConfig>): Builder = apply { this.configs = configs }
 
@@ -273,6 +294,8 @@ class DataCenterFormula private constructor(
         fun stackCreationTimeout(stackCreationTimeout: Duration): Builder =
             apply { this.stackCreationTimeout = stackCreationTimeout }
 
+        internal fun network(network: Network) = apply { this.network = network }
+
         fun build(): DataCenterFormula = DataCenterFormula(
             configs = configs,
             loadBalancerFormula = loadBalancerFormula,
@@ -281,8 +304,8 @@ class DataCenterFormula private constructor(
             jiraHomeSource = jiraHomeSource,
             database = database,
             computer = computer,
-            stackCreationTimeout = stackCreationTimeout
-
+            stackCreationTimeout = stackCreationTimeout,
+            overriddenNetwork = network
         )
     }
 }
