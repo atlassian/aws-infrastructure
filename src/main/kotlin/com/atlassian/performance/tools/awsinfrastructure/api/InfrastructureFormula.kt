@@ -5,6 +5,7 @@ import com.atlassian.performance.tools.awsinfrastructure.Network
 import com.atlassian.performance.tools.awsinfrastructure.NetworkFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.DataCenterFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.JiraFormula
+import com.atlassian.performance.tools.awsinfrastructure.api.virtualusers.StackVirtualUsersFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.virtualusers.VirtualUsersFormula
 import com.atlassian.performance.tools.awsinfrastructure.virtualusers.S3ResultsTransport
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
@@ -18,6 +19,7 @@ import java.util.concurrent.Executors
  *
  * Overrides some components to share the same network:
  * - [DataCenterFormula]
+ * - [StackVirtualUsersFormula]
  */
 class InfrastructureFormula<out T : VirtualUsers>(
     private val investment: Investment,
@@ -63,7 +65,7 @@ class InfrastructureFormula<out T : VirtualUsers>(
         }
 
         val provisionVirtualUsers = executor.submitWithLogContext("virtual users") {
-            virtualUsersFormula.provision(
+            overrideVuNetwork(network).provision(
                 investment = investment,
                 shadowJarTransport = aws.virtualUsersStorage(nonce),
                 resultsTransport = S3ResultsTransport(
@@ -103,6 +105,14 @@ class InfrastructureFormula<out T : VirtualUsers>(
     ): JiraFormula = when (jiraFormula) {
         is DataCenterFormula -> DataCenterFormula.Builder(jiraFormula).network(network).build()
         else -> jiraFormula
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun overrideVuNetwork(
+        network: Network
+    ): VirtualUsersFormula<T> = when (virtualUsersFormula) {
+        is StackVirtualUsersFormula -> StackVirtualUsersFormula.Builder(virtualUsersFormula).network(network).build() as VirtualUsersFormula<T>
+        else -> virtualUsersFormula
     }
 }
 

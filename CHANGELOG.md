@@ -24,7 +24,9 @@ Dropping a requirement of a major version of a dependency is a new contract.
 [Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-2.5.1
 
 ### Added
-- Provision a shared network for `InfrastructureFormula`. Override it in `DataCenterFormula`. Progress on [JPERF-357].
+- Provision a shared network for `InfrastructureFormula`. Progress on [JPERF-357]. Override it in:
+    - `DataCenterFormula`
+    - `StackVirtualUsersFormula`
 
 [JPERF-357]: https://ecosystem.atlassian.net/browse/JPERF-357
 

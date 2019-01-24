@@ -3,7 +3,8 @@ package com.atlassian.performance.tools.awsinfrastructure.api.virtualusers
 import com.amazonaws.services.cloudformation.model.Parameter
 import com.amazonaws.services.ec2.model.Tag
 import com.atlassian.performance.tools.aws.api.*
-import com.atlassian.performance.tools.awsinfrastructure.pickAvailabilityZone
+import com.atlassian.performance.tools.awsinfrastructure.Network
+import com.atlassian.performance.tools.awsinfrastructure.NetworkFormula
 import com.atlassian.performance.tools.awsinfrastructure.virtualusers.UbuntuVirtualUsersRuntime
 import com.atlassian.performance.tools.infrastructure.api.browser.Browser
 import com.atlassian.performance.tools.infrastructure.api.browser.Chrome
@@ -28,7 +29,8 @@ class StackVirtualUsersFormula private constructor(
     private val shadowJar: File,
     private val splunkForwarder: SplunkForwarder,
     private val browser: Browser,
-    private val stackCreationTimeout: Duration
+    private val stackCreationTimeout: Duration,
+    private val overriddenNetwork: Network? = null
 ) : VirtualUsersFormula<SshVirtualUsers> {
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
@@ -80,7 +82,7 @@ class StackVirtualUsersFormula private constructor(
         aws: Aws
     ): ProvisionedVirtualUsers<SshVirtualUsers> {
         logger.info("Setting up $name...")
-
+        val network = overriddenNetwork ?: NetworkFormula(investment, aws).provision()
         val virtualUsersStack = StackFormula(
             investment = investment,
             cloudformationTemplate = readResourceText("aws/virtual-users.yaml"),
@@ -95,8 +97,11 @@ class StackVirtualUsersFormula private constructor(
                     .withParameterKey("Ami")
                     .withParameterValue(aws.defaultAmi),
                 Parameter()
-                    .withParameterKey("AvailabilityZone")
-                    .withParameterValue(aws.pickAvailabilityZone().zoneName)
+                    .withParameterKey("Vpc")
+                    .withParameterValue(network.vpc.vpcId),
+                Parameter()
+                    .withParameterKey("Subnet")
+                    .withParameterValue(network.subnet.subnetId)
             ),
             aws = aws,
             pollingTimeout = stackCreationTimeout
@@ -141,18 +146,33 @@ class StackVirtualUsersFormula private constructor(
         private var splunkForwarder: SplunkForwarder = DisabledSplunkForwarder()
         private var browser: Browser = Chrome()
         private var stackCreationTimeout: Duration = Duration.ofMinutes(30)
+        private var network: Network? = null
+
+        internal constructor(
+            formula: StackVirtualUsersFormula
+        ) : this(
+            shadowJar = formula.shadowJar
+        ) {
+            nodeOrder = formula.nodeOrder
+            splunkForwarder = formula.splunkForwarder
+            browser = formula.browser
+            stackCreationTimeout = formula.stackCreationTimeout
+            network = formula.overriddenNetwork
+        }
 
         fun nodeOrder(nodeOrder: Int): Builder = apply { this.nodeOrder = nodeOrder}
         fun splunkForwarder(splunkForwarder: SplunkForwarder): Builder = apply { this.splunkForwarder = splunkForwarder}
         fun browser(browser: Browser): Builder = apply { this.browser = browser}
         fun stackCreationTimeout(stackCreationTimeout: Duration): Builder = apply { this.stackCreationTimeout = stackCreationTimeout}
+        internal fun network(network: Network): Builder = apply { this.network = network }
 
         fun build(): StackVirtualUsersFormula = StackVirtualUsersFormula(
             nodeOrder = nodeOrder,
             shadowJar = shadowJar,
             splunkForwarder = splunkForwarder,
             browser = browser,
-            stackCreationTimeout = stackCreationTimeout
+            stackCreationTimeout = stackCreationTimeout,
+            overriddenNetwork = network
         )
     }
 }
