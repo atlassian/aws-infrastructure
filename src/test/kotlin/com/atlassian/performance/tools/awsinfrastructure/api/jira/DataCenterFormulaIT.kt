@@ -8,10 +8,13 @@ import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C5NineExtr
 import com.atlassian.performance.tools.awsinfrastructure.api.storage.JiraSoftwareStorage
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.dataset.Dataset
+import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
+import com.atlassian.performance.tools.infrastructure.api.jvm.jmx.EnabledRemoteJmx
 import com.atlassian.performance.tools.workspace.api.TaskWorkspace
 import com.atlassian.performance.tools.workspace.api.TestWorkspace
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import org.apache.logging.log4j.CloseableThreadContext
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import java.time.Duration
 import java.util.*
@@ -40,7 +43,7 @@ class DataCenterFormulaIT {
                 jiraVersion = jiraVersionSeven,
                 dataset = datasetSeven
             ),
-            DataCenterProvisioningTest(
+            DataCenterJmxProvisioningTest(
                 jiraVersion = jiraVersionEight,
                 dataset = datasetEight
             )
@@ -58,7 +61,7 @@ class DataCenterFormulaIT {
     }
 
     private inner class DataCenterProvisioningTest(
-        val jiraVersion: String,
+        override val jiraVersion: String,
         private val dataset: Dataset
     ) : GroupableTest("Data Center provisioning - Jira version $jiraVersion") {
         override fun run(workspace: TestWorkspace) {
@@ -93,9 +96,62 @@ class DataCenterFormulaIT {
         }
     }
 
+    private inner class DataCenterJmxProvisioningTest(
+        override val jiraVersion: String,
+        private val dataset: Dataset
+    ) : GroupableTest("Data Center with JMX provisioning - Jira version $jiraVersion") {
+        override fun run(workspace: TestWorkspace) {
+            val nonce = UUID.randomUUID().toString()
+            val lifespan = Duration.ofMinutes(30)
+            val keyFormula = SshKeyFormula(
+                ec2 = aws.ec2,
+                workingDirectory = workspace.directory,
+                lifespan = lifespan,
+                prefix = nonce
+            )
+            val config = JiraNodeConfig.Builder()
+                .remoteJmx(EnabledRemoteJmx())
+                .build()
+            val dcFormula = DataCenterFormula.Builder(
+                application = JiraSoftwareStorage(jiraVersion),
+                jiraHomeSource = dataset.jiraHomeSource,
+                database = dataset.database
+            ).computer(C5NineExtraLargeEphemeral())
+                .configs(
+                    (1..2).map {
+                        JiraNodeConfig.Builder(config)
+                            .name("${config.name}-$it")
+                            .build()
+                    }
+                )
+                .build()
+
+            val provisionedJira = dcFormula.provision(
+                investment = Investment(
+                    useCase = "Test Data Center provisioning",
+                    lifespan = lifespan
+                ),
+                pluginsTransport = aws.jiraStorage(nonce),
+                resultsTransport = aws.resultsStorage(nonce),
+                key = CompletableFuture.completedFuture(keyFormula.provision()),
+                roleProfile = aws.shortTermStorageAccess(),
+                aws = aws
+            )
+            val resource = provisionedJira.resource
+
+            provisionedJira.jira.jmxClients.forEach { client ->
+                client.execute { connector -> assertThat(connector.mBeanServerConnection.mBeanCount).isGreaterThan(0) }
+            }
+
+            resource.release().get(1, TimeUnit.MINUTES)
+        }
+    }
+
     private abstract class GroupableTest(
         protected val feature: String
     ) {
+        abstract val jiraVersion: String
+
         fun run(
             group: String,
             workspace: TaskWorkspace

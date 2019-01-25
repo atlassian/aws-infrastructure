@@ -49,6 +49,7 @@ dependencies {
     ).forEach { implementation(it) }
 
     testCompile("junit:junit:4.12")
+    testCompile("org.assertj:assertj-core:3.11.1")
     testCompile("org.hamcrest:hamcrest-library:1.3")
 }
 
