@@ -29,6 +29,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
     - `StandaloneFormula`
     - `StackVirtualUsersFormula`
     - `Ec2VirtualUsersFormula`
+    - `MulticastVirtualUsersFormula`
 
 ### Deprecated
 - Deprecate `Ec2VirtualUsersFormula` constructors in favor of the builder.

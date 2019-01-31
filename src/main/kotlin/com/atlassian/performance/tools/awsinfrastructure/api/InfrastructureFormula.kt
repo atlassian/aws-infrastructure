@@ -7,6 +7,7 @@ import com.atlassian.performance.tools.awsinfrastructure.api.jira.DataCenterForm
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.JiraFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.StandaloneFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.virtualusers.Ec2VirtualUsersFormula
+import com.atlassian.performance.tools.awsinfrastructure.api.virtualusers.MulticastVirtualUsersFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.virtualusers.StackVirtualUsersFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.virtualusers.VirtualUsersFormula
 import com.atlassian.performance.tools.awsinfrastructure.virtualusers.S3ResultsTransport
@@ -24,6 +25,7 @@ import java.util.concurrent.Executors
  * - [StandaloneFormula]
  * - [StackVirtualUsersFormula]
  * - [Ec2VirtualUsersFormula]
+ * - [MulticastVirtualUsersFormula]
  */
 class InfrastructureFormula<out T : VirtualUsers>(
     private val investment: Investment,
@@ -118,6 +120,7 @@ class InfrastructureFormula<out T : VirtualUsers>(
     ): VirtualUsersFormula<T> = when (virtualUsersFormula) {
         is StackVirtualUsersFormula -> StackVirtualUsersFormula.Builder(virtualUsersFormula).network(network).build()
         is Ec2VirtualUsersFormula -> Ec2VirtualUsersFormula.Builder(virtualUsersFormula).network(network).build()
+        is MulticastVirtualUsersFormula -> MulticastVirtualUsersFormula.Builder(virtualUsersFormula).network(network).build()
         else -> virtualUsersFormula
     } as VirtualUsersFormula<T>
 }
