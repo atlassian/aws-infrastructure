@@ -3,6 +3,7 @@ package com.atlassian.performance.tools.awsinfrastructure.api.virtualusers
 import com.amazonaws.services.ec2.model.IamInstanceProfileSpecification
 import com.amazonaws.services.ec2.model.InstanceType
 import com.atlassian.performance.tools.aws.api.*
+import com.atlassian.performance.tools.awsinfrastructure.Network
 import com.atlassian.performance.tools.awsinfrastructure.virtualusers.UbuntuVirtualUsersRuntime
 import com.atlassian.performance.tools.infrastructure.api.browser.Browser
 import com.atlassian.performance.tools.infrastructure.api.browser.Chrome
@@ -13,18 +14,33 @@ import org.apache.logging.log4j.Logger
 import java.io.File
 import java.util.concurrent.Future
 
-class Ec2VirtualUsersFormula(
-    private val nodeOrder: Int = 1,
+class Ec2VirtualUsersFormula private constructor(
+    private val nodeOrder: Int,
     private val shadowJar: File,
-    private val browser: Browser
+    private val browser: Browser,
+    private val network: Network?
 ) : VirtualUsersFormula<SshVirtualUsers> {
 
+    @Deprecated("Use Ec2VirtualUsersFormula.Builder")
+    constructor(
+        nodeOrder: Int = 1,
+        shadowJar: File,
+        browser: Browser
+    ) : this(
+        nodeOrder = nodeOrder,
+        shadowJar = shadowJar,
+        browser = browser,
+        network = null
+    )
+
+    @Deprecated("Use Ec2VirtualUsersFormula.Builder")
     constructor(
         shadowJar: File
     ) : this(
         nodeOrder = 1,
         shadowJar = shadowJar,
-        browser = Chrome()
+        browser = Chrome(),
+        network = null
     )
 
     private val logger: Logger = LogManager.getLogger(this::class.java)
@@ -64,7 +80,7 @@ class Ec2VirtualUsersFormula(
     ): SshInstance = ec2.allocateInstance(
         investment = investment,
         key = key,
-        vpcId = null,
+        vpcId = network?.vpc?.vpcId,
         customizeLaunch = { launch ->
             launch
                 .withIamInstanceProfile(
@@ -73,4 +89,31 @@ class Ec2VirtualUsersFormula(
                 .withInstanceType(InstanceType.C48xlarge)
         }
     )
+
+    class Builder(
+        private var shadowJar: File
+    ) {
+        private var browser: Browser = Chrome()
+        private var network: Network? = null
+        private var nodeOrder: Int = 1
+
+        internal constructor(
+            formula: Ec2VirtualUsersFormula
+        ) : this(
+            shadowJar = formula.shadowJar
+        ) {
+            browser = formula.browser
+            network = formula.network
+            nodeOrder = formula.nodeOrder
+        }
+
+        internal fun network(network: Network) = apply { this.network = network }
+
+        fun build(): VirtualUsersFormula<SshVirtualUsers> = Ec2VirtualUsersFormula(
+            shadowJar = shadowJar,
+            browser = browser,
+            network = network,
+            nodeOrder = nodeOrder
+        )
+    }
 }

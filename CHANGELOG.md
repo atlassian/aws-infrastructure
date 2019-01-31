@@ -28,6 +28,10 @@ Dropping a requirement of a major version of a dependency is a new contract.
     - `DataCenterFormula`
     - `StandaloneFormula`
     - `StackVirtualUsersFormula`
+    - `Ec2VirtualUsersFormula`
+
+### Deprecated
+- Deprecate `Ec2VirtualUsersFormula` constructors in favor of the builder.
 
 [JPERF-357]: https://ecosystem.atlassian.net/browse/JPERF-357
 
