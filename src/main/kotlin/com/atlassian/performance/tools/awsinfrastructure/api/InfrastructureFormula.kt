@@ -5,6 +5,7 @@ import com.atlassian.performance.tools.awsinfrastructure.Network
 import com.atlassian.performance.tools.awsinfrastructure.NetworkFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.DataCenterFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.JiraFormula
+import com.atlassian.performance.tools.awsinfrastructure.api.jira.StandaloneFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.virtualusers.StackVirtualUsersFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.virtualusers.VirtualUsersFormula
 import com.atlassian.performance.tools.awsinfrastructure.virtualusers.S3ResultsTransport
@@ -19,6 +20,7 @@ import java.util.concurrent.Executors
  *
  * Overrides some components to share the same network:
  * - [DataCenterFormula]
+ * - [StandaloneFormula]
  * - [StackVirtualUsersFormula]
  */
 class InfrastructureFormula<out T : VirtualUsers>(
@@ -104,6 +106,7 @@ class InfrastructureFormula<out T : VirtualUsers>(
         network: Network
     ): JiraFormula = when (jiraFormula) {
         is DataCenterFormula -> DataCenterFormula.Builder(jiraFormula).network(network).build()
+        is StandaloneFormula -> StandaloneFormula.Builder(jiraFormula).network(network).build()
         else -> jiraFormula
     }
 

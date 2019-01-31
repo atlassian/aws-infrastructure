@@ -26,6 +26,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ### Added
 - Provision a shared network for `InfrastructureFormula`. Progress on [JPERF-357]. Override it in:
     - `DataCenterFormula`
+    - `StandaloneFormula`
     - `StackVirtualUsersFormula`
 
 [JPERF-357]: https://ecosystem.atlassian.net/browse/JPERF-357

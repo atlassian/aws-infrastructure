@@ -11,54 +11,11 @@ Parameters:
     Type: String
   JiraInstanceType:
     Type: String
-  AvailabilityZone:
-    Type: AWS::EC2::AvailabilityZone::Name
-Resources:
-  VPC:
-    Type: AWS::EC2::VPC
-    Properties:
-      EnableDnsSupport: true
-      EnableDnsHostnames: true
-      CidrBlock: 10.0.0.0/24
+  Vpc:
+    Type: String
   Subnet:
-    Type: AWS::EC2::Subnet
-    Properties:
-      MapPublicIpOnLaunch: true
-      CidrBlock: 10.0.0.0/24
-      VpcId:
-        Ref: VPC
-      AvailabilityZone: !Ref AvailabilityZone
-      Tags:
-        - Key: Application
-          Value:
-            Ref: AWS::StackId
-  InternetGateway:
-    Type: AWS::EC2::InternetGateway
-  AttachGateway:
-    Type: AWS::EC2::VPCGatewayAttachment
-    Properties:
-      VpcId: !Ref VPC
-      InternetGatewayId: !Ref InternetGateway
-  RouteTable:
-    Type: AWS::EC2::RouteTable
-    Properties:
-      VpcId: !Ref VPC
-  SubnetRouteTableAssoc:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId:
-        Ref: RouteTable
-      SubnetId:
-        Ref: Subnet
-  InternetGatewayRoute:
-    Type: AWS::EC2::Route
-    Properties:
-      DestinationCidrBlock: 0.0.0.0/0
-      RouteTableId:
-        Ref: RouteTable
-      GatewayId:
-        Ref: InternetGateway
-    DependsOn: AttachGateway
+    Type: String
+Resources:
   Database:
     Type: AWS::EC2::Instance
     Properties:
@@ -109,7 +66,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId:
-        Ref: VPC
+        Ref: Vpc
       GroupDescription: Enables SSH access
       SecurityGroupIngress:
         -
@@ -121,7 +78,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId:
-        Ref: VPC
+        Ref: Vpc
       GroupDescription: Enables Tomcat HTTP access
       SecurityGroupIngress:
         -
@@ -133,7 +90,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId:
-        Ref: VPC
+        Ref: Vpc
       GroupDescription: Enables MySql access
       SecurityGroupIngress:
         -

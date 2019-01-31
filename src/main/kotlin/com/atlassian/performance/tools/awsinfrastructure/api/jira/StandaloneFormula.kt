@@ -3,13 +3,14 @@ package com.atlassian.performance.tools.awsinfrastructure.api.jira
 import com.amazonaws.services.cloudformation.model.Parameter
 import com.amazonaws.services.ec2.model.Tag
 import com.atlassian.performance.tools.aws.api.*
+import com.atlassian.performance.tools.awsinfrastructure.Network
+import com.atlassian.performance.tools.awsinfrastructure.NetworkFormula
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
 import com.atlassian.performance.tools.awsinfrastructure.api.RemoteLocation
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C4EightExtraLargeElastic
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
 import com.atlassian.performance.tools.awsinfrastructure.api.storage.ApplicationStorage
 import com.atlassian.performance.tools.awsinfrastructure.jira.StandaloneNodeFormula
-import com.atlassian.performance.tools.awsinfrastructure.pickAvailabilityZone
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
 import com.atlassian.performance.tools.infrastructure.api.database.Database
@@ -34,7 +35,8 @@ class StandaloneFormula private constructor(
     private val database: Database,
     private val config: JiraNodeConfig,
     private val computer: Computer,
-    private val stackCreationTimeout: Duration
+    private val stackCreationTimeout: Duration,
+    private val overriddenNetwork: Network? = null
 ) : JiraFormula {
 
     @Deprecated(message = "Use StandaloneFormula.Builder instead.")
@@ -88,7 +90,7 @@ class StandaloneFormula private constructor(
             ThreadFactoryBuilder().setNameFormat("standalone-provisioning-thread-%d")
                 .build()
         )
-
+        val network = overriddenNetwork ?: NetworkFormula(investment, aws).provision()
         val template = TemplateBuilder("single-node.yaml").adaptTo(listOf(config))
 
         val stackProvisioning = executor.submitWithLogContext("provision stack") {
@@ -109,8 +111,11 @@ class StandaloneFormula private constructor(
                         .withParameterKey("JiraInstanceType")
                         .withParameterValue(computer.instanceType.toString()),
                     Parameter()
-                        .withParameterKey("AvailabilityZone")
-                        .withParameterValue(aws.pickAvailabilityZone().zoneName)
+                        .withParameterKey("Vpc")
+                        .withParameterValue(network.vpc.vpcId),
+                    Parameter()
+                        .withParameterKey("Subnet")
+                        .withParameterValue(network.subnet.subnetId)
                 ),
                 aws = aws,
                 pollingTimeout = stackCreationTimeout
@@ -191,12 +196,28 @@ class StandaloneFormula private constructor(
         private var apps: Apps = Apps(emptyList())
         private var computer: Computer = C4EightExtraLargeElastic()
         private var stackCreationTimeout: Duration = Duration.ofMinutes(30)
+        private var network: Network? = null
+
+        internal constructor(
+            formula: StandaloneFormula
+        ) : this(
+            application = formula.application,
+            jiraHomeSource = formula.jiraHomeSource,
+            database = formula.database
+        ) {
+            config = formula.config
+            apps = formula.apps
+            computer = formula.computer
+            stackCreationTimeout = formula.stackCreationTimeout
+            network = formula.overriddenNetwork
+        }
 
         fun config(config: JiraNodeConfig): Builder = apply { this.config = config }
         fun apps(apps: Apps): Builder = apply { this.apps = apps }
         fun computer(computer: Computer): Builder = apply { this.computer = computer }
         fun stackCreationTimeout(stackCreationTimeout: Duration): Builder =
             apply { this.stackCreationTimeout = stackCreationTimeout }
+        internal fun network(network: Network) = apply { this.network = network }
 
         fun build(): StandaloneFormula = StandaloneFormula(
             apps = apps,
