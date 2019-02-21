@@ -3,6 +3,7 @@ package com.atlassian.performance.tools.awsinfrastructure.api.jira
 import com.amazonaws.services.cloudformation.model.Parameter
 import com.amazonaws.services.ec2.model.Tag
 import com.atlassian.performance.tools.aws.api.*
+import com.atlassian.performance.tools.awsinfrastructure.ApplicationStorageWrapper
 import com.atlassian.performance.tools.awsinfrastructure.Network
 import com.atlassian.performance.tools.awsinfrastructure.NetworkFormula
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
@@ -11,7 +12,6 @@ import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C4EightExt
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
 import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.ElasticLoadBalancerFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.LoadBalancerFormula
-import com.atlassian.performance.tools.awsinfrastructure.api.storage.ApplicationStorage
 import com.atlassian.performance.tools.awsinfrastructure.jira.DataCenterNodeFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.DiagnosableNodeFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.StandaloneNodeFormula
@@ -21,6 +21,7 @@ import com.atlassian.performance.tools.infrastructure.api.app.Apps
 import com.atlassian.performance.tools.infrastructure.api.database.Database
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
+import com.atlassian.performance.tools.infrastructure.api.distribution.ProductDistribution
 import com.atlassian.performance.tools.jvmtasks.api.TaskTimer.time
 import com.atlassian.performance.tools.ssh.api.Ssh
 import com.atlassian.performance.tools.ssh.api.SshHost
@@ -40,7 +41,7 @@ class DataCenterFormula private constructor(
     private val configs: List<JiraNodeConfig>,
     private val loadBalancerFormula: LoadBalancerFormula,
     private val apps: Apps,
-    private val application: ApplicationStorage,
+    private val productDistribution: ProductDistribution,
     private val jiraHomeSource: JiraHomeSource,
     private val database: Database,
     private val computer: Computer,
@@ -49,12 +50,13 @@ class DataCenterFormula private constructor(
 ) : JiraFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
+    @Suppress("DEPRECATION")
     @Deprecated(message = "Use DataCenterFormula.Builder instead.")
     constructor(
         configs: List<JiraNodeConfig>,
         loadBalancerFormula: LoadBalancerFormula,
         apps: Apps,
-        application: ApplicationStorage,
+        application: com.atlassian.performance.tools.awsinfrastructure.api.storage.ApplicationStorage,
         jiraHomeSource: JiraHomeSource,
         database: Database,
         computer: Computer
@@ -62,24 +64,25 @@ class DataCenterFormula private constructor(
         configs = configs,
         loadBalancerFormula = loadBalancerFormula,
         apps = apps,
-        application = application,
+        productDistribution = ApplicationStorageWrapper(application),
         jiraHomeSource = jiraHomeSource,
         database = database,
         computer = computer,
         stackCreationTimeout = Duration.ofMinutes(30)
     )
 
+    @Suppress("DEPRECATION")
     @Deprecated(message = "Use DataCenterFormula.Builder instead.")
     constructor(
         apps: Apps,
-        application: ApplicationStorage,
+        application: com.atlassian.performance.tools.awsinfrastructure.api.storage.ApplicationStorage,
         jiraHomeSource: JiraHomeSource,
         database: Database
     ) : this(
         configs = (1..2).map { JiraNodeConfig.Builder().name("jira-node-$it").build() },
         loadBalancerFormula = ElasticLoadBalancerFormula(),
         apps = apps,
-        application = application,
+        productDistribution = ApplicationStorageWrapper(application),
         jiraHomeSource = jiraHomeSource,
         database = database,
         computer = C4EightExtraLargeElastic(),
@@ -191,7 +194,7 @@ class DataCenterFormula private constructor(
                             databaseIp = databaseIp,
                             jiraHomeSource = jiraHomeSource,
                             pluginsTransport = pluginsTransport,
-                            application = application,
+                            productDistribution = productDistribution,
                             ssh = ssh,
                             config = configs[i],
                             computer = computer
@@ -255,11 +258,24 @@ class DataCenterFormula private constructor(
         )
     }
 
-    class Builder(
-        private val application: ApplicationStorage,
+    class Builder constructor(
+        private val productDistribution: ProductDistribution,
         private val jiraHomeSource: JiraHomeSource,
         private val database: Database
     ) {
+
+        @Suppress("DEPRECATION")
+        @Deprecated("Use `ProductDistribution` instead of `ApplicationStorage`.")
+        constructor(
+            application: com.atlassian.performance.tools.awsinfrastructure.api.storage.ApplicationStorage,
+            jiraHomeSource: JiraHomeSource,
+            database: Database
+        ) : this(
+            productDistribution = ApplicationStorageWrapper(application),
+            jiraHomeSource = jiraHomeSource,
+            database = database
+        )
+
         private var configs: List<JiraNodeConfig> = (1..2).map { JiraNodeConfig.Builder().name("jira-node-$it").build() }
         private var loadBalancerFormula: LoadBalancerFormula = ElasticLoadBalancerFormula()
         private var apps: Apps = Apps(emptyList())
@@ -270,7 +286,7 @@ class DataCenterFormula private constructor(
         internal constructor(
             formula: DataCenterFormula
         ) : this(
-            application = formula.application,
+            productDistribution = formula.productDistribution,
             jiraHomeSource = formula.jiraHomeSource,
             database = formula.database
         ) {
@@ -300,7 +316,7 @@ class DataCenterFormula private constructor(
             configs = configs,
             loadBalancerFormula = loadBalancerFormula,
             apps = apps,
-            application = application,
+            productDistribution = productDistribution,
             jiraHomeSource = jiraHomeSource,
             database = database,
             computer = computer,

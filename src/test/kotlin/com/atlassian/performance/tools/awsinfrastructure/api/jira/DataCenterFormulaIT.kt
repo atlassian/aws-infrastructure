@@ -5,9 +5,9 @@ import com.atlassian.performance.tools.aws.api.SshKeyFormula
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime
 import com.atlassian.performance.tools.awsinfrastructure.api.DatasetCatalogue
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C5NineExtraLargeEphemeral
-import com.atlassian.performance.tools.awsinfrastructure.api.storage.JiraSoftwareStorage
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.dataset.Dataset
+import com.atlassian.performance.tools.infrastructure.api.distribution.PublicJiraSoftwareDistribution
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
 import com.atlassian.performance.tools.infrastructure.api.jvm.jmx.EnabledRemoteJmx
 import com.atlassian.performance.tools.workspace.api.TaskWorkspace
@@ -26,7 +26,7 @@ class DataCenterFormulaIT {
     private val workspace = IntegrationTestRuntime.taskWorkspace
     private val aws = IntegrationTestRuntime.aws
     private val jiraVersionSeven = "7.2.0"
-    private val jiraVersionEight = "8.0.0-m0030"
+    private val jiraVersionEight = "8.0.0"
     private val datasetSeven = DatasetCatalogue().largeJiraSeven()
     private val datasetEight = DatasetCatalogue().largeJiraEight()
 
@@ -74,7 +74,7 @@ class DataCenterFormulaIT {
                 prefix = nonce
             )
             val dcFormula = DataCenterFormula.Builder(
-                application = JiraSoftwareStorage(jiraVersion),
+                productDistribution = PublicJiraSoftwareDistribution(jiraVersion),
                 jiraHomeSource = dataset.jiraHomeSource,
                 database = dataset.database
             ).computer(C5NineExtraLargeEphemeral())
@@ -113,7 +113,7 @@ class DataCenterFormulaIT {
                 .remoteJmx(EnabledRemoteJmx())
                 .build()
             val dcFormula = DataCenterFormula.Builder(
-                application = JiraSoftwareStorage(jiraVersion),
+                productDistribution = PublicJiraSoftwareDistribution(jiraVersion),
                 jiraHomeSource = dataset.jiraHomeSource,
                 database = dataset.database
             ).computer(C5NineExtraLargeEphemeral())

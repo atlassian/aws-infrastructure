@@ -10,14 +10,9 @@ import com.atlassian.performance.tools.awsinfrastructure.api.ProvisionedInfrastr
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C5NineExtraLargeEphemeral
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.Jira
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.StandaloneFormula
-import com.atlassian.performance.tools.awsinfrastructure.api.storage.JiraSoftwareStorage
 import com.atlassian.performance.tools.awsinfrastructure.api.virtualusers.AbsentVirtualUsersFormula
-import com.atlassian.performance.tools.infrastructure.api.app.Apps
-import com.atlassian.performance.tools.infrastructure.api.app.NoApp
 import com.atlassian.performance.tools.infrastructure.api.dataset.Dataset
-import com.atlassian.performance.tools.infrastructure.api.jira.JiraJvmArgs
-import com.atlassian.performance.tools.infrastructure.api.jira.JiraLaunchTimeouts
-import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
+import com.atlassian.performance.tools.infrastructure.api.distribution.PublicJiraSoftwareDistribution
 import com.atlassian.performance.tools.workspace.api.TestWorkspace
 import org.apache.logging.log4j.LogManager.getLogger
 import java.time.Duration
@@ -55,7 +50,7 @@ internal class AwsDataset(
             jiraFormula = StandaloneFormula.Builder(
                 database = dataset.database,
                 jiraHomeSource = dataset.jiraHomeSource,
-                application = JiraSoftwareStorage("7.2.0")
+                productDistribution = PublicJiraSoftwareDistribution("7.2.0")
             ).computer(C5NineExtraLargeEphemeral()).build(),
             virtualUsersFormula = AbsentVirtualUsersFormula(),
             aws = aws

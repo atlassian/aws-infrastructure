@@ -30,11 +30,18 @@ Dropping a requirement of a major version of a dependency is a new contract.
     - `StackVirtualUsersFormula`
     - `Ec2VirtualUsersFormula`
     - `MulticastVirtualUsersFormula`
+- Allow usage of different artifact sources than S3. Resolves [JPERF-277].
 
 ### Deprecated
 - Deprecate `Ec2VirtualUsersFormula` constructors in favor of the builder.
+- Deprecate `DataCenterFormula.Builder` constructor in favor of the new one.
+- Deprecate `StandaloneFormula.Builder` constructor in favor of the new one.
+- Deprecate `ApplicationStorage` constructor in favor of `ProductDistribution`.
+- Deprecate `JiraServiceDeskStorage` constructor in favor of `PublicJiraServiceDeskDistribution`.
+- Deprecate `JiraServiceDeskStorage` constructor in favor of `PublicJiraSoftwareDistribution`.
 
 [JPERF-357]: https://ecosystem.atlassian.net/browse/JPERF-357
+[JPERF-277]: https://ecosystem.atlassian.net/browse/JPERF-277
 
 ## [2.5.1] - 2019-01-18
 [2.5.1]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-2.5.1%0Drelease-2.5.0

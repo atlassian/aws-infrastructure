@@ -6,7 +6,7 @@ import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.taskWorkspace
 import com.atlassian.performance.tools.awsinfrastructure.api.DatasetCatalogue
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C5NineExtraLargeEphemeral
-import com.atlassian.performance.tools.awsinfrastructure.api.storage.JiraServiceDeskStorage
+import com.atlassian.performance.tools.infrastructure.api.distribution.PublicJiraServiceDeskDistribution
 import org.junit.Test
 import java.time.Duration
 import java.util.*
@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit
 class StandaloneFormulaIT {
 
     private val workspace = taskWorkspace.isolateTest(javaClass.simpleName)
-    private val dataset = DatasetCatalogue().largeJira()
+    private val dataset = DatasetCatalogue().largeJiraSeven()
 
     @Test
     fun shouldProvisionServer() {
@@ -29,7 +29,7 @@ class StandaloneFormulaIT {
             prefix = nonce
         )
         val serverFormula = StandaloneFormula.Builder(
-            application = JiraServiceDeskStorage("3.9.8"),
+            productDistribution = PublicJiraServiceDeskDistribution("3.9.8"),
             database = dataset.database,
             jiraHomeSource = dataset.jiraHomeSource
         ).computer(C5NineExtraLargeEphemeral())

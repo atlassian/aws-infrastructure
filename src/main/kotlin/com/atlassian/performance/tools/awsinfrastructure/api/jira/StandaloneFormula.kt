@@ -3,17 +3,18 @@ package com.atlassian.performance.tools.awsinfrastructure.api.jira
 import com.amazonaws.services.cloudformation.model.Parameter
 import com.amazonaws.services.ec2.model.Tag
 import com.atlassian.performance.tools.aws.api.*
+import com.atlassian.performance.tools.awsinfrastructure.ApplicationStorageWrapper
 import com.atlassian.performance.tools.awsinfrastructure.Network
 import com.atlassian.performance.tools.awsinfrastructure.NetworkFormula
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
 import com.atlassian.performance.tools.awsinfrastructure.api.RemoteLocation
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C4EightExtraLargeElastic
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
-import com.atlassian.performance.tools.awsinfrastructure.api.storage.ApplicationStorage
 import com.atlassian.performance.tools.awsinfrastructure.jira.StandaloneNodeFormula
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
 import com.atlassian.performance.tools.infrastructure.api.database.Database
+import com.atlassian.performance.tools.infrastructure.api.distribution.ProductDistribution
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
 import com.atlassian.performance.tools.jvmtasks.api.TaskTimer.time
@@ -30,7 +31,7 @@ import java.util.concurrent.Future
 
 class StandaloneFormula private constructor(
     private val apps: Apps,
-    private val application: ApplicationStorage,
+    internal val productDistribution: ProductDistribution,
     private val jiraHomeSource: JiraHomeSource,
     private val database: Database,
     private val config: JiraNodeConfig,
@@ -39,17 +40,18 @@ class StandaloneFormula private constructor(
     private val overriddenNetwork: Network? = null
 ) : JiraFormula {
 
+    @Suppress("DEPRECATION")
     @Deprecated(message = "Use StandaloneFormula.Builder instead.")
     constructor(
         apps: Apps,
-        application: ApplicationStorage,
+        application: com.atlassian.performance.tools.awsinfrastructure.api.storage.ApplicationStorage,
         jiraHomeSource: JiraHomeSource,
         database: Database,
         config: JiraNodeConfig,
         computer: Computer
     ) : this(
         apps = apps,
-        application = application,
+        productDistribution = ApplicationStorageWrapper(application),
         jiraHomeSource = jiraHomeSource,
         database = database,
         config = config,
@@ -57,15 +59,16 @@ class StandaloneFormula private constructor(
         stackCreationTimeout = Duration.ofMinutes(30)
     )
 
+    @Suppress("DEPRECATION")
     @Deprecated(message = "Use StandaloneFormula.Builder instead.")
     constructor (
         apps: Apps,
-        application: ApplicationStorage,
+        application: com.atlassian.performance.tools.awsinfrastructure.api.storage.ApplicationStorage,
         jiraHomeSource: JiraHomeSource,
         database: Database
     ) : this(
         apps = apps,
-        application = application,
+        productDistribution = ApplicationStorageWrapper(application),
         jiraHomeSource = jiraHomeSource,
         database = database,
         config = JiraNodeConfig.Builder().build(),
@@ -160,7 +163,7 @@ class StandaloneFormula private constructor(
             pluginsTransport = pluginsTransport,
             resultsTransport = resultsTransport,
             databaseIp = databaseIp,
-            application = application,
+            productDistribution = productDistribution,
             ssh = ssh,
             computer = computer
         )
@@ -187,11 +190,23 @@ class StandaloneFormula private constructor(
         return@time ProvisionedJira(jira = jira, resource = jiraStack)
     }
 
-    class Builder(
-        private val application: ApplicationStorage,
+    class Builder constructor(
+        private val productDistribution: ProductDistribution,
         private val jiraHomeSource: JiraHomeSource,
         private val database: Database
     ) {
+        @Suppress("DEPRECATION")
+        @Deprecated("Use `ProductDistribution` instead of `ApplicationStorage`.")
+        constructor(
+            application: com.atlassian.performance.tools.awsinfrastructure.api.storage.ApplicationStorage,
+            jiraHomeSource: JiraHomeSource,
+            database: Database
+        ) : this(
+            productDistribution = ApplicationStorageWrapper(application),
+            jiraHomeSource = jiraHomeSource,
+            database = database
+        )
+
         private var config: JiraNodeConfig = JiraNodeConfig.Builder().build()
         private var apps: Apps = Apps(emptyList())
         private var computer: Computer = C4EightExtraLargeElastic()
@@ -201,7 +216,7 @@ class StandaloneFormula private constructor(
         internal constructor(
             formula: StandaloneFormula
         ) : this(
-            application = formula.application,
+            productDistribution = formula.productDistribution,
             jiraHomeSource = formula.jiraHomeSource,
             database = formula.database
         ) {
@@ -217,11 +232,12 @@ class StandaloneFormula private constructor(
         fun computer(computer: Computer): Builder = apply { this.computer = computer }
         fun stackCreationTimeout(stackCreationTimeout: Duration): Builder =
             apply { this.stackCreationTimeout = stackCreationTimeout }
+
         internal fun network(network: Network) = apply { this.network = network }
 
         fun build(): StandaloneFormula = StandaloneFormula(
             apps = apps,
-            application = application,
+            productDistribution = productDistribution,
             jiraHomeSource = jiraHomeSource,
             database = database,
             config = config,

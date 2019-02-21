@@ -1,5 +1,7 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.storage
 
+@Suppress("DEPRECATION")
+@Deprecated(message = "Use `com.atlassian.performance.tools.infrastructure.api.distribution.PublicJiraServiceDeskDistribution` instead.")
 class JiraServiceDeskStorage(
     version: String
 ) : ApplicationStorage {
