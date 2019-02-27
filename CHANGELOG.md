@@ -21,7 +21,7 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/master%0Drelease-2.5.1
+[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.5.1...master
 
 ### Added
 - Provision a shared network for `InfrastructureFormula`. Progress on [JPERF-357]. Override it in:
@@ -44,7 +44,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 [JPERF-277]: https://ecosystem.atlassian.net/browse/JPERF-277
 
 ## [2.5.1] - 2019-01-18
-[2.5.1]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-2.5.1%0Drelease-2.5.0
+[2.5.1]: https://github.com/atlassian/aws-infrastructure/compare/release-2.5.0...release-2.5.1
 
 ### Fixed
 - Attempt to download MySQL connector multiple times to make this procedure more reliable. Resolve [JPERF-342].
@@ -52,7 +52,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 [JPERF-342]: https://ecosystem.atlassian.net/browse/JPERF-342
 
 ## [2.5.0] - 2019-01-07
-[2.5.0]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-2.5.0%0Drelease-2.4.0
+[2.5.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.4.0...release-2.5.0
 
 ### Added
 - Add an option to customise stack creation timeout for virtual users. Resolve [JPERF-336]
@@ -63,7 +63,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 [JPERF-336]:https://ecosystem.atlassian.net/browse/JPERF-336
 
 ## [2.4.0] - 2019-01-03
-[2.4.0]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-2.4.0%0Drelease-2.3.0
+[2.4.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.3.0...release-2.4.0
 
 ### Added
 - Add an option to customise stack creation timeout for Jira. Resolve [JPERF-332]
@@ -71,7 +71,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 [JPERF-332]:https://ecosystem.atlassian.net/browse/JPERF-332
 
 ## [2.3.0] - 2018-12-21
-[2.3.0]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-2.3.0%0Drelease-2.2.0
+[2.3.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.2.0...release-2.3.0
 
 ### Added
 - Add profiler support. Resolve [JPERF-318].
@@ -79,7 +79,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 [JPERF-318]:https://ecosystem.atlassian.net/browse/JPERF-318
 
 ## [2.2.0] - 2018-12-18
-[2.2.0]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-2.2.0%0Drelease-2.1.1
+[2.2.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.1.1...release-2.2.0
 
 ### Added
 - Customise JDK Jira runs on. Resolve [JPERF-305].
@@ -96,7 +96,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 [JPERF-307]: https://ecosystem.atlassian.net/browse/JPERF-307
 
 ## [2.1.1] - 2018-12-06 🎅
-[2.1.1]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-2.1.1%0Drelease-2.1.0
+[2.1.1]: https://github.com/atlassian/aws-infrastructure/compare/release-2.1.0...release-2.1.1
 
 ### Fixed
 - Provision stacks in dedicated VPCs. Resolve [JPERF-292].
@@ -104,7 +104,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 [JPERF-292]: https://ecosystem.atlassian.net/browse/JPERF-292
 
 ## [2.1.0] - 2018-12-06
-[2.1.0]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-2.1.0%0Drelease-2.0.0
+[2.1.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.0.0...release-2.1.0
 
 ### Added
 - Add support for `jira-actions:3`. Resolve [JPERF-297].
@@ -112,7 +112,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 [JPERF-297]: https://ecosystem.atlassian.net/browse/JPERF-297
 
 ## [2.0.0] - 2018-11-28
-[2.0.0]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-2.0.0%0Drelease-1.4.0
+[2.0.0]: https://github.com/atlassian/aws-infrastructure/compare/release-1.4.0...release-2.0.0
 
 ### Added
 - Add support for other EC2 instance types. Resolve [JPERF-276].
@@ -141,7 +141,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 [JPERF-276]: https://ecosystem.atlassian.net/browse/JPERF-276
 
 ## [1.4.0] - 2018-10-31
-[1.4.0]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-1.4.0%0Drelease-1.3.0
+[1.4.0]: https://github.com/atlassian/aws-infrastructure/compare/release-1.3.0...release-1.4.0
 
 ### Added
 - Respect `JiraNodeConfig.launchTimeouts` in `StandaloneFormula` and `DataCenterFormula`. Resolve [JPERF-216].
@@ -152,7 +152,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 It was a botched 1.4.0 release. Don't use new APIs from this version, switch to 1.4.0 instead.
 
 ## [1.3.0] - 2018-10-26
-[1.3.0]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-1.3.0%0Drelease-1.2.1
+[1.3.0]: https://github.com/atlassian/aws-infrastructure/compare/release-1.2.1...release-1.3.0
 
 ### Added
 - Chromium support. Resolve [JPERF-238].
@@ -162,7 +162,7 @@ It was a botched 1.4.0 release. Don't use new APIs from this version, switch to 
 [JPERF-238]: https://ecosystem.atlassian.net/browse/JPERF-238
 
 ## [1.2.1] - 2018-10-19
-[1.2.1]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-1.2.1%0Drelease-1.2.0
+[1.2.1]: https://github.com/atlassian/aws-infrastructure/compare/release-1.2.0...release-1.2.1
 
 ## Fixed
 - Respect the `DataCenterFormula.computer` parameter. Fix [JPERF-220].
@@ -170,7 +170,7 @@ It was a botched 1.4.0 release. Don't use new APIs from this version, switch to 
 [JPERF-220]: https://ecosystem.atlassian.net/browse/JPERF-120
 
 ## [1.2.0] - 2018-10-16
-[1.2.0]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-1.2.0%0Drelease-1.1.1
+[1.2.0]: https://github.com/atlassian/aws-infrastructure/compare/release-1.1.1...release-1.2.0
 
 ## Added
 - Support different hardware specifications for Jira nodes.
@@ -187,31 +187,31 @@ It was a botched 1.4.0 release. Don't use new APIs from this version, switch to 
 [JPERF-164]: https://ecosystem.atlassian.net/browse/JPERF-164
 
 ## [1.1.1] - 2018-10-03
-[1.1.1]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-1.1.1%0Drelease-1.1.0
+[1.1.1]: https://github.com/atlassian/aws-infrastructure/compare/release-1.1.0...release-1.1.1
 
 ## Fixed
 - Increase the timeouts when storing custom datasets.
 
 ## [1.1.0] - 2018-09-25
-[1.1.0]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-1.1.0%0Drelease-1.0.2
+[1.1.0]: https://github.com/atlassian/aws-infrastructure/compare/release-1.0.2...release-1.1.0
 
 ## Added
 - Forward logs to Splunk from a predefined directory on Virtual User nodes.
 
 ## [1.0.2] - 2018-09-11
-[1.0.2]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-1.0.2%0Drelease-1.0.1
+[1.0.2]: https://github.com/atlassian/aws-infrastructure/compare/release-1.0.1...release-1.0.2
 
 ## Fixed
 - Increase Jira home download time for the large Jira dataset. Fix [JPERF-68](https://ecosystem.atlassian.net/browse/JPERF-68).
 
 ## [1.0.1] - 2018-09-10
-[1.0.1]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-1.0.1%0Drelease-1.0.0
+[1.0.1]: https://github.com/atlassian/aws-infrastructure/compare/release-1.0.0...release-1.0.1
 
 ## Fixed
 - Increase Jira home download time for the large Jira dataset. Fix [JPERF-68](https://ecosystem.atlassian.net/browse/JPERF-68).
 
 ## [1.0.0] - 2018-09-05
-[1.0.0]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-1.0.0%0Drelease-0.1.1
+[1.0.0]: https://github.com/atlassian/aws-infrastructure/compare/release-0.1.1...release-1.0.0
 
 ### Changed
 - Require APT `jira-actions:2`.
@@ -219,13 +219,13 @@ It was a botched 1.4.0 release. Don't use new APIs from this version, switch to 
 - Use stable APT APIs.
 
 ## [0.1.1] - 2018-08-28
-[0.1.1]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-0.1.1%0Drelease-0.0.3
+[0.1.1]: https://github.com/atlassian/aws-infrastructure/compare/release-0.0.3...release-0.1.1
 
 ### Added
 - Allow throttling virtual user diagnostics.
 
 ## [0.0.3] - 2018-08-27
-[0.0.3]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-0.0.3%0Drelease-0.0.2
+[0.0.3]: https://github.com/atlassian/aws-infrastructure/compare/release-0.0.2...release-0.0.3
 
 ### Fixed
 - [JPERF-26] - Increase Jira AWS Instance disk size.
@@ -233,7 +233,7 @@ It was a botched 1.4.0 release. Don't use new APIs from this version, switch to 
 [JPERF-26]: https://ecosystem.atlassian.net/browse/JPERF-26
 
 ## [0.0.2] - 2018-08-24
-[0.0.2]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-0.0.2%0Drelease-0.0.1
+[0.0.2]: https://github.com/atlassian/aws-infrastructure/compare/release-0.0.1...release-0.0.2
 
 ### Added
 - License.
@@ -243,7 +243,7 @@ It was a botched 1.4.0 release. Don't use new APIs from this version, switch to 
 - Depend on a stable version of APT `infrastructure`.
 
 ## [0.0.1] - 2018-08-03
-[0.0.1]: https://bitbucket.org/atlassian/aws-infrastructure/branches/compare/release-0.0.1%0Dinitial-commit
+[0.0.1]: https://github.com/atlassian/aws-infrastructure/compare/initial-commit...release-0.0.1
 
 ### Added
 - Migrate provisioning of JPT infrastructure in AWS from a [JPT submodule].
