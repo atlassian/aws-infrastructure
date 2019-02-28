@@ -21,7 +21,10 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.5.1...master
+[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.6.0...master
+
+## [2.6.0] - 2019-02-28 
+[2.6.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.5.1...release-2.6.0
 
 ### Added
 - Provision a shared network for `InfrastructureFormula`. Progress on [JPERF-357]. Override it in:
