@@ -22,10 +22,13 @@ class StartedNode(
         ssh.newConnection().use { shell ->
             monitoringProcesses.forEach { it.stop(shell) }
             val nodeResultsDirectory = "$resultsDirectory/'$name'"
+            val threadDumpsFolder =  "thread-dumps"
             listOf(
                 "mkdir -p $nodeResultsDirectory",
                 "cp $unpackedProduct/logs/catalina.out $nodeResultsDirectory",
                 "cp $unpackedProduct/logs/*access* $nodeResultsDirectory",
+                "mkdir -p $nodeResultsDirectory/$threadDumpsFolder",
+                "cp $threadDumpsFolder/* $nodeResultsDirectory/$threadDumpsFolder",
                 "cp $jiraHome/log/atlassian-jira.log $nodeResultsDirectory",
                 "cp ${JiraGcLog(unpackedProduct).path()} $nodeResultsDirectory",
                 "cp /var/log/syslog $nodeResultsDirectory",

@@ -4,6 +4,7 @@ import com.atlassian.performance.tools.aws.api.Storage
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.StartedNode
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraLaunchTimeouts
 import com.atlassian.performance.tools.infrastructure.api.jvm.JavaDevelopmentKit
+import com.atlassian.performance.tools.infrastructure.api.jvm.ThreadDump
 import com.atlassian.performance.tools.infrastructure.api.os.OsMetric
 import com.atlassian.performance.tools.infrastructure.api.process.RemoteMonitoringProcess
 import com.atlassian.performance.tools.infrastructure.api.profiler.Profiler
@@ -43,8 +44,9 @@ internal data class StandaloneStoppedNode(
             val pid = pid(sshConnection)
             monitoringProcesses.add(jdk.jstatMonitoring.start(sshConnection, pid))
             profiler.start(sshConnection, pid)?.let { monitoringProcesses.add(it) }
+            val threadDump = ThreadDump(pid, jdk)
             try {
-                waitForUpgrades(sshConnection)
+                waitForUpgrades(sshConnection, threadDump)
             } catch (exception: Exception) {
                 StartedNode(
                     name = name,
@@ -91,20 +93,23 @@ internal data class StandaloneStoppedNode(
     }
 
     private fun waitForUpgrades(
-        ssh: SshConnection
+        ssh: SshConnection,
+        threadDump: ThreadDump
     ) {
         val upgradesEndpoint = URI("http://admin:admin@localhost:8080/rest/api/2/upgrade")
         waitForStatusToChange(
             statusQuo = "000",
             timeout = launchTimeouts.offlineTimeout,
             ssh = ssh,
-            uri = upgradesEndpoint
+            uri = upgradesEndpoint,
+            threadDump = threadDump
         )
         waitForStatusToChange(
             statusQuo = "503",
             timeout = launchTimeouts.initTimeout,
             ssh = ssh,
-            uri = upgradesEndpoint
+            uri = upgradesEndpoint,
+            threadDump = threadDump
         )
         ssh.execute(
             cmd = "curl --silent --retry 6 -X POST $upgradesEndpoint",
@@ -114,7 +119,8 @@ internal data class StandaloneStoppedNode(
             statusQuo = "303",
             timeout = launchTimeouts.upgradeTimeout,
             ssh = ssh,
-            uri = upgradesEndpoint
+            uri = upgradesEndpoint,
+            threadDump = threadDump
         )
     }
 
@@ -122,7 +128,8 @@ internal data class StandaloneStoppedNode(
         statusQuo: String,
         uri: URI,
         timeout: Duration,
-        ssh: SshConnection
+        ssh: SshConnection,
+        threadDump: ThreadDump
     ) {
         val backoff = ofSeconds(10)
         val deadline = now() + timeout
@@ -137,6 +144,7 @@ internal data class StandaloneStoppedNode(
             if (deadline < now()) {
                 throw Exception("$uri failed to get out of $statusQuo status within $timeout")
             }
+            threadDump.gather(ssh, "thread-dumps")
             Thread.sleep(backoff.toMillis())
         }
     }
