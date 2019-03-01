@@ -35,15 +35,28 @@ internal data class StandaloneStoppedNode(
         logger.info("Starting '$name'...")
         val monitoringProcesses = mutableListOf<RemoteMonitoringProcess>()
 
-        ssh.newConnection().use { ssh ->
+        ssh.newConnection().use { sshConnection ->
             osMetrics.forEach { metric ->
-                monitoringProcesses.add(metric.start(ssh))
+                monitoringProcesses.add(metric.start(sshConnection))
             }
-            startJira(ssh)
-            val pid = pid(ssh)
-            monitoringProcesses.add(jdk.jstatMonitoring.start(ssh, pid))
-            profiler.start(ssh, pid)?.let { monitoringProcesses.add(it) }
-            waitForUpgrades(ssh)
+            startJira(sshConnection)
+            val pid = pid(sshConnection)
+            monitoringProcesses.add(jdk.jstatMonitoring.start(sshConnection, pid))
+            profiler.start(sshConnection, pid)?.let { monitoringProcesses.add(it) }
+            try {
+                waitForUpgrades(sshConnection)
+            } catch (exception: Exception) {
+                StartedNode(
+                    name = name,
+                    jiraHome = jiraHome,
+                    analyticLogs = analyticLogs,
+                    resultsTransport = resultsTransport,
+                    unpackedProduct = unpackedProduct,
+                    monitoringProcesses = monitoringProcesses,
+                    ssh = ssh
+                ).gatherResults()
+                throw Exception("Failed to start the Jira node.", exception)
+            }
         }
 
         logger.info("'$name' is started")
