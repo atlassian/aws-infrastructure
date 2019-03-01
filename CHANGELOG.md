@@ -23,8 +23,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.6.0...master
 
+### Added
+- Gather Thread Dumps during Jira startup.
+
 ### Fixed
-- Gather Jira logs even if the node doesn't start in time. Reslove [JPERF-404].
+- Gather Jira logs even if the node doesn't start in time. Resolve [JPERF-404].
 
 [JPERF-404]: https://ecosystem.atlassian.net/browse/JPERF-404
 
