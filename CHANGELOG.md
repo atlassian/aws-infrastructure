@@ -21,7 +21,10 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.6.0...master
+[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.7.0...master
+
+## [2.7.0] - 2019-03-06 
+[2.7.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.6.0...release-2.7.0
 
 ### Added
 - Gather Thread Dumps during Jira startup.
