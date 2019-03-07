@@ -25,11 +25,15 @@ Dropping a requirement of a major version of a dependency is a new contract.
 
 ### Added
 - Gather Thread Dumps during Jira startup.
+- Add support for `infrastructure:4.10`.
 
 ### Fixed
 - Gather Jira logs even if the node doesn't start in time. Resolve [JPERF-404].
+- Download and unzip datasets in parallel. Resolve [JPERF-412] and [JPERF-413].
 
 [JPERF-404]: https://ecosystem.atlassian.net/browse/JPERF-404
+[JPERF-412]: https://ecosystem.atlassian.net/browse/JPERF-412
+[JPERF-413]: https://ecosystem.atlassian.net/browse/JPERF-413
 
 ## [2.6.0] - 2019-02-28 
 [2.6.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.5.1...release-2.6.0
