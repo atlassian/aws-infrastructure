@@ -26,6 +26,9 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ### Added
 - Gather Thread Dumps during Jira startup.
 - Add support for `infrastructure:4.10`.
+- Add support for configurable database's `Computer`. Resolve [JPERF-414].
+- Add support for `M4ExtraLargeElastic` computer.
+- Add support for `M5ExtraLargeEphemeral` computer.
 
 ### Fixed
 - Gather Jira logs even if the node doesn't start in time. Resolve [JPERF-404].
@@ -34,6 +37,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 [JPERF-404]: https://ecosystem.atlassian.net/browse/JPERF-404
 [JPERF-412]: https://ecosystem.atlassian.net/browse/JPERF-412
 [JPERF-413]: https://ecosystem.atlassian.net/browse/JPERF-413
+[JPERF-414]: https://ecosystem.atlassian.net/browse/JPERF-414
 
 ## [2.6.0] - 2019-02-28 
 [2.6.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.5.1...release-2.6.0

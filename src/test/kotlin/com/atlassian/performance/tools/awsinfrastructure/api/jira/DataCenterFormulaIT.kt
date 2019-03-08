@@ -78,6 +78,7 @@ class DataCenterFormulaIT {
                 jiraHomeSource = dataset.jiraHomeSource,
                 database = dataset.database
             ).computer(C5NineExtraLargeEphemeral())
+                .databaseComputer(C5NineExtraLargeEphemeral())
                 .build()
 
             val resource = dcFormula.provision(
@@ -117,6 +118,7 @@ class DataCenterFormulaIT {
                 jiraHomeSource = dataset.jiraHomeSource,
                 database = dataset.database
             ).computer(C5NineExtraLargeEphemeral())
+                .databaseComputer(C5NineExtraLargeEphemeral())
                 .configs(
                     (1..2).map {
                         JiraNodeConfig.Builder(config)
