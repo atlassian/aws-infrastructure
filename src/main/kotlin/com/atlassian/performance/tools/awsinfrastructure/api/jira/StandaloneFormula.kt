@@ -10,6 +10,7 @@ import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
 import com.atlassian.performance.tools.awsinfrastructure.api.RemoteLocation
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C4EightExtraLargeElastic
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
+import com.atlassian.performance.tools.awsinfrastructure.api.hardware.M4ExtraLargeElastic
 import com.atlassian.performance.tools.awsinfrastructure.jira.StandaloneNodeFormula
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
@@ -37,7 +38,8 @@ class StandaloneFormula private constructor(
     private val config: JiraNodeConfig,
     private val computer: Computer,
     private val stackCreationTimeout: Duration,
-    private val overriddenNetwork: Network? = null
+    private val overriddenNetwork: Network? = null,
+    private val databaseComputer: Computer
 ) : JiraFormula {
 
     @Suppress("DEPRECATION")
@@ -56,7 +58,8 @@ class StandaloneFormula private constructor(
         database = database,
         config = config,
         computer = computer,
-        stackCreationTimeout = Duration.ofMinutes(30)
+        stackCreationTimeout = Duration.ofMinutes(30),
+        databaseComputer = M4ExtraLargeElastic()
     )
 
     @Suppress("DEPRECATION")
@@ -73,7 +76,8 @@ class StandaloneFormula private constructor(
         database = database,
         config = JiraNodeConfig.Builder().build(),
         computer = C4EightExtraLargeElastic(),
-        stackCreationTimeout = Duration.ofMinutes(30)
+        stackCreationTimeout = Duration.ofMinutes(30),
+        databaseComputer = M4ExtraLargeElastic()
     )
 
     private val logger: Logger = LogManager.getLogger(this::class.java)
@@ -114,6 +118,9 @@ class StandaloneFormula private constructor(
                         .withParameterKey("JiraInstanceType")
                         .withParameterValue(computer.instanceType.toString()),
                     Parameter()
+                        .withParameterKey("DatabaseInstanceType")
+                        .withParameterValue(databaseComputer.instanceType.toString()),
+                    Parameter()
                         .withParameterKey("Vpc")
                         .withParameterValue(network.vpc.vpcId),
                     Parameter()
@@ -141,6 +148,7 @@ class StandaloneFormula private constructor(
 
         val setupDatabase = executor.submitWithLogContext("database") {
             databaseSsh.newConnection().use {
+                databaseComputer.setUp(it)
                 logger.info("Setting up database...")
                 key.get().file.facilitateSsh(databaseIp)
                 val location = database.setup(it)
@@ -212,6 +220,7 @@ class StandaloneFormula private constructor(
         private var computer: Computer = C4EightExtraLargeElastic()
         private var stackCreationTimeout: Duration = Duration.ofMinutes(30)
         private var network: Network? = null
+        private var databaseComputer: Computer = M4ExtraLargeElastic()
 
         internal constructor(
             formula: StandaloneFormula
@@ -232,6 +241,7 @@ class StandaloneFormula private constructor(
         fun computer(computer: Computer): Builder = apply { this.computer = computer }
         fun stackCreationTimeout(stackCreationTimeout: Duration): Builder =
             apply { this.stackCreationTimeout = stackCreationTimeout }
+        fun databaseComputer(databaseComputer: Computer): Builder = apply { this.databaseComputer = databaseComputer }
 
         internal fun network(network: Network) = apply { this.network = network }
 
@@ -242,7 +252,8 @@ class StandaloneFormula private constructor(
             database = database,
             config = config,
             computer = computer,
-            stackCreationTimeout = stackCreationTimeout
+            stackCreationTimeout = stackCreationTimeout,
+            databaseComputer = databaseComputer
         )
     }
 }

@@ -33,6 +33,7 @@ class StandaloneFormulaIT {
             database = dataset.database,
             jiraHomeSource = dataset.jiraHomeSource
         ).computer(C5NineExtraLargeEphemeral())
+            .databaseComputer(C5NineExtraLargeEphemeral())
             .build()
 
         val resource = serverFormula.provision(

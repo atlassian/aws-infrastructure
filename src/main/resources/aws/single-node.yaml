@@ -11,6 +11,8 @@ Parameters:
     Type: String
   JiraInstanceType:
     Type: String
+  DatabaseInstanceType:
+    Type: String
   Vpc:
     Type: String
   Subnet:
@@ -19,7 +21,7 @@ Resources:
   Database:
     Type: AWS::EC2::Instance
     Properties:
-      InstanceType: m4.xlarge
+      InstanceType: !Ref DatabaseInstanceType
       SubnetId:
         Ref: Subnet
       SecurityGroupIds:

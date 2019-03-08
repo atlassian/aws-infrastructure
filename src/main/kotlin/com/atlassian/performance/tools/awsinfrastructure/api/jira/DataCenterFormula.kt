@@ -10,6 +10,7 @@ import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
 import com.atlassian.performance.tools.awsinfrastructure.api.RemoteLocation
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C4EightExtraLargeElastic
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
+import com.atlassian.performance.tools.awsinfrastructure.api.hardware.M4ExtraLargeElastic
 import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.ElasticLoadBalancerFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.LoadBalancerFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.DataCenterNodeFormula
@@ -46,7 +47,8 @@ class DataCenterFormula private constructor(
     private val database: Database,
     private val computer: Computer,
     private val stackCreationTimeout: Duration,
-    private val overriddenNetwork: Network? = null
+    private val overriddenNetwork: Network? = null,
+    private val databaseComputer: Computer
 ) : JiraFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
@@ -68,7 +70,8 @@ class DataCenterFormula private constructor(
         jiraHomeSource = jiraHomeSource,
         database = database,
         computer = computer,
-        stackCreationTimeout = Duration.ofMinutes(30)
+        stackCreationTimeout = Duration.ofMinutes(30),
+        databaseComputer = M4ExtraLargeElastic()
     )
 
     @Suppress("DEPRECATION")
@@ -86,7 +89,8 @@ class DataCenterFormula private constructor(
         jiraHomeSource = jiraHomeSource,
         database = database,
         computer = C4EightExtraLargeElastic(),
-        stackCreationTimeout = Duration.ofMinutes(30)
+        stackCreationTimeout = Duration.ofMinutes(30),
+        databaseComputer = M4ExtraLargeElastic()
     )
 
     override fun provision(
@@ -123,6 +127,9 @@ class DataCenterFormula private constructor(
                     Parameter()
                         .withParameterKey("JiraInstanceType")
                         .withParameterValue(computer.instanceType.toString()),
+                    Parameter()
+                        .withParameterKey("DatabaseInstanceType")
+                        .withParameterValue(databaseComputer.instanceType.toString()),
                     Parameter()
                         .withParameterKey("Vpc")
                         .withParameterValue(network.vpc.vpcId),
@@ -212,6 +219,7 @@ class DataCenterFormula private constructor(
         val loadBalancer = provisionedLoadBalancer.loadBalancer
         val setupDatabase = executor.submitWithLogContext("database") {
             databaseSsh.newConnection().use {
+                databaseComputer.setUp(it)
                 logger.info("Setting up database...")
                 key.get().file.facilitateSsh(databaseIp)
                 val location = database.setup(it)
@@ -282,6 +290,7 @@ class DataCenterFormula private constructor(
         private var computer: Computer = C4EightExtraLargeElastic()
         private var stackCreationTimeout: Duration = Duration.ofMinutes(30)
         private var network: Network? = null
+        private var databaseComputer: Computer = M4ExtraLargeElastic()
 
         internal constructor(
             formula: DataCenterFormula
@@ -310,6 +319,8 @@ class DataCenterFormula private constructor(
         fun stackCreationTimeout(stackCreationTimeout: Duration): Builder =
             apply { this.stackCreationTimeout = stackCreationTimeout }
 
+        fun databaseComputer(databaseComputer: Computer): Builder = apply { this.databaseComputer = databaseComputer }
+
         internal fun network(network: Network) = apply { this.network = network }
 
         fun build(): DataCenterFormula = DataCenterFormula(
@@ -321,7 +332,8 @@ class DataCenterFormula private constructor(
             database = database,
             computer = computer,
             stackCreationTimeout = stackCreationTimeout,
-            overriddenNetwork = network
+            overriddenNetwork = network,
+            databaseComputer = databaseComputer
         )
     }
 }
