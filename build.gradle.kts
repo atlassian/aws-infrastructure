@@ -1,3 +1,6 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+
 val kotlinVersion = "1.2.70"
 
 plugins {
@@ -79,4 +82,11 @@ tasks["check"].dependsOn(testIntegration)
 tasks.getByName("wrapper", Wrapper::class).apply {
     gradleVersion = "5.2.1"
     distributionType = Wrapper.DistributionType.ALL
+}
+
+tasks.withType<Test> {
+    testLogging {
+        events = setOf(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
+        exceptionFormat = TestExceptionFormat.FULL
+    }
 }
