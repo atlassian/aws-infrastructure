@@ -33,11 +33,13 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ### Fixed
 - Gather Jira logs even if the node doesn't start in time. Resolve [JPERF-404].
 - Download and unzip datasets in parallel. Resolve [JPERF-412] and [JPERF-413].
+- Utilise ephemeral drive for shared home if provided. Resolve [JPERF-415].
 
 [JPERF-404]: https://ecosystem.atlassian.net/browse/JPERF-404
 [JPERF-412]: https://ecosystem.atlassian.net/browse/JPERF-412
 [JPERF-413]: https://ecosystem.atlassian.net/browse/JPERF-413
 [JPERF-414]: https://ecosystem.atlassian.net/browse/JPERF-414
+[JPERF-415]: https://ecosystem.atlassian.net/browse/JPERF-415
 
 ## [2.6.0] - 2019-02-28 
 [2.6.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.5.1...release-2.6.0
