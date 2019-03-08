@@ -178,7 +178,8 @@ class DataCenterFormula private constructor(
                 jiraHomeSource = jiraHomeSource,
                 pluginsTransport = pluginsTransport,
                 ip = sharedHomePrivateIp,
-                ssh = sharedHomeSsh
+                ssh = sharedHomeSsh,
+                computer = computer
             ).provision()
             logger.info("Shared home is set up")
             sharedHome
