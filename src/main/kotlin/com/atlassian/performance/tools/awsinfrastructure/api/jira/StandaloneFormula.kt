@@ -234,6 +234,7 @@ class StandaloneFormula private constructor(
             computer = formula.computer
             stackCreationTimeout = formula.stackCreationTimeout
             network = formula.overriddenNetwork
+            databaseComputer = formula.databaseComputer
         }
 
         fun config(config: JiraNodeConfig): Builder = apply { this.config = config }
