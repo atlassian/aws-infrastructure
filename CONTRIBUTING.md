@@ -30,7 +30,8 @@ You can build and run aws-infrastructure on MacOS, Windows or Linux. You'll need
  
 Pull requests, issues and comments are welcome. For pull requests:
 
-  - Create your own [fork] of the repository and raise a pull request targeting master branch in the main repository
+  - Create your own fork of the repository and raise a pull request targeting master branch in the main repository
+  - Enable CircleCI for your fork
   - Add tests for new features and bug fixes
   - Follow the existing style
   - Separate unrelated changes into multiple pull requests
