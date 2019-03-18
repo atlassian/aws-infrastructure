@@ -1,0 +1,55 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/openjdk:8u181-jdk
+    working_directory: ~/repo
+    environment:
+      TERM: dumb
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "build.gradle.kts" }}
+            - v1-dependencies-
+      - run: ./gradlew compileTestKotlin
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: v1-dependencies-{{ checksum "build.gradle.kts" }}
+      - run:
+          command: ./gradlew build
+          no_output_timeout: 45m
+      - store_artifacts:
+          path: ./build/reports/tests
+          destination: test-reports
+      - store_test_results:
+          path: ./build/test-results
+  release:
+    docker:
+      - image: circleci/openjdk:8u181-jdk
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "build.gradle.kts" }}
+            - v1-dependencies-
+      - run: ./gradlew release -Prelease.customUsername=${github_pushback_personal_token}
+      - run: ./gradlew publish
+workflows:
+  version: 2
+  release-workflow:
+    jobs:
+      - build
+      - approve-release:
+          type: approval
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+            tags:
+              only: /release-*-alpha/
+      - release:
+          requires:
+            - approve-release
