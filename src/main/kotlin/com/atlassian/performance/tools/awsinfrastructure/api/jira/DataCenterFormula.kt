@@ -306,6 +306,7 @@ class DataCenterFormula private constructor(
             computer = formula.computer
             stackCreationTimeout = formula.stackCreationTimeout
             network = formula.overriddenNetwork
+            databaseComputer = formula.databaseComputer
         }
 
         fun configs(configs: List<JiraNodeConfig>): Builder = apply { this.configs = configs }

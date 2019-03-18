@@ -23,6 +23,9 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.7.0...master
 
+### Fixed
+- Copy the `databaseComputer` in Jira formula builders.
+
 ## [2.7.0] - 2019-03-07 
 [2.7.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.6.0...release-2.7.0
 
