@@ -21,7 +21,10 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.7.0...master
+[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.7.1...master
+
+## [2.7.1] - 2019-03-19
+[2.7.1]: https://github.com/atlassian/aws-infrastructure/compare/release-2.7.0...release-2.7.1
 
 ### Fixed
 - Copy the `databaseComputer` in Jira formula builders.
