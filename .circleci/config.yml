@@ -34,7 +34,7 @@ jobs:
           keys:
             - v1-dependencies-{{ checksum "build.gradle.kts" }}
             - v1-dependencies-
-      - run: ./gradlew release -Prelease.customUsername=${github_pushback_personal_token}
+      - run: ./gradlew release
       - run: ./gradlew publish
 workflows:
   version: 2
