@@ -21,7 +21,10 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.7.1...master
+[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.7.2...master
+
+## [2.7.2] - 2019-03-27
+[2.7.2]: https://github.com/atlassian/aws-infrastructure/compare/release-2.7.1...release-2.7.2
 
 ### Fixed
 - Fix duplicated virtual user node order. Fix [JPERF-431].
