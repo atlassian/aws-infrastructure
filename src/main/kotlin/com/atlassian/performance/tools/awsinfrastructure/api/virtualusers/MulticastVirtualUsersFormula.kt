@@ -70,6 +70,7 @@ class MulticastVirtualUsersFormula private constructor(
                     StackVirtualUsersFormula.Builder(
                         shadowJar = shadowJar
                     )
+                        .nodeOrder(nodeOrder)
                         .splunkForwarder(splunkForwarder)
                         .browser(browser)
                         .also { if (network != null) it.network(network) }
