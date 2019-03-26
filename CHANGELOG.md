@@ -23,6 +23,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.7.1...master
 
+### Fixed
+- Fix duplicated virtual user node order. Fix [JPERF-431].
+
+[JPERF-431]: https://ecosystem.atlassian.net/browse/JPERF-431
+
 ## [2.7.1] - 2019-03-19
 [2.7.1]: https://github.com/atlassian/aws-infrastructure/compare/release-2.7.0...release-2.7.1
 
