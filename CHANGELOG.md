@@ -21,7 +21,10 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.7.2...master
+[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.7.3...master
+
+## [2.7.3] - 2019-03-28
+[2.7.3]: https://github.com/atlassian/aws-infrastructure/compare/release-2.7.2...release-2.7.3
 
 ### Fixed
 - Increase timeout for creating the filesystem on ephemeral storage. Resolve [JPERF-433].
