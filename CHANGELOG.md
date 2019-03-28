@@ -23,6 +23,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.7.2...master
 
+### Fixed
+- Increase timeout for creating the filesystem on ephemeral storage. Resolve [JPERF-433].
+
+[JPERF-433]: https://ecosystem.atlassian.net/browse/JPERF-433
+
 ## [2.7.2] - 2019-03-27
 [2.7.2]: https://github.com/atlassian/aws-infrastructure/compare/release-2.7.1...release-2.7.2
 
