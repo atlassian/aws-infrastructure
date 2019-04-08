@@ -13,6 +13,7 @@ import com.atlassian.performance.tools.virtualusers.api.config.VirtualUserTarget
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import java.net.URI
 import java.nio.file.Path
 import java.util.concurrent.Executors
 
@@ -25,20 +26,26 @@ class Infrastructure<out T : VirtualUsers>(
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
     fun applyLoad(
-        behavior: VirtualUserBehavior
+        options: TargetingVirtualUserOptions
     ) {
         time("applying load") {
             virtualUsers.applyLoad(
-                VirtualUserOptions(
-                    target = VirtualUserTarget(
-                        webApplication = jira.address,
-                        userName = "admin",
-                        password = "admin"
-                    ),
-                    behavior = behavior
-                )
+                options.target(jira.address)
             )
         }
+    }
+
+    @Deprecated(
+        "Use applyLoad(TargetingVirtualUserOptions)",
+        ReplaceWith(
+            "applyLoad(LegacyTargetingVirtualUserOptions(behavior))",
+            "com.atlassian.performance.tools.awsinfrastructure.api.LegacyTargetingVirtualUserOptions"
+        )
+    )
+    fun applyLoad(
+        behavior: VirtualUserBehavior
+    ) {
+        applyLoad(LegacyTargetingVirtualUserOptions(behavior))
     }
 
     fun downloadResults(
@@ -71,6 +78,29 @@ class Infrastructure<out T : VirtualUsers>(
     override fun toString(): String {
         return "Infrastructure(virtualUsers=$virtualUsers, jira=$jira, resultsTransport=$resultsTransport, sshKey=$sshKey)"
     }
+}
+
+interface TargetingVirtualUserOptions {
+
+    fun target(
+        jira: URI
+    ): VirtualUserOptions
+}
+
+private class LegacyTargetingVirtualUserOptions(
+    private val behavior: VirtualUserBehavior
+) : TargetingVirtualUserOptions {
+
+    override fun target(
+        jira: URI
+    ): VirtualUserOptions = VirtualUserOptions(
+        target = VirtualUserTarget(
+            webApplication = jira,
+            userName = "admin",
+            password = "admin"
+        ),
+        behavior = behavior
+    )
 }
 
 private fun Int.butNotMoreThan(
