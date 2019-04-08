@@ -23,6 +23,14 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.7.3...master
 
+### Added
+- Give more control over `VirtualUserOptions`. Resolve [JPERF-451].
+
+### Deprecated
+- Deprecate the hardcoded admin credentials in `Infrastructure.applyLoad`.
+
+[JPERF-451]: https://ecosystem.atlassian.net/browse/JPERF-451
+
 ## [2.7.3] - 2019-03-28
 [2.7.3]: https://github.com/atlassian/aws-infrastructure/compare/release-2.7.2...release-2.7.3
 
