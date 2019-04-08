@@ -29,13 +29,17 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ### Deprecated
 - Deprecate the hardcoded admin credentials in `Infrastructure.applyLoad`.
 
+### Fixed
+- Increase timeout for creating the filesystem on ephemeral storage. Resolve [JPERF-433].
+
 [JPERF-451]: https://ecosystem.atlassian.net/browse/JPERF-451
 
 ## [2.7.3] - 2019-03-28
 [2.7.3]: https://github.com/atlassian/aws-infrastructure/compare/release-2.7.2...release-2.7.3
 
 ### Fixed
-- Increase timeout for creating the filesystem on ephemeral storage. Resolve [JPERF-433].
+- Increase timeout for creating the filesystem on ephemeral storage. The timeout was too small to 
+resolve [JPERF-433].
 
 [JPERF-433]: https://ecosystem.atlassian.net/browse/JPERF-433
 
