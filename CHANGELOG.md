@@ -34,8 +34,10 @@ Dropping a requirement of a major version of a dependency is a new contract.
 
 ### Fixed
 - Increase timeout for creating the filesystem on ephemeral storage. Resolve [JPERF-433].
+- Install Jira and download dataset at the same time. Fix [JPERF-457].
 
 [JPERF-451]: https://ecosystem.atlassian.net/browse/JPERF-451
+[JPERF-457]: https://ecosystem.atlassian.net/browse/JPERF-457
 
 ## [2.7.3] - 2019-03-28
 [2.7.3]: https://github.com/atlassian/aws-infrastructure/compare/release-2.7.2...release-2.7.3
