@@ -21,7 +21,10 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.7.3...master
+[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.8.0...master
+
+## [2.8.0] - 2019-04-17
+[2.8.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.7.3...release-2.8.0
 
 ### Added
 - Give more control over `VirtualUserOptions`. Resolve [JPERF-451].
