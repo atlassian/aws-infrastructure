@@ -52,7 +52,8 @@ internal class StandaloneNodeFormula(
                 jiraIp = ssh.host.ipAddress
             )
             connection.execute("echo jira.home=`realpath $jiraHome` > $unpackedProduct/atlassian-jira/WEB-INF/classes/jira-application.properties")
-            connection.execute("echo jira.autoexport=false > $jiraHome/jira-config.properties")
+            connection.execute("touch $jiraHome/jira-config.properties")
+            connection.execute("grep -qxF \"jira.autoexport=false\" $jiraHome/jira-config.properties || echo -e \"\\njira.autoexport=false\" >> $jiraHome/jira-config.properties")
             downloadMysqlConnector(
                 "https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.40.tar.gz",
                 connection
