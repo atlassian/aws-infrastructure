@@ -17,7 +17,7 @@ com.atlassian.performance.tools:concurrency:1.0.0
 com.atlassian.performance.tools:infrastructure:4.12.1
 com.atlassian.performance.tools:io:1.2.0
 com.atlassian.performance.tools:jira-actions:3.3.0
-com.atlassian.performance.tools:jvm-tasks:1.0.0
+com.atlassian.performance.tools:jvm-tasks:1.0.1
 com.atlassian.performance.tools:ssh:2.1.0
 com.atlassian.performance.tools:virtual-users:3.6.4
 com.atlassian.performance.tools:workspace:2.0.0
