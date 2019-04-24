@@ -23,6 +23,14 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.8.0...master
 
+### Added
+- Add support for `infrastructure:4.12`.
+
+### Fixed
+- Make `Ubuntu` thread safe. Resolves [JPERF-468].
+
+[JPERF-468]: https://ecosystem.atlassian.net/browse/JPERF-468
+
 ## [2.8.0] - 2019-04-17
 [2.8.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.7.3...release-2.8.0
 
