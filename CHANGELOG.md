@@ -25,9 +25,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 
 ### Added
 - Add support for `infrastructure:4.12`.
+- Add support for Apache proxy load balancer
 
 ### Fixed
 - Make `Ubuntu` thread safe. Resolves [JPERF-468].
+- Fixed unequal VU distribution amongst jira nodes. Resolves [JPERF-486].
 
 [JPERF-468]: https://ecosystem.atlassian.net/browse/JPERF-468
 
