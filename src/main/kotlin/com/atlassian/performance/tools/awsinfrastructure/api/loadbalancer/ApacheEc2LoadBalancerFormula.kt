@@ -1,12 +1,13 @@
-package com.atlassian.performance.tools.awsinfrastructure.loadbalancer
+package com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer
 
 import com.amazonaws.services.ec2.AmazonEC2
 import com.amazonaws.services.ec2.model.*
 import com.atlassian.performance.tools.aws.api.*
-import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.LoadBalancerFormula
-import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.ProvisionedLoadBalancer
 import com.atlassian.performance.tools.infrastructure.api.loadbalancer.LoadBalancer
+import com.atlassian.performance.tools.jvmtasks.api.ExponentialBackoff
+import com.atlassian.performance.tools.jvmtasks.api.IdempotentAction
 import com.atlassian.performance.tools.ssh.api.Ssh
+import com.atlassian.performance.tools.ssh.api.SshConnection
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.net.URI
@@ -35,16 +36,19 @@ internal class ApacheEc2LoadBalancerFormula : LoadBalancerFormula {
                 launch
                     .withSecurityGroupIds(httpAccess.groupId)
                     .withSubnetId(subnet.subnetId)
-                    .withInstanceType(InstanceType.M1Large)
+                    .withInstanceType(InstanceType.M5Large)
             }
         )
+        key.file.facilitateSsh(ssh.host.ipAddress)
+        val loadBalancer = HaProxyLoadBalancer(
+            nodes = instances.map { URI("http://${it.publicIpAddress}:8080/") },
+            httpPort = balancerPort,
+            ssh = ssh
+        )
+        loadBalancer.provision()
         logger.info("Apache load balancer is set up")
         return ProvisionedLoadBalancer(
-            loadBalancer = ApacheLoadBalancer(
-                nodes = instances.map { URI("http://${it.publicIpAddress}:8080/") },
-                httpPort = balancerPort,
-                ssh = ssh
-            ),
+            loadBalancer = loadBalancer,
             resource = DependentResources(
                 user = resource,
                 dependency = Ec2SecurityGroup(httpAccess, ec2)
@@ -82,25 +86,62 @@ internal class ApacheEc2LoadBalancerFormula : LoadBalancerFormula {
     }
 }
 
-private class ApacheLoadBalancer(
+private class HaProxyLoadBalancer(
     private val nodes: List<URI>,
     private val ssh: Ssh,
     private val httpPort: Int
 ) : LoadBalancer {
-
-    init {
-        throw Exception("Wait until the `infrastructure` module ships `ApacheLoadBalancer`")
-    }
 
     override val uri: URI = URI("http://${ssh.host.ipAddress}:$httpPort/")
 
     override fun waitUntilHealthy(
         timeout: Duration
     ) {
-        throw Exception(
-            "TODO: Install Apache load balancer via $ssh," +
-                " configure it to balance between $nodes" +
-                " and listen on $httpPort"
-        )
+
     }
+
+    private val APACHE_CONFIG_PATH = "/etc/apache2/sites-enabled/000-default.conf"
+
+    fun provision() {
+        IdempotentAction("Installing and configuring apache load balancer") {
+            tryToProvision(
+                ssh
+            )
+        }
+            .retry(
+                maxAttempts = 2,
+                backoff = ExponentialBackoff(
+                    baseBackoff = Duration.ofSeconds(5)
+                )
+            )
+    }
+
+    fun tryToProvision(ssh: Ssh) {
+        ssh.newConnection().use { connection ->
+            connection.execute("sudo apt-get update", Duration.ofMinutes(3))
+            connection.execute("sudo apt-get --assume-yes install apache2", Duration.ofMinutes(1))
+            connection.execute("sudo rm $APACHE_CONFIG_PATH")
+            connection.execute("sudo touch $APACHE_CONFIG_PATH")
+            connection.execute("sudo a2enmod proxy proxy_ajp proxy_http rewrite deflate headers proxy_balancer proxy_connect proxy_html xml2enc lbmethod_byrequests")
+
+            appendToApacheProxyConfiguration(connection, "Header add Set-Cookie \\\"ROUTEID=.%{BALANCER_WORKER_ROUTE}e; path=/\\\" env=BALANCER_ROUTE_CHANGED")
+            appendToApacheProxyConfiguration(connection, "<Proxy balancer://mycluster>")
+
+            nodes.forEachIndexed { index, uri -> appendToApacheProxyConfiguration(connection, "\tBalancerMember http://${uri.host}:${uri.port} route=$index")}
+
+            appendToApacheProxyConfiguration(connection, "</Proxy>\n")
+            appendToApacheProxyConfiguration(connection, "ProxyPass / balancer://mycluster/ stickysession=ROUTEID")
+
+            connection.execute("sudo service apache2 restart", Duration.ofMinutes(3))
+        }
+    }
+
+    private fun appendToApacheProxyConfiguration(
+        connection: SshConnection,
+        line: String
+    ) {
+        connection.execute("echo \"$line\" | sudo tee -a $APACHE_CONFIG_PATH")
+    }
+
+
 }

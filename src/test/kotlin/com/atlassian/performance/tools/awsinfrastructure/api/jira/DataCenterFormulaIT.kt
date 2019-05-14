@@ -15,7 +15,12 @@ import com.atlassian.performance.tools.workspace.api.TestWorkspace
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import org.apache.logging.log4j.CloseableThreadContext
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.data.Offset
+import org.assertj.core.data.Percentage
+import org.hamcrest.CoreMatchers.equalTo
+import org.hamcrest.CoreMatchers.notNullValue
 import org.junit.Test
+import java.net.URI
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -81,7 +86,7 @@ class DataCenterFormulaIT {
                 .databaseComputer(C5NineExtraLargeEphemeral())
                 .build()
 
-            val resource = dcFormula.provision(
+            val provisionedJira = dcFormula.provision(
                 investment = Investment(
                     useCase = "Test Data Center provisioning",
                     lifespan = lifespan
@@ -91,9 +96,49 @@ class DataCenterFormulaIT {
                 key = CompletableFuture.completedFuture(keyFormula.provision()),
                 roleProfile = aws.shortTermStorageAccess(),
                 aws = aws
-            ).resource
+            )
 
-            resource.release().get(1, TimeUnit.MINUTES)
+            runLoadBalancerTest(provisionedJira.jira.address)
+
+            provisionedJira.resource.release().get(3, TimeUnit.MINUTES)
+        }
+
+        private fun runLoadBalancerTest(address: URI) {
+            val executor = Executors.newFixedThreadPool(
+                20,
+                ThreadFactoryBuilder()
+                    .setNameFormat("DCFIT-test-load-balancer-thread-%d")
+                    .build()
+            )
+
+            val routeIds = (1..1000).map {
+                executor.submitWithLogContext("Test") {
+                    getRouteId(address)
+                }
+            }
+                .map { it.get() }
+                .groupingBy { it }
+                .eachCount()
+
+            assertThat(routeIds.size).isEqualTo(2)
+
+            val counts = routeIds.entries.map { it.value }
+
+            assertThat(counts[0]).isCloseTo(counts[1], Percentage.withPercentage(10.0))
+        }
+
+        private fun getRouteId(address: URI): String {
+            val cookiesList = address.toURL().openConnection().headerFields["Set-Cookie"]
+
+            assertThat(cookiesList).isNotNull
+
+            val routeId = cookiesList!!.filter { str ->
+                str.contains("ROUTEID")
+            }
+
+            assertThat(routeId.size).isEqualTo(1)
+
+            return routeId[0].split(";")[0]
         }
     }
 
@@ -145,7 +190,7 @@ class DataCenterFormulaIT {
                 client.execute { connector -> assertThat(connector.mBeanServerConnection.mBeanCount).isGreaterThan(0) }
             }
 
-            resource.release().get(1, TimeUnit.MINUTES)
+            resource.release().get(3, TimeUnit.MINUTES)
         }
     }
 
