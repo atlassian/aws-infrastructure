@@ -11,7 +11,7 @@ import com.atlassian.performance.tools.awsinfrastructure.api.RemoteLocation
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C4EightExtraLargeElastic
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.M4ExtraLargeElastic
-import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.ElasticLoadBalancerFormula
+import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.ApacheEc2LoadBalancerFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.LoadBalancerFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.DataCenterNodeFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.DiagnosableNodeFormula
@@ -83,7 +83,7 @@ class DataCenterFormula private constructor(
         database: Database
     ) : this(
         configs = (1..2).map { JiraNodeConfig.Builder().name("jira-node-$it").build() },
-        loadBalancerFormula = ElasticLoadBalancerFormula(),
+        loadBalancerFormula = ApacheEc2LoadBalancerFormula(),
         apps = apps,
         productDistribution = ApplicationStorageWrapper(application),
         jiraHomeSource = jiraHomeSource,
@@ -286,7 +286,7 @@ class DataCenterFormula private constructor(
         )
 
         private var configs: List<JiraNodeConfig> = (1..2).map { JiraNodeConfig.Builder().name("jira-node-$it").build() }
-        private var loadBalancerFormula: LoadBalancerFormula = ElasticLoadBalancerFormula()
+        private var loadBalancerFormula: LoadBalancerFormula = ApacheEc2LoadBalancerFormula()
         private var apps: Apps = Apps(emptyList())
         private var computer: Computer = C4EightExtraLargeElastic()
         private var stackCreationTimeout: Duration = Duration.ofMinutes(30)
