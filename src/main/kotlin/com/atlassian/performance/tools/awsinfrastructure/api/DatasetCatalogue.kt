@@ -1,5 +1,6 @@
 package com.atlassian.performance.tools.awsinfrastructure.api
 
+import com.amazonaws.regions.Regions
 import com.atlassian.performance.tools.aws.api.StorageLocation
 import com.atlassian.performance.tools.awsinfrastructure.api.dataset.S3DatasetPackage
 import com.atlassian.performance.tools.infrastructure.api.database.LicenseOverridingMysql
