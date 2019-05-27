@@ -21,7 +21,10 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.8.0...master
+[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.9.0...master
+
+## [2.9.0] - 2019-05-28
+[2.9.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.8.0...release-2.9.0
 
 ### Added
 - Add support for `infrastructure:4.12`.
@@ -32,6 +35,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 - Fixed unequal VU distribution amongst jira nodes. Resolves [JPERF-486].
 
 [JPERF-468]: https://ecosystem.atlassian.net/browse/JPERF-468
+[JPERF-486]: https://ecosystem.atlassian.net/browse/JPERF-486
 
 ## [2.8.0] - 2019-04-17
 [2.8.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.7.3...release-2.8.0
