@@ -23,6 +23,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.9.0...master
 
+### Added
+- Add the parameter for specifying volume size. Resolves [JPERF-26]
+
+[JPERF-26]: https://ecosystem.atlassian.net/browse/JPERF-26
+
 ## [2.9.0] - 2019-05-28
 [2.9.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.8.0...release-2.9.0
 

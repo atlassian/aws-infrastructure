@@ -11,6 +11,7 @@ import com.atlassian.performance.tools.awsinfrastructure.api.RemoteLocation
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C4EightExtraLargeElastic
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.M4ExtraLargeElastic
+import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
 import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.ApacheEc2LoadBalancerFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.LoadBalancerFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.DataCenterNodeFormula
@@ -46,9 +47,11 @@ class DataCenterFormula private constructor(
     private val jiraHomeSource: JiraHomeSource,
     private val database: Database,
     private val computer: Computer,
+    private val jiraVolume: Volume,
     private val stackCreationTimeout: Duration,
     private val overriddenNetwork: Network? = null,
-    private val databaseComputer: Computer
+    private val databaseComputer: Computer,
+    private val databaseVolume: Volume
 ) : JiraFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
@@ -70,8 +73,10 @@ class DataCenterFormula private constructor(
         jiraHomeSource = jiraHomeSource,
         database = database,
         computer = computer,
+        jiraVolume = Volume(100),
         stackCreationTimeout = Duration.ofMinutes(30),
-        databaseComputer = M4ExtraLargeElastic()
+        databaseComputer = M4ExtraLargeElastic(),
+        databaseVolume = Volume(100)
     )
 
     @Suppress("DEPRECATION")
@@ -89,8 +94,10 @@ class DataCenterFormula private constructor(
         jiraHomeSource = jiraHomeSource,
         database = database,
         computer = C4EightExtraLargeElastic(),
+        jiraVolume = Volume(100),
         stackCreationTimeout = Duration.ofMinutes(30),
-        databaseComputer = M4ExtraLargeElastic()
+        databaseComputer = M4ExtraLargeElastic(),
+        databaseVolume = Volume(100)
     )
 
     override fun provision(
@@ -128,8 +135,14 @@ class DataCenterFormula private constructor(
                         .withParameterKey("JiraInstanceType")
                         .withParameterValue(computer.instanceType.toString()),
                     Parameter()
+                        .withParameterKey("JiraVolumeSize")
+                        .withParameterValue(jiraVolume.size.toString()),
+                    Parameter()
                         .withParameterKey("DatabaseInstanceType")
                         .withParameterValue(databaseComputer.instanceType.toString()),
+                    Parameter()
+                        .withParameterKey("DatabaseVolumeSize")
+                        .withParameterValue(databaseVolume.size.toString()),
                     Parameter()
                         .withParameterKey("Vpc")
                         .withParameterValue(network.vpc.vpcId),
@@ -289,9 +302,11 @@ class DataCenterFormula private constructor(
         private var loadBalancerFormula: LoadBalancerFormula = ApacheEc2LoadBalancerFormula()
         private var apps: Apps = Apps(emptyList())
         private var computer: Computer = C4EightExtraLargeElastic()
+        private var jiraVolume: Volume = Volume(100)
         private var stackCreationTimeout: Duration = Duration.ofMinutes(30)
         private var network: Network? = null
         private var databaseComputer: Computer = M4ExtraLargeElastic()
+        private var databaseVolume: Volume = Volume(100)
 
         internal constructor(
             formula: DataCenterFormula
@@ -318,10 +333,14 @@ class DataCenterFormula private constructor(
 
         fun computer(computer: Computer): Builder = apply { this.computer = computer }
 
+        fun jiraVolume(jiraVolume: Volume): Builder = apply { this.jiraVolume = jiraVolume }
+
         fun stackCreationTimeout(stackCreationTimeout: Duration): Builder =
             apply { this.stackCreationTimeout = stackCreationTimeout }
 
         fun databaseComputer(databaseComputer: Computer): Builder = apply { this.databaseComputer = databaseComputer }
+
+        fun databaseVolume(databaseVolume: Volume): Builder = apply { this.databaseVolume = databaseVolume }
 
         internal fun network(network: Network) = apply { this.network = network }
 
@@ -333,9 +352,11 @@ class DataCenterFormula private constructor(
             jiraHomeSource = jiraHomeSource,
             database = database,
             computer = computer,
+            jiraVolume = jiraVolume,
             stackCreationTimeout = stackCreationTimeout,
             overriddenNetwork = network,
-            databaseComputer = databaseComputer
+            databaseComputer = databaseComputer,
+            databaseVolume = databaseVolume
         )
     }
 }
