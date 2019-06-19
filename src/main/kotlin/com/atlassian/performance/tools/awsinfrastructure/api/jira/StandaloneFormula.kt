@@ -11,6 +11,7 @@ import com.atlassian.performance.tools.awsinfrastructure.api.RemoteLocation
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C4EightExtraLargeElastic
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.M4ExtraLargeElastic
+import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
 import com.atlassian.performance.tools.awsinfrastructure.jira.StandaloneNodeFormula
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
@@ -37,9 +38,11 @@ class StandaloneFormula private constructor(
     private val database: Database,
     private val config: JiraNodeConfig,
     private val computer: Computer,
+    private val jiraVolume: Volume,
     private val stackCreationTimeout: Duration,
     private val overriddenNetwork: Network? = null,
-    private val databaseComputer: Computer
+    private val databaseComputer: Computer,
+    private val databaseVolume: Volume
 ) : JiraFormula {
 
     @Suppress("DEPRECATION")
@@ -58,8 +61,10 @@ class StandaloneFormula private constructor(
         database = database,
         config = config,
         computer = computer,
+        jiraVolume = Volume(200),
         stackCreationTimeout = Duration.ofMinutes(30),
-        databaseComputer = M4ExtraLargeElastic()
+        databaseComputer = M4ExtraLargeElastic(),
+        databaseVolume = Volume(100)
     )
 
     @Suppress("DEPRECATION")
@@ -76,8 +81,10 @@ class StandaloneFormula private constructor(
         database = database,
         config = JiraNodeConfig.Builder().build(),
         computer = C4EightExtraLargeElastic(),
+        jiraVolume = Volume(200),
         stackCreationTimeout = Duration.ofMinutes(30),
-        databaseComputer = M4ExtraLargeElastic()
+        databaseComputer = M4ExtraLargeElastic(),
+        databaseVolume = Volume(100)
     )
 
     private val logger: Logger = LogManager.getLogger(this::class.java)
@@ -118,8 +125,14 @@ class StandaloneFormula private constructor(
                         .withParameterKey("JiraInstanceType")
                         .withParameterValue(computer.instanceType.toString()),
                     Parameter()
+                        .withParameterKey("JiraVolumeSize")
+                        .withParameterValue(jiraVolume.size.toString()),
+                    Parameter()
                         .withParameterKey("DatabaseInstanceType")
                         .withParameterValue(databaseComputer.instanceType.toString()),
+                    Parameter()
+                        .withParameterKey("DatabaseVolumeSize")
+                        .withParameterValue(databaseVolume.size.toString()),
                     Parameter()
                         .withParameterKey("Vpc")
                         .withParameterValue(network.vpc.vpcId),
@@ -218,9 +231,11 @@ class StandaloneFormula private constructor(
         private var config: JiraNodeConfig = JiraNodeConfig.Builder().build()
         private var apps: Apps = Apps(emptyList())
         private var computer: Computer = C4EightExtraLargeElastic()
+        private var jiraVolume: Volume = Volume(200)
         private var stackCreationTimeout: Duration = Duration.ofMinutes(30)
         private var network: Network? = null
         private var databaseComputer: Computer = M4ExtraLargeElastic()
+        private var databaseVolume: Volume = Volume(100)
 
         internal constructor(
             formula: StandaloneFormula
@@ -240,9 +255,11 @@ class StandaloneFormula private constructor(
         fun config(config: JiraNodeConfig): Builder = apply { this.config = config }
         fun apps(apps: Apps): Builder = apply { this.apps = apps }
         fun computer(computer: Computer): Builder = apply { this.computer = computer }
+        fun jiraVolume(jiraVolume: Volume): Builder = apply { this.jiraVolume = jiraVolume }
         fun stackCreationTimeout(stackCreationTimeout: Duration): Builder =
             apply { this.stackCreationTimeout = stackCreationTimeout }
         fun databaseComputer(databaseComputer: Computer): Builder = apply { this.databaseComputer = databaseComputer }
+        fun databaseVolume(databaseVolume: Volume): Builder = apply { this.databaseVolume = databaseVolume }
 
         internal fun network(network: Network) = apply { this.network = network }
 
@@ -253,8 +270,10 @@ class StandaloneFormula private constructor(
             database = database,
             config = config,
             computer = computer,
+            jiraVolume = jiraVolume,
             stackCreationTimeout = stackCreationTimeout,
-            databaseComputer = databaseComputer
+            databaseComputer = databaseComputer,
+            databaseVolume = databaseVolume
         )
     }
 }

@@ -11,8 +11,12 @@ Parameters:
     Type: String
   JiraInstanceType:
     Type: String
+  JiraVolumeSize:
+    Type: Number
   DatabaseInstanceType:
     Type: String
+  DatabaseVolumeSize:
+    Type: Number
   Vpc:
     Type: String
   Subnet:
@@ -41,7 +45,7 @@ Resources:
         -
           DeviceName: /dev/sda1
           Ebs:
-            VolumeSize: 100
+            VolumeSize: !Ref JiraVolumeSize
             VolumeType: gp2
   jira2:
     Type: AWS::EC2::Instance
@@ -66,7 +70,7 @@ Resources:
         -
           DeviceName: /dev/sda1
           Ebs:
-            VolumeSize: 100
+            VolumeSize: !Ref JiraVolumeSize
             VolumeType: gp2
   SharedHome:
     Type: AWS::EC2::Instance
@@ -89,7 +93,7 @@ Resources:
         -
           DeviceName: /dev/sda1
           Ebs:
-            VolumeSize: 100
+            VolumeSize: !Ref JiraVolumeSize
             VolumeType: gp2
   Database:
     Type: AWS::EC2::Instance
@@ -112,7 +116,7 @@ Resources:
         -
           DeviceName: /dev/sda1
           Ebs:
-            VolumeSize: 100
+            VolumeSize: !Ref DatabaseVolumeSize
             VolumeType: gp2
   SshSecurityGroup:
     Type: AWS::EC2::SecurityGroup
