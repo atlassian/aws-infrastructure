@@ -24,7 +24,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.9.0...master
 
 ### Added
-- Add the parameter for specifying volume size. Resolves [JPERF-26]
+- Add the parameter for specifying volume size. Resolve [JPERF-26].
 
 [JPERF-26]: https://ecosystem.atlassian.net/browse/JPERF-26
 
@@ -33,11 +33,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 
 ### Added
 - Add support for `infrastructure:4.12`.
-- Add support for Apache proxy load balancer
+- Add support for Apache proxy load balancer.
 
 ### Fixed
-- Make `Ubuntu` thread safe. Resolves [JPERF-468].
-- Fixed unequal VU distribution amongst jira nodes. Resolves [JPERF-486].
+- Make `Ubuntu` thread safe. Resolve [JPERF-468].
+- Fixed unequal VU distribution amongst jira nodes. Resolve [JPERF-486].
 
 [JPERF-468]: https://ecosystem.atlassian.net/browse/JPERF-468
 [JPERF-486]: https://ecosystem.atlassian.net/browse/JPERF-486
@@ -158,7 +158,7 @@ resolve [JPERF-433].
 ### Added
 - Add profiler support. Resolve [JPERF-318].
 
-[JPERF-318]:https://ecosystem.atlassian.net/browse/JPERF-318
+[JPERF-318]: https://ecosystem.atlassian.net/browse/JPERF-318
 
 ## [2.2.0] - 2018-12-18
 [2.2.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.1.1...release-2.2.0
