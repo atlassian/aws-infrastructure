@@ -21,7 +21,10 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.10.0...master
+[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.10.1...master
+
+## [2.10.1] - 2019-06-24
+[2.10.1]: https://github.com/atlassian/aws-infrastructure/compare/release-2.10.0...release-2.10.1
 
 ### Fixed
 - Configure Ehcache listener. Fix [JPERF-503].
