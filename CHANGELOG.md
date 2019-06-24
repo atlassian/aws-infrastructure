@@ -23,6 +23,10 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.10.0...master
 
+### Fixed
+- Configure Ehcache listener. Fix [JPERF-503].
+
+[JPERF-503]: https://ecosystem.atlassian.net/browse/JPERF-503
 ## [2.10.0] - 2019-06-21
 [2.10.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.9.0...release-2.10.0
 
