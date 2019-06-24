@@ -200,14 +200,13 @@ class DataCenterFormula private constructor(
 
         val nodeFormulas = jiraNodes
             .asSequence()
-            .map { it.publicIpAddress }
-            .onEach { ip ->
+            .onEach { instance ->
                 CloseableThreadContext.push("a jira node").use {
-                    key.get().file.facilitateSsh(ip)
+                    key.get().file.facilitateSsh(instance.publicIpAddress)
                 }
             }
-            .map { Ssh(SshHost(it, "ubuntu", keyPath), connectivityPatience = 5) }
-            .mapIndexed { i: Int, ssh: Ssh ->
+            .mapIndexed { i: Int, instance ->
+                val ssh = Ssh(SshHost(instance.publicIpAddress, "ubuntu", keyPath), connectivityPatience = 5)
                 DiagnosableNodeFormula(
                     delegate = DataCenterNodeFormula(
                         base = StandaloneNodeFormula(
@@ -221,7 +220,8 @@ class DataCenterFormula private constructor(
                             computer = computer
                         ),
                         nodeIndex = i,
-                        sharedHome = sharedHome
+                        sharedHome = sharedHome,
+                        privateIpAddress = instance.privateIpAddress
                     )
                 )
             }
