@@ -3,6 +3,7 @@ package com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer
 import com.amazonaws.services.ec2.AmazonEC2
 import com.amazonaws.services.ec2.model.*
 import com.atlassian.performance.tools.aws.api.*
+import com.atlassian.performance.tools.infrastructure.api.Sed
 import com.atlassian.performance.tools.infrastructure.api.loadbalancer.LoadBalancer
 import com.atlassian.performance.tools.jvmtasks.api.ExponentialBackoff
 import com.atlassian.performance.tools.jvmtasks.api.IdempotentAction
@@ -13,7 +14,8 @@ import org.apache.logging.log4j.Logger
 import java.net.URI
 import java.time.Duration
 
-internal class ApacheEc2LoadBalancerFormula : LoadBalancerFormula {
+class ApacheEc2LoadBalancerFormula : LoadBalancerFormula {
+
     private val logger: Logger = LogManager.getLogger(this::class.java)
     private val balancerPort = 80
 
@@ -40,7 +42,7 @@ internal class ApacheEc2LoadBalancerFormula : LoadBalancerFormula {
             }
         )
         key.file.facilitateSsh(ssh.host.ipAddress)
-        val loadBalancer = HaProxyLoadBalancer(
+        val loadBalancer = ApacheProxyLoadBalancer(
             nodes = instances.map { URI("http://${it.publicIpAddress}:8080/") },
             httpPort = balancerPort,
             ssh = ssh
@@ -53,6 +55,7 @@ internal class ApacheEc2LoadBalancerFormula : LoadBalancerFormula {
                 user = resource,
                 dependency = Ec2SecurityGroup(httpAccess, ec2)
             )
+
         )
     }
 
@@ -86,10 +89,10 @@ internal class ApacheEc2LoadBalancerFormula : LoadBalancerFormula {
     }
 }
 
-private class HaProxyLoadBalancer(
+internal class ApacheProxyLoadBalancer(
     private val nodes: List<URI>,
     private val ssh: Ssh,
-    private val httpPort: Int
+    httpPort: Int
 ) : LoadBalancer {
 
     override val uri: URI = URI("http://${ssh.host.ipAddress}:$httpPort/")
@@ -116,6 +119,19 @@ private class HaProxyLoadBalancer(
             )
     }
 
+    fun updateJiraConfiguration(
+        ssh: Ssh,
+        unpackedProduct: String
+    ) {
+        ssh.newConnection().use { shell ->
+            Sed().replace(
+                shell,
+                "bindOnInit=\"false\"",
+                "bindOnInit=\"false\" scheme=\"http\" proxyName=\"${uri.host}\" proxyPort=\"80\"",
+                "$unpackedProduct/conf/server.xml")
+        }
+    }
+
     fun tryToProvision(ssh: Ssh) {
         ssh.newConnection().use { connection ->
             connection.execute("sudo apt-get update", Duration.ofMinutes(3))
@@ -131,6 +147,7 @@ private class HaProxyLoadBalancer(
 
             appendToApacheProxyConfiguration(connection, "</Proxy>\n")
             appendToApacheProxyConfiguration(connection, "ProxyPass / balancer://mycluster/ stickysession=ROUTEID")
+            appendToApacheProxyConfiguration(connection, "ProxyPassReverse / balancer://mycluster/ stickysession=ROUTEID")
 
             connection.execute("sudo service apache2 restart", Duration.ofMinutes(3))
         }
@@ -145,3 +162,4 @@ private class HaProxyLoadBalancer(
 
 
 }
+

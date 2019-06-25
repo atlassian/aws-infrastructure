@@ -32,7 +32,7 @@ internal data class StandaloneStoppedNode(
 ) : StoppedNode {
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
-    override fun start(): StartedNode {
+    override fun start(updateConfigurationFunction: List<(ssh: Ssh, unpackedProduct: String) -> Unit>): StartedNode {
         logger.info("Starting '$name'...")
         val monitoringProcesses = mutableListOf<RemoteMonitoringProcess>()
 
@@ -40,6 +40,11 @@ internal data class StandaloneStoppedNode(
             osMetrics.forEach { metric ->
                 monitoringProcesses.add(metric.start(sshConnection))
             }
+
+            updateConfigurationFunction.forEach {
+                it(ssh, unpackedProduct)
+            }
+
             startJira(sshConnection)
             val pid = pid(sshConnection)
             monitoringProcesses.add(jdk.jstatMonitoring.start(sshConnection, pid))

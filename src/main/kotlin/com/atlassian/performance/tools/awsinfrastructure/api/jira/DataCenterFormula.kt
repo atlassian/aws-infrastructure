@@ -13,6 +13,7 @@ import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.M4ExtraLargeElastic
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
 import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.ApacheEc2LoadBalancerFormula
+import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.ApacheProxyLoadBalancer
 import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.LoadBalancerFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.DataCenterNodeFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.DiagnosableNodeFormula
@@ -251,9 +252,13 @@ class DataCenterFormula private constructor(
 
         val databaseDataLocation = setupDatabase.get()
 
+        val updateJiraConfiguration =
+            if (loadBalancer is ApacheProxyLoadBalancer) listOf(loadBalancer::updateJiraConfiguration) else emptyList()
+
         val nodes = nodesProvisioning
             .map { it.get() }
-            .map { node -> time("start $node") { node.start() } }
+            .map { node -> time("start $node") { node.start(updateJiraConfiguration) } }
+
         executor.shutdownNow()
 
         time("wait for loadbalancer") {

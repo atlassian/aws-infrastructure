@@ -23,10 +23,15 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.11.0...master
 
+### Added
+- Makes ApacheEc2LoadBalancerFormula available as part of API
+
 ### Fixed
 - Error while AwsDatasetModification saves dataset. Fix [JPERF-515].
+- Update jira configuration if ApacheLoadBalancer is chosen. Fix [JPERF-506]
 
 [JPERF-515]: https://ecosystem.atlassian.net/browse/JPERF-515
+[JPERF-506]: https://ecosystem.atlassian.net/browse/JPERF-506
 
 ## [2.11.0] - 2019-07-01
 [2.11.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.10.1...release-2.11.0
