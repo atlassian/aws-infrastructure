@@ -2,6 +2,7 @@ package com.atlassian.performance.tools.awsinfrastructure.jira
 
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.StartedNode
 import com.atlassian.performance.tools.infrastructure.api.jira.SharedHome
+import com.atlassian.performance.tools.ssh.api.Ssh
 import java.util.concurrent.Future
 
 internal class DataCenterNodeFormula(
@@ -27,8 +28,8 @@ internal class DataCenterNodeFormula(
         }
 
         return object : StoppedNode by provisionedNode {
-            override fun start(): StartedNode {
-                return provisionedNode.start().copy(
+            override fun start(updateConfigurationFunction: List<(ssh: Ssh, unpackedProduct: String) -> Unit>): StartedNode {
+                return provisionedNode.start(updateConfigurationFunction).copy(
                     name = name,
                     analyticLogs = localSharedHome
                 )

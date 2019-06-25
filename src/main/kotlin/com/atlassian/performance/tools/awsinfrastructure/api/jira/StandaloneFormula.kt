@@ -195,7 +195,7 @@ class StandaloneFormula private constructor(
 
         val databaseDataLocation = setupDatabase.get()
         executor.shutdownNow()
-        val node = time("start") { provisionedNode.start() }
+        val node = time("start") { provisionedNode.start(emptyList()) }
 
         val jira = Jira(
             nodes = listOf(node),

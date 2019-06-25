@@ -6,5 +6,7 @@ import com.atlassian.performance.tools.ssh.api.Ssh
 internal interface StoppedNode {
     val jiraHome: String
     val ssh: Ssh
-    fun start(): StartedNode
+    fun start(
+        updateConfigurationFunction: List<(ssh: Ssh, unpackedProduct: String) -> Unit>
+    ): StartedNode
 }
