@@ -1,30 +1,24 @@
-package com.atlassian.performance.tools.awsinfrastructure
+package com.atlassian.performance.tools.awsinfrastructure.api
 
 import com.amazonaws.regions.Regions
 import com.atlassian.performance.tools.aws.api.StorageLocation
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.aws
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.taskWorkspace
-import com.atlassian.performance.tools.awsinfrastructure.api.DatasetCatalogue
 import com.atlassian.performance.tools.infrastructure.api.dataset.Dataset
 import com.atlassian.performance.tools.ssh.api.Ssh
 import org.junit.Test
 import java.net.URI
 import java.time.Duration.ofMinutes
-import java.util.*
 
-class AwsDatasetIT {
+class AwsDatasetModificationIT {
 
     private val workspace = taskWorkspace.isolateTest(javaClass.simpleName)
     private val sourceDataset = smallJiraSeven()
 
     @Test
     fun shouldRemoveBackups() {
-        AwsDataset(sourceDataset)
-            .modify(
-                aws = aws,
-                workspace = workspace,
-                newDatasetName = "dataset-${UUID.randomUUID()}"
-            ) { infrastructure ->
+        val transformation = object : DatasetTransformation {
+            override fun transform(infrastructure: Infrastructure<*>) {
                 val jiraHome = infrastructure.jira.jiraHome
                 val backupPath = "${jiraHome.location}/export"
                 Ssh(jiraHome.host, connectivityPatience = 4)
@@ -36,6 +30,16 @@ class AwsDatasetIT {
                         ssh.execute("rm -r $backupPath")
                     }
             }
+        }
+        val modification = AwsDatasetModification.Builder(
+            aws = aws,
+            dataset = sourceDataset,
+            transformation = transformation
+        )
+            .workspace(workspace)
+            .build()
+
+        modification.modify()
     }
 
     private fun smallJiraSeven(): Dataset = DatasetCatalogue().custom(
