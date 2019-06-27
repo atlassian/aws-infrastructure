@@ -23,6 +23,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.10.1...master
 
+### Added
+- Add `AwsDatasetModification`. Resolve [JPERF-509].
+
+[JPERF-509]: https://ecosystem.atlassian.net/browse/JPERF-509
+
 ## [2.10.1] - 2019-06-24
 [2.10.1]: https://github.com/atlassian/aws-infrastructure/compare/release-2.10.0...release-2.10.1
 
