@@ -16,6 +16,7 @@ import org.apache.logging.log4j.LogManager.getLogger
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.TimeUnit
+import java.util.function.Consumer
 
 class AwsDatasetModification private constructor(
     private val aws: Aws,
@@ -23,7 +24,7 @@ class AwsDatasetModification private constructor(
     private val workspace: TestWorkspace,
     private val newDatasetName: String,
     private val formula: InfrastructureFormula<*>,
-    private val transformation: DatasetTransformation
+    private val onlineTransformation: Consumer<Infrastructure<*>>
 ) {
 
     fun modify(): Dataset {
@@ -32,7 +33,7 @@ class AwsDatasetModification private constructor(
         val resource = provisionedInfrastructure.resource
         val newDataset: Dataset
         try {
-            apply(infrastructure, transformation)
+            apply(infrastructure)
             cleanUp(infrastructure)
             newDataset = persist(infrastructure.jira, newDatasetName)
         } finally {
@@ -49,11 +50,10 @@ class AwsDatasetModification private constructor(
     }
 
     private fun apply(
-        infrastructure: Infrastructure<*>,
-        modification: DatasetTransformation
+        infrastructure: Infrastructure<*>
     ) {
         logger.info("Modifying the dataset ...")
-        modification.transform(infrastructure)
+        onlineTransformation.accept(infrastructure)
         logger.info("Dataset modified")
         logger.info("To avoid leaking license, do not make this modified dataset publicly available.")
     }
@@ -101,9 +101,9 @@ class AwsDatasetModification private constructor(
 
     class Builder(
         private val aws: Aws,
-        private val dataset: Dataset,
-        private val transformation: DatasetTransformation
+        private val dataset: Dataset
     ) {
+        private var onlineTransformation = Consumer<Infrastructure<*>> { }
         private var workspace: TestWorkspace = RootWorkspace().currentTask.isolateTest(javaClass.simpleName)
         private var newDatasetName: String = "dataset-${UUID.randomUUID()}"
         private var formula: InfrastructureFormula<*> = InfrastructureFormula(
@@ -120,6 +120,7 @@ class AwsDatasetModification private constructor(
             aws = aws
         )
 
+        fun onlineTransformation(onlineTransformation: Consumer<Infrastructure<*>>) = apply { this.onlineTransformation = onlineTransformation }
         fun workspace(workspace: TestWorkspace) = apply { this.workspace = workspace }
         fun newDatasetName(newDatasetName: String) = apply { this.newDatasetName = newDatasetName }
         fun formula(formula: InfrastructureFormula<*>) = apply { this.formula = formula }
@@ -130,7 +131,7 @@ class AwsDatasetModification private constructor(
             workspace = workspace,
             newDatasetName = newDatasetName,
             formula = formula,
-            transformation = transformation
+            onlineTransformation = onlineTransformation
         )
     }
 
