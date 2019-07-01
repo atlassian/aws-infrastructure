@@ -9,6 +9,7 @@ import com.atlassian.performance.tools.ssh.api.Ssh
 import org.junit.Test
 import java.net.URI
 import java.time.Duration.ofMinutes
+import java.util.function.Consumer
 
 class AwsDatasetModificationIT {
 
@@ -17,26 +18,24 @@ class AwsDatasetModificationIT {
 
     @Test
     fun shouldRemoveBackups() {
-        val transformation = object : DatasetTransformation {
-            override fun transform(infrastructure: Infrastructure<*>) {
-                val jiraHome = infrastructure.jira.jiraHome
-                val backupPath = "${jiraHome.location}/export"
-                Ssh(jiraHome.host, connectivityPatience = 4)
-                    .newConnection()
-                    .use { ssh ->
-                        val listCommand = "ls -lh $backupPath"
-                        val listOutput = ssh.execute(listCommand).output
-                        println("$ $listCommand\n$listOutput")
-                        ssh.execute("rm -r $backupPath")
-                    }
-            }
+        val transformation = Consumer<Infrastructure<*>> { infrastructure ->
+            val jiraHome = infrastructure.jira.jiraHome
+            val backupPath = "${jiraHome.location}/export"
+            Ssh(jiraHome.host, connectivityPatience = 4)
+                .newConnection()
+                .use { ssh ->
+                    val listCommand = "ls -lh $backupPath"
+                    val listOutput = ssh.execute(listCommand).output
+                    println("$ $listCommand\n$listOutput")
+                    ssh.execute("rm -r $backupPath")
+                }
         }
         val modification = AwsDatasetModification.Builder(
             aws = aws,
-            dataset = sourceDataset,
-            transformation = transformation
+            dataset = sourceDataset
         )
             .workspace(workspace)
+            .onlineTransformation(transformation)
             .build()
 
         modification.modify()
