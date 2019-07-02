@@ -5,14 +5,16 @@ import com.atlassian.performance.tools.aws.api.Aws
 import com.atlassian.performance.tools.aws.api.Investment
 import com.atlassian.performance.tools.aws.api.StackFormula
 import com.atlassian.performance.tools.io.api.readResourceText
+import org.apache.logging.log4j.LogManager
 
 internal class NetworkFormula(
     private val investment: Investment,
     private val aws: Aws
 ) {
+    private val logger = LogManager.getLogger(this::class.java)
 
     fun provision(): Network {
-        return StackFormula(
+        val stackFormula = StackFormula(
             investment = investment,
             aws = aws,
             cloudformationTemplate = readResourceText("aws/network.yaml"),
@@ -22,12 +24,12 @@ internal class NetworkFormula(
                     .withParameterValue(aws.pickAvailabilityZone().zoneName)
             )
         )
-            .provision()
-            .let {
-                Network(
-                    it.findVpc("Vpc"),
-                    it.findSubnet("TheOnlySubnet")
-                )
-            }
+        logger.info("Provisioning network...")
+        val stack = stackFormula.provision()
+        logger.info("Network provisioned")
+        return Network(
+            stack.findVpc("Vpc"),
+            stack.findSubnet("TheOnlySubnet")
+        )
     }
 }
