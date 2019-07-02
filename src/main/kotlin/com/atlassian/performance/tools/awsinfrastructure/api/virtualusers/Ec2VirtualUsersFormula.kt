@@ -87,6 +87,7 @@ class Ec2VirtualUsersFormula private constructor(
                     IamInstanceProfileSpecification().withName(roleProfile)
                 )
                 .withInstanceType(InstanceType.C48xlarge)
+                .withSubnetId(network?.subnet?.subnetId)
         }
     )
 
