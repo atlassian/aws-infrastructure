@@ -31,7 +31,7 @@ class RemoteLocation(val host: SshHost, val location: String) {
     fun move(destination: String, timeout: Duration): RemoteLocation {
         if (location != destination) {
             Ssh(host, connectivityPatience = 4).newConnection().use {
-                it.execute("mv $location $destination", timeout)
+                it.execute("sudo mv $location $destination", timeout)
             }
         }
         return RemoteLocation(host, destination)
