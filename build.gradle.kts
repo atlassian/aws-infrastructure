@@ -34,6 +34,7 @@ configurations.all {
 }
 
 dependencies {
+    api(fileTree(mapOf("dir" to "lib", "include" to "*.jar")))
     api("com.atlassian.performance.tools:infrastructure:[4.12.2,5.0.0)")
     api("com.atlassian.performance.tools:aws-resources:[1.1.1,2.0.0)")
     api("com.atlassian.performance.tools:jira-actions:[2.0.0,4.0.0)")
