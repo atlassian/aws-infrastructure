@@ -4,7 +4,7 @@ import com.amazonaws.services.cloudformation.model.Parameter
 import com.amazonaws.services.ec2.model.Tag
 import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.ApplicationStorageWrapper
-import com.atlassian.performance.tools.awsinfrastructure.Network
+import com.atlassian.performance.tools.awsinfrastructure.api.Network
 import com.atlassian.performance.tools.awsinfrastructure.NetworkFormula
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
 import com.atlassian.performance.tools.awsinfrastructure.api.RemoteLocation
@@ -19,11 +19,6 @@ import com.atlassian.performance.tools.infrastructure.api.database.Database
 import com.atlassian.performance.tools.infrastructure.api.distribution.ProductDistribution
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.JiraNodeFlow
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.DefaultJiraInstallation
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.HookedJiraInstallation
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.JiraInstallation
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.start.JiraStart
 import com.atlassian.performance.tools.jvmtasks.api.TaskTimer.time
 import com.atlassian.performance.tools.ssh.api.Ssh
 import com.atlassian.performance.tools.ssh.api.SshHost

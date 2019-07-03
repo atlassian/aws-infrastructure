@@ -3,7 +3,7 @@ package com.atlassian.performance.tools.awsinfrastructure.api.jira
 import com.amazonaws.services.cloudformation.model.Parameter
 import com.amazonaws.services.ec2.model.Tag
 import com.atlassian.performance.tools.aws.api.*
-import com.atlassian.performance.tools.awsinfrastructure.Network
+import com.atlassian.performance.tools.awsinfrastructure.api.Network
 import com.atlassian.performance.tools.awsinfrastructure.NetworkFormula
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
 import com.atlassian.performance.tools.awsinfrastructure.api.DatasetCatalogue
@@ -34,12 +34,11 @@ import org.apache.logging.log4j.CloseableThreadContext
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.net.URI
-import java.nio.file.Paths
 import java.time.Duration
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 
-class LegacyMysqlServerFormula private constructor(
+class FlowServerFormula private constructor(
     private val installation: JiraInstallation,
     private val start: JiraStart,
     private val flow: JiraNodeFlow,
@@ -151,13 +150,7 @@ class LegacyMysqlServerFormula private constructor(
                 start.start(ssh, installedJira, flow)
             }
         }
-        val jira = Jira(
-            emptyList(),
-            RemoteLocation(SshHost("UNSUPPORTED", "UNSUPPORTED", Paths.get(".")), "UNSUPPORTED"),
-            databaseLocation,
-            jiraAddress,
-            emptyList()
-        )
+        val jira = minimumFeatures(jiraAddress)
         return@time ProvisionedJira(jira = jira, resource = jiraStack)
     }
 
@@ -181,7 +174,7 @@ class LegacyMysqlServerFormula private constructor(
         fun start(start: JiraStart) = apply { this.start = start }
         fun flow(flow: JiraNodeFlow) = apply { this.flow = flow }
 
-        fun build(): LegacyMysqlServerFormula = LegacyMysqlServerFormula(
+        fun build(): FlowServerFormula = FlowServerFormula(
             installation = installation,
             start = start,
             flow = flow,

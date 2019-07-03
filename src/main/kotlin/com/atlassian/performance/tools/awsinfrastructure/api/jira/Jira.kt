@@ -5,8 +5,10 @@ import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.MeasurementSource
 import com.atlassian.performance.tools.infrastructure.api.jvm.jmx.JmxClient
 import com.atlassian.performance.tools.jvmtasks.api.TaskTimer.time
+import com.atlassian.performance.tools.ssh.api.SshHost
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import java.net.URI
+import java.nio.file.Paths
 import java.util.concurrent.Executors
 
 class Jira(
@@ -31,3 +33,13 @@ class Jira(
 
     override fun toString() = "Jira(address=$address)"
 }
+
+internal fun minimumFeatures(
+    uri: URI
+): Jira = Jira(
+    emptyList(),
+    RemoteLocation(SshHost("UNSUPPORTED", "UNSUPPORTED", Paths.get(".")), "UNSUPPORTED"),
+    null,
+    uri,
+    emptyList()
+)
