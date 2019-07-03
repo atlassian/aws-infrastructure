@@ -22,20 +22,9 @@ import com.atlassian.performance.tools.awsinfrastructure.jira.home.SharedHomeFor
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
 import com.atlassian.performance.tools.infrastructure.api.database.Database
+import com.atlassian.performance.tools.infrastructure.api.distribution.ProductDistribution
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
-import com.atlassian.performance.tools.infrastructure.api.distribution.ProductDistribution
-import com.atlassian.performance.tools.infrastructure.api.distribution.PublicJiraSoftwareDistribution
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.JiraNodeFlow
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.TcpServer
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.DefaultJiraInstallation
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.DefaultPostInstallHook
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.HookedJiraInstallation
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.JiraInstallation
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.start.DefaultStartedJiraHook
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.start.HookedJiraStart
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.start.JiraLaunchScript
-import com.atlassian.performance.tools.infrastructure.api.jvm.OracleJDK
 import com.atlassian.performance.tools.jvmtasks.api.TaskTimer.time
 import com.atlassian.performance.tools.ssh.api.Ssh
 import com.atlassian.performance.tools.ssh.api.SshHost
@@ -218,26 +207,7 @@ class DataCenterFormula private constructor(
                 }
             }
             .mapIndexed { i: Int, instance ->
-                val config = configs[i]
-                val flow = JiraNodeFlow()
-                flow.hookPostStart(DefaultStartedJiraHook())
-                flow.hookPostInstall(DefaultPostInstallHook(config))
-                val server = TcpServer(
-                    ip = instance.publicIpAddress,
-                    port = 8080,
-                    name = "jira-http-$i"
-                )
-                val installation = HookedJiraInstallation(DefaultJiraInstallation(
-                    jiraHomeSource = jiraHomeSource,
-                    productDistribution = productDistribution,
-                    jdk = config.jdk
-                ))
-                val start = HookedJiraStart(JiraLaunchScript())
                 val ssh = Ssh(SshHost(instance.publicIpAddress, "ubuntu", keyPath), connectivityPatience = 5)
-                val installed = installation.install(ssh, server, flow)
-                val started = jiraStart.start(ssh, installed, flow)
-                stop(started, ssh)
-                flow.reports.flatMap { it.locate(ssh) }
                 DiagnosableNodeFormula(
                     delegate = DataCenterNodeFormula(
                         base = StandaloneNodeFormula(

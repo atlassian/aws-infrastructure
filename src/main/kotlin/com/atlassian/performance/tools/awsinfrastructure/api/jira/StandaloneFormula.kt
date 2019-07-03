@@ -19,6 +19,11 @@ import com.atlassian.performance.tools.infrastructure.api.database.Database
 import com.atlassian.performance.tools.infrastructure.api.distribution.ProductDistribution
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
+import com.atlassian.performance.tools.infrastructure.api.jira.flow.JiraNodeFlow
+import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.DefaultJiraInstallation
+import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.HookedJiraInstallation
+import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.JiraInstallation
+import com.atlassian.performance.tools.infrastructure.api.jira.flow.start.JiraStart
 import com.atlassian.performance.tools.jvmtasks.api.TaskTimer.time
 import com.atlassian.performance.tools.ssh.api.Ssh
 import com.atlassian.performance.tools.ssh.api.SshHost
