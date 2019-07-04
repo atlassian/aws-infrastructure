@@ -3,29 +3,15 @@ package com.atlassian.performance.tools.awsinfrastructure.api.jira
 import com.amazonaws.services.cloudformation.model.Parameter
 import com.amazonaws.services.ec2.model.Tag
 import com.atlassian.performance.tools.aws.api.*
-import com.atlassian.performance.tools.awsinfrastructure.api.Network
 import com.atlassian.performance.tools.awsinfrastructure.NetworkFormula
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
-import com.atlassian.performance.tools.awsinfrastructure.api.DatasetCatalogue
-import com.atlassian.performance.tools.awsinfrastructure.api.RemoteLocation
+import com.atlassian.performance.tools.awsinfrastructure.api.Network
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C5NineExtraLargeEphemeral
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.M5ExtraLargeEphemeral
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
-import com.atlassian.performance.tools.infrastructure.api.database.Database
-import com.atlassian.performance.tools.infrastructure.api.database.DatabaseIpConfig
-import com.atlassian.performance.tools.infrastructure.api.database.MysqlConnector
-import com.atlassian.performance.tools.infrastructure.api.distribution.PublicJiraSoftwareDistribution
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.JiraNodeFlow
 import com.atlassian.performance.tools.infrastructure.api.jira.flow.TcpServer
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.DefaultJiraInstallation
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.HookedJiraInstallation
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.JiraInstallation
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.start.HookedJiraStart
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.start.JiraLaunchScript
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.start.JiraStart
-import com.atlassian.performance.tools.infrastructure.api.jvm.OracleJDK
 import com.atlassian.performance.tools.jvmtasks.api.TaskTimer.time
 import com.atlassian.performance.tools.ssh.api.Ssh
 import com.atlassian.performance.tools.ssh.api.SshHost
@@ -39,16 +25,13 @@ import java.util.concurrent.Executors
 import java.util.concurrent.Future
 
 class FlowServerFormula private constructor(
-    private val installation: JiraInstallation,
-    private val start: JiraStart,
-    private val flow: JiraNodeFlow,
-    private val database: Database,
+    private val node: JiraNodeProvisioning,
     private val jiraComputer: Computer,
     private val jiraVolume: Volume,
     private val dbComputer: Computer,
     private val dbVolume: Volume,
     private val stackCreationTimeout: Duration,
-    private val overriddenNetwork: Network?
+    private val network: Network?
 ) : JiraFormula {
 
     private val logger: Logger = LogManager.getLogger(this::class.java)
@@ -61,16 +44,14 @@ class FlowServerFormula private constructor(
         roleProfile: String,
         aws: Aws
     ): ProvisionedJira = time("provision Jira Server") {
-        logger.info("Setting up Jira...")
-
+        logger.info("Setting up Jira Server...")
         val executor = Executors.newFixedThreadPool(
             4,
             ThreadFactoryBuilder().setNameFormat("standalone-provisioning-thread-%d")
                 .build()
         )
-        val network = overriddenNetwork ?: NetworkFormula(investment, aws).provision()
+        val network = network ?: NetworkFormula(investment, aws).provision()
         val template = TemplateBuilder("single-node.yaml").build()
-
         val stackProvisioning = executor.submitWithLogContext("provision stack") {
             StackFormula(
                 investment = investment,
@@ -108,83 +89,50 @@ class FlowServerFormula private constructor(
                 pollingTimeout = stackCreationTimeout
             ).provision()
         }
-
-        val jiraStack = stackProvisioning.get()
+        val stack = stackProvisioning.get()
         val keyPath = key.get().file.path
-
-        val machines = jiraStack.listMachines()
-        val databaseIp = machines.single { it.tags.contains(Tag("jpt-database", "true")) }.publicIpAddress
-        val databaseHost = SshHost(databaseIp, "ubuntu", keyPath)
-        val databaseSsh = Ssh(databaseHost, connectivityPatience = 4)
+        val machines = stack.listMachines()
         val jiraIp = machines.single { it.tags.contains(Tag("jpt-jira", "true")) }.publicIpAddress
         val jiraServer = TcpServer(jiraIp, 8080, "jira")
         val jiraAddress = jiraServer.toPublicHttp()
-
-        val setupDatabase = executor.submitWithLogContext("database") {
-            databaseSsh.newConnection().use {
-                dbComputer.setUp(it)
-                logger.info("Setting up database...")
-                key.get().file.facilitateSsh(databaseIp)
-                val location = database.setup(it)
-                logger.info("Database is set up")
-                logger.info("Starting database...")
-                database.start(jiraAddress, it)
-                logger.info("Database is started")
-                RemoteLocation(databaseHost, location)
-            }
-        }
-
         val jiraSsh = Ssh(SshHost(jiraIp, "ubuntu", keyPath), connectivityPatience = 5)
-        flow.hookPostInstall(MysqlConnector())
-        flow.hookPostInstall(DatabaseIpConfig(databaseIp))
         val installedJira = jiraSsh.newConnection().use { ssh ->
-            installation.install(ssh, jiraServer, flow)
+            node.installation.install(ssh, jiraServer, node.flow)
         }
-        val databaseLocation = setupDatabase.get()
         CloseableThreadContext.push("Jira node").use {
             key.get().file.facilitateSsh(jiraIp)
         }
         executor.shutdownNow()
         time("start") {
             jiraSsh.newConnection().use { ssh ->
-                start.start(ssh, installedJira, flow)
+                node.start.start(ssh, installedJira, node.flow)
             }
         }
         val jira = minimumFeatures(jiraAddress)
-        return@time ProvisionedJira(jira = jira, resource = jiraStack)
+        logger.info("$jira is set up, will expire ${stack.expiry}")
+        return@time ProvisionedJira(jira = jira, resource = stack)
     }
 
     class Builder {
-        private var installation: JiraInstallation = HookedJiraInstallation(DefaultJiraInstallation(
-            jiraHomeSource = DatasetCatalogue().largeJiraSeven().jiraHomeSource,
-            productDistribution = PublicJiraSoftwareDistribution("7.13.0"),
-            jdk = OracleJDK()
-        ))
-        private var start: JiraStart = HookedJiraStart(JiraLaunchScript())
-        private var flow: JiraNodeFlow = JiraNodeFlow()
-        private var database: Database = DatasetCatalogue().largeJiraSeven().database
+        private var node: JiraNodeProvisioning = JiraNodeProvisioning.Builder().build()
         private var jiraComputer: Computer = C5NineExtraLargeEphemeral()
         private var jiraVolume: Volume = Volume(200)
         private var dbComputer: Computer = M5ExtraLargeEphemeral()
         private var dbVolume: Volume = Volume(100)
-        private var overriddenNetwork: Network? = null
+        private var network: Network? = null
         private var stackCreationTimeout: Duration = Duration.ofMinutes(30)
 
-        fun installation(installation: JiraInstallation) = apply { this.installation = installation }
-        fun start(start: JiraStart) = apply { this.start = start }
-        fun flow(flow: JiraNodeFlow) = apply { this.flow = flow }
+        fun node(node: JiraNodeProvisioning) = apply { this.node = node }
+        internal fun network(network: Network) = apply { this.network = network }
 
         fun build(): FlowServerFormula = FlowServerFormula(
-            installation = installation,
-            start = start,
-            flow = flow,
-            database = database,
+            node = node,
             jiraComputer = jiraComputer,
             jiraVolume = jiraVolume,
             dbComputer = dbComputer,
             dbVolume = dbVolume,
             stackCreationTimeout = stackCreationTimeout,
-            overriddenNetwork = overriddenNetwork
+            network = network
         )
     }
 }

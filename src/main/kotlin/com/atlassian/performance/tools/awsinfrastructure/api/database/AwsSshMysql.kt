@@ -9,6 +9,8 @@ import com.atlassian.performance.tools.awsinfrastructure.api.Network
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
 import com.atlassian.performance.tools.infrastructure.api.database.Database
+import com.atlassian.performance.tools.infrastructure.api.database.DatabaseIpConfig
+import com.atlassian.performance.tools.infrastructure.api.database.MysqlConnector
 import com.atlassian.performance.tools.infrastructure.api.jira.flow.JiraNodeFlow
 import com.atlassian.performance.tools.infrastructure.api.jira.flow.TcpServer
 import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.InstalledJira
@@ -75,7 +77,8 @@ class AwsSshMysql(
             database.start(jira.server.toPublicHttp(), it)
             logger.info("Database is started")
         }
-        ssh.
+        flow.hookPostInstall(MysqlConnector())
+        flow.hookPostInstall(DatabaseIpConfig(ip))
     }
 }
 

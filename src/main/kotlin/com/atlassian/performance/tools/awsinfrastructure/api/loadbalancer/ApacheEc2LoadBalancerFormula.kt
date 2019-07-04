@@ -143,7 +143,7 @@ internal class ApacheProxyLoadBalancer(
             appendToApacheProxyConfiguration(connection, "Header add Set-Cookie \\\"ROUTEID=.%{BALANCER_WORKER_ROUTE}e; path=/\\\" env=BALANCER_ROUTE_CHANGED")
             appendToApacheProxyConfiguration(connection, "<Proxy balancer://mycluster>")
 
-            nodes.forEachIndexed { index, uri -> appendToApacheProxyConfiguration(connection, "\tBalancerMember http://${uri.host}:${uri.port} route=$index")}
+            nodes.forEachIndexed { index, uri -> appendToApacheProxyConfiguration(connection, "\tBalancerMember http://${uri.host}:${uri.port} route=$index") }
 
             appendToApacheProxyConfiguration(connection, "</Proxy>\n")
             appendToApacheProxyConfiguration(connection, "ProxyPass / balancer://mycluster/ stickysession=ROUTEID")
