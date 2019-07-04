@@ -5,10 +5,10 @@ import com.atlassian.performance.tools.infrastructure.api.jira.EmptyJiraHome
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
 import com.atlassian.performance.tools.infrastructure.api.jira.flow.JiraNodeFlow
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.DefaultJiraInstallation
 import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.DefaultPostInstallHook
 import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.HookedJiraInstallation
 import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.JiraInstallation
+import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.ParallelInstallation
 import com.atlassian.performance.tools.infrastructure.api.jira.flow.start.DefaultStartedJiraHook
 import com.atlassian.performance.tools.infrastructure.api.jira.flow.start.HookedJiraStart
 import com.atlassian.performance.tools.infrastructure.api.jira.flow.start.JiraLaunchScript
@@ -37,7 +37,7 @@ class JiraNodeProvisioning private constructor(
             )
         }
         private var installation: JiraInstallation = HookedJiraInstallation(
-            DefaultJiraInstallation(
+            ParallelInstallation(
                 jiraHome,
                 PublicJiraSoftwareDistribution("7.13.0"),
                 OracleJDK()
@@ -47,7 +47,7 @@ class JiraNodeProvisioning private constructor(
             JiraLaunchScript()
         )
 
-        constructor(): this(EmptyJiraHome())
+        constructor() : this(EmptyJiraHome())
 
         fun flow(flow: JiraNodeFlow) = apply { this.flow = flow }
         fun installation(installation: JiraInstallation) = apply { this.installation = installation }
