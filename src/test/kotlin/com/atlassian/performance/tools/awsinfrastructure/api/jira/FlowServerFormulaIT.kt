@@ -50,7 +50,7 @@ class FlowServerFormulaIT {
             .node(
                 JiraNodeProvisioning.Builder()
                     .flow(
-                        JiraNodeFlow().apply { hookPostInstall(mysqlHook) }
+                        JiraNodeFlow().apply { hookPreInstall(mysqlHook) }
                     )
                     .build()
             )
