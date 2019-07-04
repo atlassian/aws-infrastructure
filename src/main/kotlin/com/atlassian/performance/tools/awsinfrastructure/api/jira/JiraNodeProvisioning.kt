@@ -2,6 +2,7 @@ package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
 import com.atlassian.performance.tools.infrastructure.api.distribution.PublicJiraSoftwareDistribution
 import com.atlassian.performance.tools.infrastructure.api.jira.EmptyJiraHome
+import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
 import com.atlassian.performance.tools.infrastructure.api.jira.flow.JiraNodeFlow
 import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.DefaultJiraInstallation
@@ -22,7 +23,9 @@ class JiraNodeProvisioning private constructor(
 ) {
 
     @NotThreadSafe
-    class Builder {
+    class Builder(
+        jiraHome: JiraHomeSource
+    ) {
         private var flow: JiraNodeFlow = JiraNodeFlow().apply {
             hookPostStart(
                 DefaultStartedJiraHook()
@@ -35,7 +38,7 @@ class JiraNodeProvisioning private constructor(
         }
         private var installation: JiraInstallation = HookedJiraInstallation(
             DefaultJiraInstallation(
-                EmptyJiraHome(),
+                jiraHome,
                 PublicJiraSoftwareDistribution("7.13.0"),
                 OracleJDK()
             )
@@ -43,6 +46,8 @@ class JiraNodeProvisioning private constructor(
         private var start: JiraStart = HookedJiraStart(
             JiraLaunchScript()
         )
+
+        constructor(): this(EmptyJiraHome())
 
         fun flow(flow: JiraNodeFlow) = apply { this.flow = flow }
         fun installation(installation: JiraInstallation) = apply { this.installation = installation }

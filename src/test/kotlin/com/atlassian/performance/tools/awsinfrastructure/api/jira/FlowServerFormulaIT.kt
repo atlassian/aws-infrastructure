@@ -48,7 +48,7 @@ class FlowServerFormulaIT {
         )
         val serverFormula = FlowServerFormula.Builder()
             .node(
-                JiraNodeProvisioning.Builder()
+                JiraNodeProvisioning.Builder(dataset.jiraHomeSource)
                     .flow(
                         JiraNodeFlow().apply { hookPreInstall(mysqlHook) }
                     )

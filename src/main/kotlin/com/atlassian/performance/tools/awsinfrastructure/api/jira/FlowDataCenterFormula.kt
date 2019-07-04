@@ -7,7 +7,7 @@ import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.NetworkFormula
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
 import com.atlassian.performance.tools.awsinfrastructure.api.Network
-import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C4EightExtraLargeElastic
+import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C5NineExtraLargeEphemeral
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
 import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.ApacheEc2LoadBalancerFormula
@@ -18,7 +18,6 @@ import com.atlassian.performance.tools.awsinfrastructure.jira.home.SharedHomeFor
 import com.atlassian.performance.tools.awsinfrastructure.jira.home.SharedHomeHook
 import com.atlassian.performance.tools.awsinfrastructure.loadbalancer.ApacheProxyFix
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
-import com.atlassian.performance.tools.infrastructure.api.jira.EmptyJiraHome
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource
 import com.atlassian.performance.tools.infrastructure.api.jira.SharedHome
 import com.atlassian.performance.tools.infrastructure.api.jira.flow.TcpServer
@@ -216,29 +215,33 @@ class FlowDataCenterFormula private constructor(
             }
         }
 
-    class Builder {
-        private var nodes: List<JiraNodeProvisioning> = (1..2).map { JiraNodeProvisioning.Builder().build() }
+    class Builder(
+        jiraHome: JiraHomeSource
+    ) {
+        private var nodes: List<JiraNodeProvisioning> = (1..2).map {
+            JiraNodeProvisioning.Builder(jiraHome).build()
+        }
         private var loadBalancer: LoadBalancerFormula = ApacheEc2LoadBalancerFormula()
-        private var sharedHomeSource: JiraHomeSource = EmptyJiraHome()
-        private var computer: Computer = C4EightExtraLargeElastic()
-        private var jiraVolume: Volume = Volume(100)
+        private var sharedHome: JiraHomeSource = jiraHome
+        private var computer: Computer = C5NineExtraLargeEphemeral()
+        private var volume: Volume = Volume(100)
         private var stackPatience: Duration = Duration.ofMinutes(30)
         private var network: Network? = null
 
         fun nodes(nodes: List<JiraNodeProvisioning>) = apply { this.nodes = nodes }
         fun loadBalancer(loadBalancer: LoadBalancerFormula) = apply { this.loadBalancer = loadBalancer }
-        fun sharedHomeSource(sharedHomeSource: JiraHomeSource) = apply { this.sharedHomeSource = sharedHomeSource }
+        fun sharedHome(sharedHome: JiraHomeSource) = apply { this.sharedHome = sharedHome }
         fun computer(computer: Computer) = apply { this.computer = computer }
-        fun jiraVolume(jiraVolume: Volume) = apply { this.jiraVolume = jiraVolume }
+        fun volume(volume: Volume) = apply { this.volume = volume }
         fun stackPatience(stackPatience: Duration) = apply { this.stackPatience = stackPatience }
         internal fun network(network: Network) = apply { this.network = network }
 
         fun build(): FlowDataCenterFormula = FlowDataCenterFormula(
             nodes = nodes,
             loadBalancerFormula = loadBalancer,
-            sharedHomeSource = sharedHomeSource,
+            sharedHomeSource = sharedHome,
             computer = computer,
-            volume = jiraVolume,
+            volume = volume,
             stackPatience = stackPatience,
             overriddenNetwork = network
         )
