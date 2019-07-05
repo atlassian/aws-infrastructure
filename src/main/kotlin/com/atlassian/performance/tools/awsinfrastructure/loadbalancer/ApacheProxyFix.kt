@@ -11,7 +11,7 @@ class ApacheProxyFix(
     private val loadBalancer: URI
 ) : InstalledJiraHook {
 
-    override fun hook(ssh: SshConnection, jira: InstalledJira, flow: JiraNodeFlow) {
+    override fun run(ssh: SshConnection, jira: InstalledJira, flow: JiraNodeFlow) {
         Sed().replace(
             ssh,
             "bindOnInit=\"false\"",

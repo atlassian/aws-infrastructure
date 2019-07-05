@@ -14,7 +14,7 @@ class S3AppSourceInstall(
     private val transport: Storage
 ) : InstalledJiraHook {
 
-    override fun hook(ssh: SshConnection, jira: InstalledJira, flow: JiraNodeFlow) {
+    override fun run(ssh: SshConnection, jira: InstalledJira, flow: JiraNodeFlow) {
         Apps(apps)
             .listFiles()
             .forEach { transport.upload(it) }

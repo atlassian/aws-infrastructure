@@ -9,7 +9,7 @@ internal class DcHook(
     private val privateDcNodeIp: String
 ) : InstalledJiraHook {
 
-    override fun hook(ssh: SshConnection, jira: InstalledJira, flow: JiraNodeFlow) {
+    override fun run(ssh: SshConnection, jira: InstalledJira, flow: JiraNodeFlow) {
         val clusterProperties = "${jira.home}/cluster.properties"
         ssh.execute("echo ehcache.listener.hostName = $privateDcNodeIp >> $clusterProperties")
         ssh.execute("echo ehcache.object.port = 40011 >> $clusterProperties")

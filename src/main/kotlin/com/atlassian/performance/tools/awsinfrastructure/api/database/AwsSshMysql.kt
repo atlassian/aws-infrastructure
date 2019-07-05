@@ -13,8 +13,6 @@ import com.atlassian.performance.tools.infrastructure.api.database.DatabaseIpCon
 import com.atlassian.performance.tools.infrastructure.api.database.MysqlConnector
 import com.atlassian.performance.tools.infrastructure.api.jira.flow.JiraNodeFlow
 import com.atlassian.performance.tools.infrastructure.api.jira.flow.TcpServer
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.InstalledJira
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.InstalledJiraHook
 import com.atlassian.performance.tools.infrastructure.api.jira.flow.server.TcpServerHook
 import com.atlassian.performance.tools.ssh.api.Ssh
 import com.atlassian.performance.tools.ssh.api.SshConnection
@@ -37,7 +35,7 @@ class AwsSshMysql(
 
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
-    override fun hook(ssh: SshConnection, server: TcpServer, flow: JiraNodeFlow) {
+    override fun run(ssh: SshConnection, server: TcpServer, flow: JiraNodeFlow) {
         val stack = StackFormula(
             investment = investment,
             cloudformationTemplate = javaClass

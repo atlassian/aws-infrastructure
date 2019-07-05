@@ -10,7 +10,7 @@ internal class SharedHomeHook(
     private val sharedHome: SharedHome
 ) : InstalledJiraHook {
 
-    override fun hook(ssh: SshConnection, jira: InstalledJira, flow: JiraNodeFlow) {
+    override fun run(ssh: SshConnection, jira: InstalledJira, flow: JiraNodeFlow) {
         sharedHome.mount(ssh)
         val mountedPath = "`realpath ${sharedHome.localSharedHome}`"
         ssh.execute("echo jira.shared.home = $mountedPath >> ${jira.home}/cluster.properties")
