@@ -5,6 +5,7 @@ import com.atlassian.performance.tools.aws.api.SshKeyFormula
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime
 import com.atlassian.performance.tools.awsinfrastructure.NetworkFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.DatasetCatalogue
+import com.atlassian.performance.tools.awsinfrastructure.api.database.AsyncTcpServerHook
 import com.atlassian.performance.tools.awsinfrastructure.api.database.AwsSshMysql
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.M5ExtraLargeEphemeral
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
@@ -36,15 +37,17 @@ class FlowServerFormulaIT {
             lifespan = lifespan
         )
         val network = NetworkFormula(investment, aws).provision()
-        val mysqlHook = AwsSshMysql(
-            dataset.database,
-            aws,
-            investment,
-            M5ExtraLargeEphemeral(),
-            Volume(100),
-            network,
-            sshKey,
-            Duration.ofMinutes(4)
+        val mysqlHook = AsyncTcpServerHook(
+            AwsSshMysql(
+                dataset.database,
+                aws,
+                investment,
+                M5ExtraLargeEphemeral(),
+                Volume(100),
+                network,
+                sshKey,
+                Duration.ofMinutes(4)
+            )
         )
         val serverFormula = FlowServerFormula.Builder()
             .node(
