@@ -2,6 +2,7 @@ package com.atlassian.performance.tools.awsinfrastructure.api
 
 import com.atlassian.performance.tools.aws.api.StorageLocation
 import com.atlassian.performance.tools.awsinfrastructure.S3DatasetPackage
+import com.atlassian.performance.tools.infrastructure.api.database.LicenseOverridingMysql
 import com.atlassian.performance.tools.infrastructure.api.database.MySqlDatabase
 import com.atlassian.performance.tools.infrastructure.api.dataset.Dataset
 import com.atlassian.performance.tools.infrastructure.api.dataset.FileArchiver
@@ -53,6 +54,29 @@ class DatasetCatalogue {
             )
         )
     }
+
+    /**
+     * Has more active users than the timebomb license, so on DC, it will refuse to create issues.
+     * Use [LicenseOverridingMysql] to supply a bigger license if need be.
+     *
+     * @since 2.12.0
+     */
+    fun smallJiraSeven(): Dataset = URI("https://s3-eu-west-1.amazonaws.com/")
+        .resolve("jpt-custom-datasets-storage-a008820-datasetbucket-1sjxdtrv5hdhj/")
+        .resolve("dataset-f8dba866-9d1b-492e-b76c-f4a78ac3958c/")
+        .let { uri ->
+            Dataset(
+                label = "7k issues JSW 7.2.0",
+                database = MySqlDatabase(HttpDatasetPackage(
+                    uri = uri.resolve("database.tar.bz2"),
+                    downloadTimeout = ofMinutes(6)
+                )),
+                jiraHomeSource = JiraHomePackage(HttpDatasetPackage(
+                    uri = uri.resolve("jirahome.tar.bz2"),
+                    downloadTimeout = ofMinutes(6)
+                ))
+            )
+        }
 
     fun custom(
         location: StorageLocation,

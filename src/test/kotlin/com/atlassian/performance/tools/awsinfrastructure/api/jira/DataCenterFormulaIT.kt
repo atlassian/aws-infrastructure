@@ -15,10 +15,7 @@ import com.atlassian.performance.tools.workspace.api.TestWorkspace
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import org.apache.logging.log4j.CloseableThreadContext
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.data.Offset
 import org.assertj.core.data.Percentage
-import org.hamcrest.CoreMatchers.equalTo
-import org.hamcrest.CoreMatchers.notNullValue
 import org.junit.Test
 import java.net.URI
 import java.time.Duration
@@ -32,7 +29,7 @@ class DataCenterFormulaIT {
     private val aws = IntegrationTestRuntime.aws
     private val jiraVersionSeven = "7.2.0"
     private val jiraVersionEight = "8.0.0"
-    private val datasetSeven = DatasetCatalogue().largeJiraSeven()
+    private val datasetSeven = DatasetCatalogue().smallJiraSeven()
     private val datasetEight = DatasetCatalogue().largeJiraEight()
 
     @Test
