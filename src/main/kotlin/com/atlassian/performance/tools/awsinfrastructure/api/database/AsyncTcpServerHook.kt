@@ -1,5 +1,6 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.database
 
+import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.jira.flow.JiraNodeFlow
 import com.atlassian.performance.tools.infrastructure.api.jira.flow.TcpServer
 import com.atlassian.performance.tools.infrastructure.api.jira.flow.server.TcpServerHook
@@ -12,7 +13,7 @@ class AsyncTcpServerHook(
 
     override fun run(ssh: SshConnection, server: TcpServer, flow: JiraNodeFlow) {
         val thread = Executors.newSingleThreadExecutor()
-        val future = thread.submit {
+        val future = thread.submitWithLogContext("async-hook") {
             hook.run(ssh, server, flow)
         }
         flow.hookPostInstall(FutureBlockingHook(future))
