@@ -31,15 +31,13 @@ class AwsDatasetModification private constructor(
         val provisionedInfrastructure = provision()
         val infrastructure = provisionedInfrastructure.infrastructure
         val resource = provisionedInfrastructure.resource
-        val newDataset: Dataset
         try {
             apply(infrastructure)
             cleanUp(infrastructure)
-            newDataset = persist(infrastructure.jira, newDatasetName)
+            return persist(infrastructure.jira)
         } finally {
             release(resource)
         }
-        return newDataset
     }
 
     private fun provision(): ProvisionedInfrastructure<*> {
@@ -59,18 +57,17 @@ class AwsDatasetModification private constructor(
     }
 
     private fun persist(
-        jira: Jira,
-        datasetName: String
+        jira: Jira
     ): Dataset {
-        logger.info("Persisting the $datasetName dataset ...")
+        logger.info("Persisting the $newDatasetName dataset ...")
         val source = CustomDatasetSource(
             jiraHome = jira.jiraHome,
             database = jira.database ?: throw Exception("The database should have been provisioned")
         )
         val storedDataset = source.store(
-            aws.customDatasetStorage(datasetName).location
+            aws.customDatasetStorage(newDatasetName).location
         )
-        logger.info("Dataset $datasetName persisted")
+        logger.info("Dataset $newDatasetName persisted")
         return storedDataset
     }
 
