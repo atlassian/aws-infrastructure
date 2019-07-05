@@ -27,6 +27,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 - Makes ApacheEc2LoadBalancerFormula available as part of API
 - Let `AwsDatasetModification` build the `Dataset` without disturbing the `InfrastructureFormula` and vice versa.
 - Add `SshMysqlDatasetPublication`. Resolve [JPERF-519].
+- Add `DatasetCatalogue().smallJiraSeven()`. Unblock [JPERF-214].
 
 ### Fixed
 - Error while AwsDatasetModification saves dataset. Fix [JPERF-515].
@@ -38,6 +39,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 - Replace `AwsDatasetModification.formula` with a pair of `dataset` and `host`.
 
 [JPERF-519]: https://ecosystem.atlassian.net/browse/JPERF-519
+[JPERF-214]: https://ecosystem.atlassian.net/browse/JPERF-214
 [JPERF-515]: https://ecosystem.atlassian.net/browse/JPERF-515
 [JPERF-506]: https://ecosystem.atlassian.net/browse/JPERF-506
 [JPERF-406]: https://ecosystem.atlassian.net/browse/JPERF-406

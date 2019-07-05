@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit
 class StandaloneFormulaIT {
 
     private val workspace = taskWorkspace.isolateTest(javaClass.simpleName)
-    private val dataset = DatasetCatalogue().largeJiraSeven()
+    private val dataset = DatasetCatalogue().smallJiraSeven()
 
     @Test
     fun shouldProvisionServer() {
