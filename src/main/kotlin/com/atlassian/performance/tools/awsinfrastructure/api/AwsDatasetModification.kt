@@ -3,6 +3,7 @@ package com.atlassian.performance.tools.awsinfrastructure.api
 import com.atlassian.performance.tools.aws.api.Aws
 import com.atlassian.performance.tools.aws.api.Investment
 import com.atlassian.performance.tools.aws.api.Resource
+import com.atlassian.performance.tools.awsinfrastructure.api.dataset.DatasetHost
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C5NineExtraLargeEphemeral
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.Jira
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.StandaloneFormula
@@ -23,7 +24,7 @@ class AwsDatasetModification private constructor(
     private val dataset: Dataset,
     private val workspace: TestWorkspace,
     private val newDatasetName: String,
-    private val formula: InfrastructureFormula<*>,
+    private val host: DatasetHost,
     private val onlineTransformation: Consumer<Infrastructure<*>>
 ) {
 
@@ -42,7 +43,9 @@ class AwsDatasetModification private constructor(
 
     private fun provision(): ProvisionedInfrastructure<*> {
         logger.info("Provisioning the ${dataset.label} dataset ...")
-        val infrastructure = formula.provision(workspace.directory)
+        val infrastructure = host
+            .host(dataset)
+            .provision(workspace.directory)
         logger.info("Provisioned successfully")
         return infrastructure
     }
@@ -98,36 +101,52 @@ class AwsDatasetModification private constructor(
 
     class Builder(
         private val aws: Aws,
-        private val dataset: Dataset
+        internal var dataset: Dataset
     ) {
         private var onlineTransformation = Consumer<Infrastructure<*>> { }
         private var workspace: TestWorkspace = RootWorkspace().currentTask.isolateTest(javaClass.simpleName)
         private var newDatasetName: String = "dataset-${UUID.randomUUID()}"
-        private var formula: InfrastructureFormula<*> = InfrastructureFormula(
-            investment = Investment(
-                useCase = "Generic purpose dataset modification",
-                lifespan = Duration.ofMinutes(50)
-            ),
-            jiraFormula = StandaloneFormula.Builder(
-                database = dataset.database,
-                jiraHomeSource = dataset.jiraHomeSource,
-                productDistribution = PublicJiraSoftwareDistribution("7.2.0")
-            ).computer(C5NineExtraLargeEphemeral()).build(),
-            virtualUsersFormula = AbsentVirtualUsersFormula(),
-            aws = aws
-        )
+        private var host: DatasetHost = DatasetHost {
+            InfrastructureFormula(
+                investment = Investment(
+                    useCase = "Generic purpose dataset modification",
+                    lifespan = Duration.ofMinutes(50)
+                ),
+                jiraFormula = StandaloneFormula.Builder(
+                    database = it.database,
+                    jiraHomeSource = it.jiraHomeSource,
+                    productDistribution = PublicJiraSoftwareDistribution("7.2.0")
+                ).computer(C5NineExtraLargeEphemeral()).build(),
+                virtualUsersFormula = AbsentVirtualUsersFormula(),
+                aws = aws
+            )
+        }
+
+        /**
+         * @since 2.12.0
+         */
+        fun dataset(dataset: Dataset) = apply { this.dataset = dataset }
+
+        /**
+         * @since 2.12.0
+         */
+        fun host(host: DatasetHost) = apply { this.host = host }
 
         fun onlineTransformation(onlineTransformation: Consumer<Infrastructure<*>>) = apply { this.onlineTransformation = onlineTransformation }
         fun workspace(workspace: TestWorkspace) = apply { this.workspace = workspace }
         fun newDatasetName(newDatasetName: String) = apply { this.newDatasetName = newDatasetName }
-        fun formula(formula: InfrastructureFormula<*>) = apply { this.formula = formula }
+
+        @Deprecated("This ignores `dataset` building. Replace with `host` or `dataset`.")
+        fun formula(formula: InfrastructureFormula<*>) = apply {
+            this.host = DatasetHost { formula }
+        }
 
         fun build() = AwsDatasetModification(
             aws = aws,
             dataset = dataset,
             workspace = workspace,
             newDatasetName = newDatasetName,
-            formula = formula,
+            host = host,
             onlineTransformation = onlineTransformation
         )
     }
