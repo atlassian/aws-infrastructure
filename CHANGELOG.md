@@ -25,11 +25,15 @@ Dropping a requirement of a major version of a dependency is a new contract.
 
 ### Added
 - Makes ApacheEc2LoadBalancerFormula available as part of API
+- Let `AwsDatasetModification` build the `Dataset` without disturbing the `InfrastructureFormula` and vice versa.
 
 ### Fixed
 - Error while AwsDatasetModification saves dataset. Fix [JPERF-515].
 - Update jira configuration if ApacheLoadBalancer is chosen. Fix [JPERF-506]
 - Fix `Ec2VirtualUsersFormula` network. Fix [JPERF-406].
+
+### Deprecated
+- Replace `AwsDatasetModification.formula` with a pair of `dataset` and `host`.
 
 [JPERF-515]: https://ecosystem.atlassian.net/browse/JPERF-515
 [JPERF-506]: https://ecosystem.atlassian.net/browse/JPERF-506
