@@ -31,6 +31,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 - Error while AwsDatasetModification saves dataset. Fix [JPERF-515].
 - Update jira configuration if ApacheLoadBalancer is chosen. Fix [JPERF-506]
 - Fix `Ec2VirtualUsersFormula` network. Fix [JPERF-406].
+- Fix `StandaloneFormula` network. Fix [JPERF-516].
 
 ### Deprecated
 - Replace `AwsDatasetModification.formula` with a pair of `dataset` and `host`.
@@ -38,6 +39,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 [JPERF-515]: https://ecosystem.atlassian.net/browse/JPERF-515
 [JPERF-506]: https://ecosystem.atlassian.net/browse/JPERF-506
 [JPERF-406]: https://ecosystem.atlassian.net/browse/JPERF-406
+[JPERF-516]: https://ecosystem.atlassian.net/browse/JPERF-516
 
 ## [2.11.0] - 2019-07-01
 [2.11.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.10.1...release-2.11.0
