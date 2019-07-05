@@ -4,6 +4,7 @@ import com.atlassian.performance.tools.aws.api.Aws
 import com.atlassian.performance.tools.aws.api.Investment
 import com.atlassian.performance.tools.aws.api.Resource
 import com.atlassian.performance.tools.awsinfrastructure.api.dataset.DatasetHost
+import com.atlassian.performance.tools.awsinfrastructure.api.dataset.SshMysqlDatasetPublication
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C5NineExtraLargeEphemeral
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.Jira
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.StandaloneFormula
@@ -56,7 +57,8 @@ class AwsDatasetModification private constructor(
         logger.info("Modifying the dataset ...")
         onlineTransformation.accept(infrastructure)
         logger.info("Dataset modified")
-        logger.info("To avoid leaking license, do not make this modified dataset publicly available.")
+        val publicationMechanism = SshMysqlDatasetPublication::class.java.canonicalName
+        logger.info("It might contain a license. To publish this dataset, use the $publicationMechanism")
     }
 
     private fun persist(
