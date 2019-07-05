@@ -23,6 +23,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.12.0...master
 
+### Fixed
+- Parallelize AwsCli#ensureAwsCli across SSH hosts. Fix [JPERF-518].
+
+[JPERF-518]: https://ecosystem.atlassian.net/browse/JPERF-518
+
 ## [2.12.0] - 2019-07-08
 [2.12.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.11.0...release-2.12.0
 
