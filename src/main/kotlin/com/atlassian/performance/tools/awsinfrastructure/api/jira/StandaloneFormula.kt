@@ -258,6 +258,7 @@ class StandaloneFormula private constructor(
         fun jiraVolume(jiraVolume: Volume): Builder = apply { this.jiraVolume = jiraVolume }
         fun stackCreationTimeout(stackCreationTimeout: Duration): Builder =
             apply { this.stackCreationTimeout = stackCreationTimeout }
+
         fun databaseComputer(databaseComputer: Computer): Builder = apply { this.databaseComputer = databaseComputer }
         fun databaseVolume(databaseVolume: Volume): Builder = apply { this.databaseVolume = databaseVolume }
 
@@ -272,6 +273,7 @@ class StandaloneFormula private constructor(
             computer = computer,
             jiraVolume = jiraVolume,
             stackCreationTimeout = stackCreationTimeout,
+            overriddenNetwork = network,
             databaseComputer = databaseComputer,
             databaseVolume = databaseVolume
         )
