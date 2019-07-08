@@ -1,16 +1,21 @@
-package com.atlassian.performance.tools.awsinfrastructure
+package com.atlassian.performance.tools.awsinfrastructure.api.dataset
 
 import com.atlassian.performance.tools.aws.api.StorageLocation
+import com.atlassian.performance.tools.awsinfrastructure.AwsCli
 import com.atlassian.performance.tools.infrastructure.api.dataset.DatasetPackage
 import com.atlassian.performance.tools.infrastructure.api.dataset.FileArchiver
 import com.atlassian.performance.tools.jvmtasks.api.TaskTimer.time
 import com.atlassian.performance.tools.ssh.api.SshConnection
 import java.time.Duration
 
-internal data class S3DatasetPackage(
+/**
+ * Downloads dataset from S3 and unzips on the remote machine.
+ * Requires valid AWS credentials.
+ */
+class S3DatasetPackage(
     private val artifactName: String,
     private val location: StorageLocation,
-    private val unpackedPath: String? = null,
+    private val unpackedPath: String,
     private val downloadTimeout: Duration
 ) : DatasetPackage {
 
@@ -26,6 +31,6 @@ internal data class S3DatasetPackage(
             ssh.execute("$downloadFileCommand | $unzipCommand", downloadTimeout)
         }
 
-        return unpackedPath!!
+        return unpackedPath
     }
 }
