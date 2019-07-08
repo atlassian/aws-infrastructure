@@ -1,7 +1,7 @@
 package com.atlassian.performance.tools.awsinfrastructure.api
 
 import com.atlassian.performance.tools.aws.api.StorageLocation
-import com.atlassian.performance.tools.awsinfrastructure.S3DatasetPackage
+import com.atlassian.performance.tools.awsinfrastructure.api.dataset.S3DatasetPackage
 import com.atlassian.performance.tools.infrastructure.api.database.LicenseOverridingMysql
 import com.atlassian.performance.tools.infrastructure.api.database.MySqlDatabase
 import com.atlassian.performance.tools.infrastructure.api.dataset.Dataset
