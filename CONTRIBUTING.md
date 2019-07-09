@@ -56,6 +56,19 @@ those contributing as an individual.
 * [CLA for corporate contributors](https://na2.docusign.net/Member/PowerFormSigning.aspx?PowerFormId=e1c17c66-ca4d-4aab-a953-2c231af4a20b)
 * [CLA for individuals](https://na2.docusign.net/Member/PowerFormSigning.aspx?PowerFormId=3f94fbdc-2fbe-46ac-b14c-5d152700ae5d)
 
+### Pull Request Checks
+
+Pull requests must pass a [CircleCI](https://circleci.com) build. This is **not** automatically run under Atlassian's account, as contributor you will need to setup and run the CI build against your own fork.
+
+The CI build runs the IT tests which require your AWS credentials. At a minimum this will require the following Environent Variables to be set against the project in CircleCI:
+
+* AWS_ACCESS_KEY_ID
+* AWS_SECRET_ACCESS_KEY
+
+If you are using session based credentials you will also need the following Environment Variable:
+
+* AWS_SESSION_TOKEN
+
 ## Style Guide / Coding conventions
 
 [Git commit messages](https://chris.beams.io/posts/git-commit/)
