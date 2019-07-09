@@ -21,7 +21,10 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.12.0...master
+[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.12.1...master
+
+## [2.12.1] - 2019-07-09
+[2.12.1]: https://github.com/atlassian/aws-infrastructure/compare/release-2.12.0...release-2.12.1
 
 ### Fixed
 - Parallelize AwsCli#ensureAwsCli across SSH hosts. Fix [JPERF-518].
