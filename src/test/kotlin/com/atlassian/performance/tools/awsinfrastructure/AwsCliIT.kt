@@ -67,7 +67,7 @@ class AwsCliIT {
                 }
             }
         }.map {
-            Assertions.catchThrowable { it.get(60, TimeUnit.SECONDS) }
+            Assertions.catchThrowable { it.get(2, TimeUnit.MINUTES) }
         }
 
         Assertions.assertThat(ensureCliErrors).containsOnlyNulls()
