@@ -11,6 +11,8 @@ import java.time.Duration
 /**
  * Downloads dataset from S3 and unzips on the remote machine.
  * Requires valid AWS credentials.
+ *
+ * @since 2.13.0
  */
 class S3DatasetPackage(
     private val artifactName: String,

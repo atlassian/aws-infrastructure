@@ -21,7 +21,10 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.12.1...master
+[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.13.0...master
+
+## [2.13.0] - 2019-07-11
+[2.13.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.12.1...release-2.13.0
 
 ### Added
 - Expose `S3DatasetPackage` to define private datasets.
