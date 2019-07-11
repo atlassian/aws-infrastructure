@@ -18,7 +18,7 @@ class Ec2VirtualUsersFormulaIT {
         val jar = Files.createTempFile("vu", ".jar").toFile()
         val investment = Investment(
             useCase = "test Ec2VirtualUsersFormula",
-            lifespan = Duration.ofMinutes(5)
+            lifespan = Duration.ofMinutes(15)
         )
         val networkFormula = NetworkFormula(investment, aws)
         val nonce = UUID.randomUUID().toString()
