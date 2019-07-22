@@ -324,9 +324,11 @@ class DataCenterFormula private constructor(
             loadBalancerFormula = formula.loadBalancerFormula
             apps = formula.apps
             computer = formula.computer
+            jiraVolume = formula.jiraVolume
             stackCreationTimeout = formula.stackCreationTimeout
             network = formula.overriddenNetwork
             databaseComputer = formula.databaseComputer
+            databaseVolume = formula.databaseVolume
         }
 
         fun configs(configs: List<JiraNodeConfig>): Builder = apply { this.configs = configs }
