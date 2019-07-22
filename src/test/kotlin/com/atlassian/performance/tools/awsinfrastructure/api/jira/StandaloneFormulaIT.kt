@@ -6,6 +6,7 @@ import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.taskWorkspace
 import com.atlassian.performance.tools.awsinfrastructure.api.DatasetCatalogue
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C5NineExtraLargeEphemeral
+import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
 import com.atlassian.performance.tools.infrastructure.api.distribution.PublicJiraServiceDeskDistribution
 import org.junit.Test
 import java.time.Duration
@@ -33,10 +34,13 @@ class StandaloneFormulaIT {
             database = dataset.database,
             jiraHomeSource = dataset.jiraHomeSource
         ).computer(C5NineExtraLargeEphemeral())
+            .jiraVolume(Volume(80))
             .databaseComputer(C5NineExtraLargeEphemeral())
+            .databaseVolume(Volume(90))
             .build()
+        val copiedFormula = StandaloneFormula.Builder(serverFormula).build()
 
-        val resource = serverFormula.provision(
+        val resource = copiedFormula.provision(
             investment = Investment(
                 useCase = "Test JSD Server provisioning",
                 lifespan = lifespan
