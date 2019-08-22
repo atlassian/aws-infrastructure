@@ -4,6 +4,7 @@ import com.amazonaws.services.cloudformation.model.Parameter
 import com.atlassian.performance.tools.aws.api.Aws
 import com.atlassian.performance.tools.aws.api.Investment
 import com.atlassian.performance.tools.aws.api.StackFormula
+import com.atlassian.performance.tools.awsinfrastructure.api.Network
 import com.atlassian.performance.tools.io.api.readResourceText
 import org.apache.logging.log4j.LogManager
 

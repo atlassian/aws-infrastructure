@@ -1,9 +1,9 @@
-package com.atlassian.performance.tools.awsinfrastructure
+package com.atlassian.performance.tools.awsinfrastructure.api
 
 import com.amazonaws.services.ec2.model.Subnet
 import com.amazonaws.services.ec2.model.Vpc
 
-internal class Network(
+class Network(
     val vpc: Vpc,
     val subnet: Subnet
 )
