@@ -23,6 +23,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.13.1...master
 
+### Added
+- Let multicast VU nodes share a network. Resolve [JPERF-553].
+
+[JPERF-553]: https://ecosystem.atlassian.net/browse/JPERF-553
+
 ## [2.13.1] - 2019-07-23
 [2.13.1]: https://github.com/atlassian/aws-infrastructure/compare/release-2.13.0...release-2.13.1
 

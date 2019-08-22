@@ -1,7 +1,7 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.virtualusers
 
 import com.atlassian.performance.tools.aws.api.*
-import com.atlassian.performance.tools.awsinfrastructure.Network
+import com.atlassian.performance.tools.awsinfrastructure.api.Network
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.browser.Browser
 import com.atlassian.performance.tools.infrastructure.api.browser.Chrome
@@ -115,7 +115,11 @@ class MulticastVirtualUsersFormula private constructor(
         }
 
         fun browser(browser: Browser) = apply { this.browser = browser }
-        internal fun network(network: Network) = apply { this.network = network }
+
+        /**
+         * Connects all VU nodes.
+         */
+        fun network(network: Network) = apply { this.network = network }
         fun splunkForwarder(splunkForwarder: SplunkForwarder) = apply { this.splunkForwarder = splunkForwarder }
 
         fun build(): VirtualUsersFormula<MulticastVirtualUsers<SshVirtualUsers>> = MulticastVirtualUsersFormula(
