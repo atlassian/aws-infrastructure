@@ -25,6 +25,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 
 ### Added
 - Let multicast VU nodes share a network. Resolve [JPERF-553].
+- Provide a `NetworkFormula`. Facilitate [JPERF-553].
 
 [JPERF-553]: https://ecosystem.atlassian.net/browse/JPERF-553
 

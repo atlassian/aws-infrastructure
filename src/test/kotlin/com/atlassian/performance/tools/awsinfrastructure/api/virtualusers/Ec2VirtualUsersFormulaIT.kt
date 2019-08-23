@@ -3,7 +3,7 @@ package com.atlassian.performance.tools.awsinfrastructure.api.virtualusers
 import com.atlassian.performance.tools.aws.api.Investment
 import com.atlassian.performance.tools.aws.api.SshKeyFormula
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.aws
-import com.atlassian.performance.tools.awsinfrastructure.NetworkFormula
+import com.atlassian.performance.tools.awsinfrastructure.api.network.NetworkFormula
 import com.atlassian.performance.tools.awsinfrastructure.virtualusers.S3ResultsTransport
 import org.junit.Test
 import java.nio.file.Files
