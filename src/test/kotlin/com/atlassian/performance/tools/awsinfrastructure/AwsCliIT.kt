@@ -4,6 +4,7 @@ import com.amazonaws.services.ec2.model.InstanceType
 import com.atlassian.performance.tools.aws.api.Investment
 import com.atlassian.performance.tools.aws.api.SshInstance
 import com.atlassian.performance.tools.aws.api.SshKeyFormula
+import com.atlassian.performance.tools.awsinfrastructure.api.network.NetworkFormula
 import org.assertj.core.api.Assertions
 import org.junit.After
 import org.junit.Before

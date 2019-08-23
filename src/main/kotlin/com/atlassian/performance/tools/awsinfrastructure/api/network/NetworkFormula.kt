@@ -1,14 +1,17 @@
-package com.atlassian.performance.tools.awsinfrastructure
+package com.atlassian.performance.tools.awsinfrastructure.api.network
 
 import com.amazonaws.services.cloudformation.model.Parameter
 import com.atlassian.performance.tools.aws.api.Aws
 import com.atlassian.performance.tools.aws.api.Investment
 import com.atlassian.performance.tools.aws.api.StackFormula
-import com.atlassian.performance.tools.awsinfrastructure.api.Network
+import com.atlassian.performance.tools.awsinfrastructure.pickAvailabilityZone
 import com.atlassian.performance.tools.io.api.readResourceText
 import org.apache.logging.log4j.LogManager
 
-internal class NetworkFormula(
+/**
+ * @since 2.14.0
+ */
+class NetworkFormula(
     private val investment: Investment,
     private val aws: Aws
 ) {
