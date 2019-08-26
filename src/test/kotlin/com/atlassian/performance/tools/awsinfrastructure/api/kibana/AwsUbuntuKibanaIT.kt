@@ -37,7 +37,7 @@ class AwsUbuntuKibanaIT {
             investment
         )
 
-        logger.info("Kibana provisioned: ${kibana.address}")
+        logger.info("Kibana provisioned: ${kibana.address}, ES: ${kibana.elasticsearchHosts}")
         assertThat(kibana.address.scheme).isEqualTo("http")
     }
 }

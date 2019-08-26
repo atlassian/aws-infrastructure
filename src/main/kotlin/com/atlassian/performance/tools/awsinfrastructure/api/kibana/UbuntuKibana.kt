@@ -23,7 +23,7 @@ class UbuntuKibana {
         val hosts = elasticsearchHosts
             .map { it.toString() }
             .let { config.toYamlArray(it) }
-        config.append("elasticsearch.hosts: $hosts}", shell)
+        config.append("elasticsearch.hosts: $hosts", shell)
         shell.execute("sudo systemctl start kibana.service")
         return Kibana(
             address = URI("http://$ip:$port"),
