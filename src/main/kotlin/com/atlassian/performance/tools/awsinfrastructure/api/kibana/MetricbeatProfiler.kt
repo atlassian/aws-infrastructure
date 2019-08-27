@@ -25,6 +25,7 @@ class MetricbeatProfiler(
             .let { config.toYamlArray(it) }
         config.append("output.elasticsearch.hosts: $hostsYaml", ssh)
         config.append("fields: ${config.toYamlDictionary(fields)}", ssh)
+        config.append("processors.0.add_host_metadata.netinfo.enabled: true", ssh)
         ssh.execute("sudo metricbeat setup --dashboards", Duration.ofSeconds(70))
         ssh.execute("sudo service metricbeat start")
     }
