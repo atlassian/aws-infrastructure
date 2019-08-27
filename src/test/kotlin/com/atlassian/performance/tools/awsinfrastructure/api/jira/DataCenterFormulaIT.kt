@@ -12,7 +12,6 @@ import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.dataset.Dataset
 import com.atlassian.performance.tools.infrastructure.api.distribution.PublicJiraSoftwareDistribution
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
-import com.atlassian.performance.tools.infrastructure.api.jvm.jmx.EnabledRemoteJmx
 import com.atlassian.performance.tools.workspace.api.TaskWorkspace
 import com.atlassian.performance.tools.workspace.api.TestWorkspace
 import com.google.common.util.concurrent.ThreadFactoryBuilder
@@ -50,7 +49,7 @@ class DataCenterFormulaIT {
 //            ),
             DataCenterJmxProvisioningTest(
                 jiraVersion = jiraVersionSeven,
-                dataset = DatasetCatalogue().smallJiraSeven()
+                dataset = datasetSeven
             )
         )
             .map { test ->
@@ -156,7 +155,7 @@ class DataCenterFormulaIT {
                 prefix = nonce
             )
             val config = JiraNodeConfig.Builder()
-                .remoteJmx(EnabledRemoteJmx())
+                .name("dc-node")
                 .build()
             val dcFormula = DataCenterFormula.Builder(
                 productDistribution = PublicJiraSoftwareDistribution(jiraVersion),
@@ -200,13 +199,8 @@ class DataCenterFormulaIT {
                 roleProfile = aws.shortTermStorageAccess(),
                 aws = aws
             )
-            val resource = provisionedJira.resource
 
-            provisionedJira.jira.jmxClients.forEach { client ->
-                client.execute { connector -> assertThat(connector.mBeanServerConnection.mBeanCount).isGreaterThan(0) }
-            }
-
-            resource.release().get(3, TimeUnit.MINUTES)
+            provisionedJira.resource.release().get(3, TimeUnit.MINUTES)
         }
     }
 
