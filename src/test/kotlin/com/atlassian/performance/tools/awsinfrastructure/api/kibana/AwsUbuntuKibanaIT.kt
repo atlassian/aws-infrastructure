@@ -17,7 +17,7 @@ class AwsUbuntuKibanaIT {
     @Test
     fun shouldProvision() {
         val nonce = UUID.randomUUID().toString()
-        val lifespan = Duration.ofHours(1)
+        val lifespan = Duration.ofDays(4)
         val sshKey = SshKeyFormula(
             ec2 = aws.ec2,
             workingDirectory = workspace.directory,

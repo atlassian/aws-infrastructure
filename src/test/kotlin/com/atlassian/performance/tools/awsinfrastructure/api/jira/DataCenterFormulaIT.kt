@@ -171,8 +171,8 @@ class DataCenterFormulaIT {
                             .profiler(
                                 MetricbeatProfiler(
                                     kibana = Kibana(
-                                        address = URI("http://34.249.115.210:5601"),
-                                        elasticsearchHosts = listOf(URI("http://34.249.115.210:9200"))
+                                        address = URI("http://34.253.121.248:5601"),
+                                        elasticsearchHosts = listOf(URI("http://34.253.121.248:9200"))
                                     ),
                                     fields = mapOf(
                                         "jpt-infra-name" to "jira-node-$it",
