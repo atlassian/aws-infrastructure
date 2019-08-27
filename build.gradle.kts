@@ -76,6 +76,9 @@ val testIntegration = task<Test>("testIntegration") {
         include("**/*IT.class")
     }
     maxParallelForks = 5
+    val shadowJarTask = tasks.getByPath(":test-vu:shadowJar")
+    dependsOn(shadowJarTask)
+    systemProperty("jpt.virtual-users.shadow-jar", shadowJarTask.outputs.files.files.first())
 }
 
 tasks["check"].dependsOn(testIntegration)
