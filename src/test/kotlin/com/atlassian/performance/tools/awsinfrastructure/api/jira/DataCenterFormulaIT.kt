@@ -8,6 +8,7 @@ import com.atlassian.performance.tools.awsinfrastructure.api.DatasetCatalogue
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C5NineExtraLargeEphemeral
 import com.atlassian.performance.tools.awsinfrastructure.api.kibana.Kibana
 import com.atlassian.performance.tools.awsinfrastructure.api.kibana.MetricbeatProfiler
+import com.atlassian.performance.tools.awsinfrastructure.api.kibana.UbuntuMetricbeat
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.dataset.Dataset
 import com.atlassian.performance.tools.infrastructure.api.distribution.PublicJiraSoftwareDistribution
@@ -169,17 +170,19 @@ class DataCenterFormulaIT {
                             .name("${config.name}-$it")
                             .profiler(
                                 MetricbeatProfiler(
-                                    kibana = Kibana(
-                                        address = URI("http://34.253.121.248:5601"),
-                                        elasticsearchHosts = listOf(URI("http://34.253.121.248:9200"))
-                                    ),
-                                    fields = mapOf(
-                                        "jpt-infra-name" to "jira-node-$it",
-                                        "jpt-infra-role" to "jira-node",
-                                        "jpt-jira-version" to jiraVersion,
-                                        "jpt-dataset" to dataset.label,
-                                        "jpt-nonce" to nonce,
-                                        "jpt-user" to currentUser()
+                                    UbuntuMetricbeat(
+                                        kibana = Kibana(
+                                            address = URI("http://34.253.121.248:5601"),
+                                            elasticsearchHosts = listOf(URI("http://34.253.121.248:9200"))
+                                        ),
+                                        fields = mapOf(
+                                            "jpt-infra-name" to "jira-node-$it",
+                                            "jpt-infra-role" to "jira-node",
+                                            "jpt-jira-version" to jiraVersion,
+                                            "jpt-dataset" to dataset.label,
+                                            "jpt-nonce" to nonce,
+                                            "jpt-user" to currentUser()
+                                        )
                                     )
                                 )
                             )

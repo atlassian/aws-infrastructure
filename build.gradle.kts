@@ -47,7 +47,7 @@ dependencies {
     implementation("org.glassfish:javax.json:1.1")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.4")
     implementation("com.google.guava:guava:23.6-jre")
-    implementation("com.atlassian.performance.tools:concurrency:[1.0.0,2.0.0)")
+    implementation("com.atlassian.performance.tools:concurrency:[1.1.0,2.0.0)")
     log4j(
         "api",
         "core",
