@@ -1,9 +1,12 @@
-package com.atlassian.performance.tools.awsinfrastructure.api.kibana
+package com.atlassian.performance.tools.awsinfrastructure.api.elk
 
 import com.atlassian.performance.tools.ssh.api.SshConnection
 
 class ElasticConfig(
-    private val elasticProduct: String
+    private val elasticProduct: String,
+    val pathHome: String = "/etc/$elasticProduct",
+    val configFile: String = "$elasticProduct.yml",
+    val configFilePath: String = "$pathHome/$configFile"
 ) {
     fun toYamlArray(
         elements: List<String>
@@ -30,6 +33,12 @@ class ElasticConfig(
             is String -> "\"$value\""
             else -> value.toString()
         }
+    }
+
+    fun clean(shell: SshConnection) : ElasticConfig {
+        shell.execute("[ -f $configFilePath ] && sudo mv $configFilePath $configFilePath.orig")
+        shell.execute("sudo touch $configFilePath")
+        return this
     }
 
     fun append(

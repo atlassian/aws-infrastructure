@@ -5,9 +5,9 @@ import com.atlassian.performance.tools.aws.api.currentUser
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.DataCenterFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.JiraFormula
-import com.atlassian.performance.tools.awsinfrastructure.api.kibana.Kibana
-import com.atlassian.performance.tools.awsinfrastructure.api.kibana.MetricbeatProfiler
-import com.atlassian.performance.tools.awsinfrastructure.api.kibana.UbuntuMetricbeat
+import com.atlassian.performance.tools.awsinfrastructure.api.elk.Kibana
+import com.atlassian.performance.tools.awsinfrastructure.api.elk.MetricbeatProfiler
+import com.atlassian.performance.tools.awsinfrastructure.api.elk.UbuntuMetricbeat
 import com.atlassian.performance.tools.awsinfrastructure.api.network.Network
 import com.atlassian.performance.tools.awsinfrastructure.api.network.NetworkFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.virtualusers.MetricbeatVirtualUsersFormula

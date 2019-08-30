@@ -1,4 +1,4 @@
-package com.atlassian.performance.tools.awsinfrastructure.api.kibana
+package com.atlassian.performance.tools.awsinfrastructure.api.elk
 
 import com.amazonaws.services.ec2.AmazonEC2
 import com.amazonaws.services.ec2.model.*
@@ -24,7 +24,7 @@ class AwsUbuntuKibana {
                     .withSecurityGroupIds(
                         openPort(9200, "elasticsearch", ec2, awaitingEc2, investment).groupId,
                         openPort(9300, "elasticsearc-clustering", ec2, awaitingEc2, investment).groupId,
-                        openPort(5601, "kibana", ec2, awaitingEc2, investment).groupId
+                        openPort(5601, "elk", ec2, awaitingEc2, investment).groupId
                     )
             }
         )

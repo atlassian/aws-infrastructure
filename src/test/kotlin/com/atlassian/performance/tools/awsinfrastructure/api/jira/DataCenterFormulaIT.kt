@@ -6,9 +6,9 @@ import com.atlassian.performance.tools.aws.api.currentUser
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime
 import com.atlassian.performance.tools.awsinfrastructure.api.DatasetCatalogue
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C5NineExtraLargeEphemeral
-import com.atlassian.performance.tools.awsinfrastructure.api.kibana.Kibana
-import com.atlassian.performance.tools.awsinfrastructure.api.kibana.MetricbeatProfiler
-import com.atlassian.performance.tools.awsinfrastructure.api.kibana.UbuntuMetricbeat
+import com.atlassian.performance.tools.awsinfrastructure.api.elk.Kibana
+import com.atlassian.performance.tools.awsinfrastructure.api.elk.MetricbeatProfiler
+import com.atlassian.performance.tools.awsinfrastructure.api.elk.UbuntuMetricbeat
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.dataset.Dataset
 import com.atlassian.performance.tools.infrastructure.api.distribution.PublicJiraSoftwareDistribution

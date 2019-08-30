@@ -1,4 +1,4 @@
-package com.atlassian.performance.tools.awsinfrastructure.api.kibana
+package com.atlassian.performance.tools.awsinfrastructure.api.elk
 
 import com.atlassian.performance.tools.infrastructure.api.os.Ubuntu
 import com.atlassian.performance.tools.ssh.api.SshConnection

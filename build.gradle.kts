@@ -95,3 +95,9 @@ tasks.withType<Test> {
         exceptionFormat = TestExceptionFormat.FULL
     }
 }
+
+tasks.compileTestKotlin {
+    kotlinOptions {
+        this.freeCompilerArgs += "-Xjvm-default=enable"
+    }
+}

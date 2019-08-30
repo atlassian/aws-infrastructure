@@ -1,4 +1,4 @@
-package com.atlassian.performance.tools.awsinfrastructure.api.kibana
+package com.atlassian.performance.tools.awsinfrastructure.api.elk
 
 import com.atlassian.performance.tools.infrastructure.api.os.Ubuntu
 import com.atlassian.performance.tools.ssh.api.SshConnection
@@ -15,7 +15,7 @@ class UbuntuMetricbeat(
         ssh.execute("sudo dpkg -i $debFile", Duration.ofSeconds(50))
         ssh.execute("sudo metricbeat modules enable system")
         val config = ElasticConfig("metricbeat")
-        config.append("setup.kibana.host: '${kibana.address}'", ssh)
+        config.append("setup.elk.host: '${kibana.address}'", ssh)
         val hostsYaml = kibana
             .elasticsearchHosts
             .map { it.toString() }

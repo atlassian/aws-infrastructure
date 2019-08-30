@@ -1,4 +1,4 @@
-package com.atlassian.performance.tools.awsinfrastructure.api.kibana
+package com.atlassian.performance.tools.awsinfrastructure.api.elk
 
 import com.atlassian.performance.tools.infrastructure.api.process.RemoteMonitoringProcess
 import com.atlassian.performance.tools.infrastructure.api.profiler.Profiler
