@@ -10,7 +10,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.Future
 
 class MultiVirtualUsersFormula<T : VirtualUsers>(
-    private val base: VirtualUsersFormula<T>,
+    private val base: VirtualUsersFormula2<T>,
     private val nodeCount: Int
 ) : VirtualUsersFormula<MulticastVirtualUsers<T>> {
 
@@ -36,7 +36,8 @@ class MultiVirtualUsersFormula<T : VirtualUsers>(
                             resultsTransport = resultsTransport,
                             key = key,
                             roleProfile = roleProfile,
-                            aws = aws
+                            aws = aws,
+                            nodeNumber = nodeNumber
                         )
                     }
                 }

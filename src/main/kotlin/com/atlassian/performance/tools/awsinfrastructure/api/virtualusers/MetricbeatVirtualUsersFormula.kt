@@ -5,14 +5,16 @@ import com.atlassian.performance.tools.aws.api.Investment
 import com.atlassian.performance.tools.aws.api.SshKey
 import com.atlassian.performance.tools.aws.api.Storage
 import com.atlassian.performance.tools.awsinfrastructure.api.kibana.UbuntuMetricbeat
+import com.atlassian.performance.tools.infrastructure.api.elk.UbuntuFilebeat
 import com.atlassian.performance.tools.infrastructure.api.virtualusers.ResultsTransport
 import com.atlassian.performance.tools.infrastructure.api.virtualusers.SshVirtualUsers
 import java.util.concurrent.Future
 
 class MetricbeatVirtualUsersFormula(
-    private val base: VirtualUsersFormula<SshVirtualUsers>,
-    private val metricbeat: UbuntuMetricbeat
-) : VirtualUsersFormula<SshVirtualUsers> {
+    private val base: VirtualUsersFormula2<SshVirtualUsers>,
+    private val metricbeat: UbuntuMetricbeat,
+    private val filebeat: UbuntuFilebeat
+) : VirtualUsersFormula2<SshVirtualUsers> {
 
     override fun provision(
         investment: Investment,
@@ -20,12 +22,14 @@ class MetricbeatVirtualUsersFormula(
         resultsTransport: ResultsTransport,
         key: Future<SshKey>,
         roleProfile: String,
-        aws: Aws
+        aws: Aws,
+        nodeNumber: Int
     ): ProvisionedVirtualUsers<SshVirtualUsers> {
         val sshVus = base.provision(
-            investment, shadowJarTransport, resultsTransport, key, roleProfile, aws
+            investment, shadowJarTransport, resultsTransport, key, roleProfile, aws, nodeNumber
         )
         sshVus.virtualUsers.ssh.newConnection().use { ssh ->
+            filebeat.install(ssh)
             metricbeat.install(ssh)
         }
         return sshVus

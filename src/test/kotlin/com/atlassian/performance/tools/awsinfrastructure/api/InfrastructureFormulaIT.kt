@@ -17,14 +17,17 @@ import com.atlassian.performance.tools.awsinfrastructure.api.virtualusers.Virtua
 import com.atlassian.performance.tools.awsinfrastructure.jira.NetworkOverrideAvoidingJiraFormula
 import com.atlassian.performance.tools.awsinfrastructure.virtualusers.NetworkOverrideAvoidingVirtualUsersFormula
 import com.atlassian.performance.tools.infrastructure.api.distribution.PublicJiraSoftwareDistribution
+import com.atlassian.performance.tools.infrastructure.api.elk.UbuntuFilebeat
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
 import com.atlassian.performance.tools.io.api.dereference
 import com.atlassian.performance.tools.jiraactions.api.scenario.JiraCoreScenario
 import com.atlassian.performance.tools.virtualusers.api.VirtualUserOptions
 import com.atlassian.performance.tools.virtualusers.api.config.VirtualUserBehavior
 import com.atlassian.performance.tools.virtualusers.api.config.VirtualUserTarget
+import org.assertj.core.util.Files
 import org.junit.Test
 import java.net.URI
+import java.nio.file.Paths
 import java.time.Duration
 import java.util.*
 
@@ -108,22 +111,51 @@ class InfrastructureFormulaIT {
         network: Network,
         nonce: String,
         kibana: Kibana
-    ): VirtualUsersFormula<*> = NetworkOverrideAvoidingVirtualUsersFormula(
-        MultiVirtualUsersFormula(
-            base = MetricbeatVirtualUsersFormula(
-                base = StackVirtualUsersFormula.Builder(dereference("jpt.virtual-users.shadow-jar"))
-                    .network(network)
-                    .build(),
-                metricbeat = UbuntuMetricbeat(
-                    kibana = kibana,
-                    fields = mapOf(
-                        "jpt-infra-role" to "vu-node",
-                        "jpt-nonce" to nonce,
-                        "jpt-user" to currentUser()
+    ): VirtualUsersFormula<*> {
+        val temporaryFolder = Files.newTemporaryFolder()
+        return NetworkOverrideAvoidingVirtualUsersFormula(
+            MultiVirtualUsersFormula(
+                base = MetricbeatVirtualUsersFormula(
+                    base = StackVirtualUsersFormula.Builder(dereference("jpt.virtual-users.shadow-jar"))
+                        .network(network)
+                        .build(),
+                    metricbeat = UbuntuMetricbeat(
+                        kibana = kibana,
+                        fields = mapOf(
+                            "jpt-infra-role" to "vu-node",
+                            "jpt-nonce" to nonce,
+                            "jpt-user" to currentUser()
+                        )
+                    ),
+                    filebeat = UbuntuFilebeat(
+                        kibana = kibana,
+                        configFile = UbuntuFilebeat.FILEBEAT_VU_CONFIG_RESOURCE_PATH.let { resourcePath ->
+                            UbuntuFilebeat::class.java.getResourceAsStream(resourcePath).use { resourceStream ->
+                                temporaryFolder.resolve(Paths.get(resourcePath).fileName.toString()).also { file ->
+                                    file.outputStream().use {
+                                        resourceStream.transferTo(it)
+                                    }
+                                }
+                            }
+                        },
+                        supportingFiles = UbuntuFilebeat.FILEBEAT_VU_SUPPORTING_RESOURCE_PATH.map { resourcePath ->
+                            UbuntuFilebeat::class.java.getResourceAsStream(resourcePath).use { resourceStream ->
+                                temporaryFolder.resolve(Paths.get(resourcePath).fileName.toString()).also { file ->
+                                    file.outputStream().use {
+                                        resourceStream.transferTo(it)
+                                    }
+                                }
+                            }
+                        },
+                        fields = mapOf(
+                            "jpt-infra-role" to "vu-node",
+                            "jpt-nonce" to nonce,
+                            "jpt-user" to currentUser()
+                        )
                     )
-                )
-            ),
-            nodeCount = 2
+                ),
+                nodeCount = 2
+            )
         )
-    )
+    }
 }

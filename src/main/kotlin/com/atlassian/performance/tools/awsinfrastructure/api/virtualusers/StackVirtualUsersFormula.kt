@@ -31,7 +31,7 @@ class StackVirtualUsersFormula private constructor(
     private val browser: Browser,
     private val stackCreationTimeout: Duration,
     private val overriddenNetwork: Network? = null
-) : VirtualUsersFormula<SshVirtualUsers> {
+) : VirtualUsersFormula2<SshVirtualUsers> {
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
     private val name: String = "virtual-user-node-$nodeOrder"
@@ -130,6 +130,73 @@ class StackVirtualUsersFormula private constructor(
         return ProvisionedVirtualUsers(
             virtualUsers = SshVirtualUsers(
                 nodeOrder = nodeOrder,
+                name = name,
+                resultsTransport = resultsTransport,
+                jarName = jarPath,
+                ssh = virtualUsersSsh
+            ),
+            resource = virtualUsersStack
+        )
+    }
+
+    override fun provision(
+        investment: Investment,
+        shadowJarTransport: Storage,
+        resultsTransport: ResultsTransport,
+        key: Future<SshKey>,
+        roleProfile: String,
+        aws: Aws,
+        nodeNumber: Int
+    ): ProvisionedVirtualUsers<SshVirtualUsers> {
+        logger.info("Setting up $name...")
+        val network = overriddenNetwork ?: NetworkFormula(investment, aws).provision()
+        val virtualUsersStack = StackFormula(
+            investment = investment,
+            cloudformationTemplate = readResourceText("aws/virtual-users.yaml"),
+            parameters = listOf(
+                Parameter()
+                    .withParameterKey("KeyName")
+                    .withParameterValue(key.get().remote.name),
+                Parameter()
+                    .withParameterKey("InstanceProfile")
+                    .withParameterValue(roleProfile),
+                Parameter()
+                    .withParameterKey("Ami")
+                    .withParameterValue(aws.defaultAmi),
+                Parameter()
+                    .withParameterKey("Vpc")
+                    .withParameterValue(network.vpc.vpcId),
+                Parameter()
+                    .withParameterKey("Subnet")
+                    .withParameterValue(network.subnet.subnetId)
+            ),
+            aws = aws,
+            pollingTimeout = stackCreationTimeout
+        ).provision()
+
+        val virtualUsersMachine = virtualUsersStack
+            .listMachines()
+            .single { it.tags.contains(Tag("jpt-virtual-users", "true")) }
+        val virtualUsersIp = virtualUsersMachine.publicIpAddress
+        val virtualUsersHost = SshHost(virtualUsersIp, "ubuntu", key.get().file.path)
+        val virtualUsersSsh = Ssh(virtualUsersHost, connectivityPatience = 4)
+
+        key.get().file.facilitateSsh(virtualUsersIp)
+
+        val jarPath = UbuntuVirtualUsersRuntime().prepareForExecution(
+            virtualUsersSsh,
+            shadowJar,
+            shadowJarTransport,
+            browser
+        )
+        virtualUsersSsh.newConnection().use {
+            it.execute("mkdir splunkforward")
+            splunkForwarder.run(it, name, logsPath = "/home/ubuntu/splunkforward/")
+        }
+        logger.info("$name is ready to apply load")
+        return ProvisionedVirtualUsers(
+            virtualUsers = SshVirtualUsers(
+                nodeOrder = nodeNumber,
                 name = name,
                 resultsTransport = resultsTransport,
                 jarName = jarPath,
