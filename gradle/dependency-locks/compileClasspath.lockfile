@@ -14,7 +14,7 @@ com.amazonaws:aws-java-sdk-support:1.11.424
 com.amazonaws:jmespath-java:1.11.424
 com.atlassian.performance.tools:aws-resources:1.4.0
 com.atlassian.performance.tools:concurrency:1.1.0
-com.atlassian.performance.tools:infrastructure:4.14.3-SNAPSHOT
+com.atlassian.performance.tools:infrastructure:4.14.2
 com.atlassian.performance.tools:io:1.2.0
 com.atlassian.performance.tools:jira-actions:3.9.1-SNAPSHOT
 com.atlassian.performance.tools:jvm-tasks:1.0.1
