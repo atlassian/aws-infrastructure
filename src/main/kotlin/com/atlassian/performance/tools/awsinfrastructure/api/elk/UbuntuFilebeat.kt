@@ -13,9 +13,9 @@ class UbuntuFilebeat(
     private val supportingFiles: List<File>,
     private val fields: Map<String, Any>
 ) {
-    private val exe = "filebeat"
-    private val debFile = "$exe-7.3.1-amd64.deb"
-    private val rootDownloadUri = URI("https://artifacts.elastic.co/downloads/beats/$exe/")
+    private val service = "filebeat"
+    private val debFile = "$service-7.3.1-amd64.deb"
+    private val rootDownloadUri = URI("https://artifacts.elastic.co/downloads/beats/$service/")
 
     fun install(ssh: SshConnection) {
         downloadAndInstall(ssh)
@@ -35,7 +35,7 @@ class UbuntuFilebeat(
 
     private fun configure(ssh: SshConnection) {
 
-        val config = ElasticConfig(exe).clean(ssh)
+        val config = ElasticConfig(service).clean(ssh)
 
         // overwrite the existing file
         uploadFile(configFile, ssh, config)
@@ -61,7 +61,7 @@ class UbuntuFilebeat(
         config: ElasticConfig,
         ssh: SshConnection
     ) {
-        config.append("setup.elk.host: '${kibana.address}'", ssh)
+        config.append("setup.kibana.host: '${kibana.address}'", ssh)
         val hostsYaml = kibana
             .elasticsearchHosts
             .map { it.toString() }
@@ -71,15 +71,16 @@ class UbuntuFilebeat(
     }
 
     private fun validate(config: ElasticConfig, ssh: SshConnection) {
-        ssh.execute("sudo $exe test config -c ${config.configFilePath}")
+        ssh.execute("sudo $service export config -c ${config.configFilePath}")
+        ssh.execute("sudo $service test config -c ${config.configFilePath}")
     }
 
     private fun setup(ssh: SshConnection) {
-        ssh.execute("sudo $exe setup --dashboards", Duration.ofSeconds(70))
+        ssh.execute("sudo $service setup --dashboards", Duration.ofSeconds(70))
     }
 
     private fun start(ssh: SshConnection) {
-        ssh.execute("sudo service $exe start")
+        ssh.execute("sudo service $service start")
     }
 
     companion object {

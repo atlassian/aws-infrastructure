@@ -7,6 +7,7 @@ import com.atlassian.performance.tools.awsinfrastructure.api.jira.DataCenterForm
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.JiraFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.elk.Kibana
 import com.atlassian.performance.tools.awsinfrastructure.api.elk.MetricbeatProfiler
+import com.atlassian.performance.tools.awsinfrastructure.api.elk.UbuntuFilebeat
 import com.atlassian.performance.tools.awsinfrastructure.api.elk.UbuntuMetricbeat
 import com.atlassian.performance.tools.awsinfrastructure.api.network.Network
 import com.atlassian.performance.tools.awsinfrastructure.api.network.NetworkFormula
@@ -17,7 +18,6 @@ import com.atlassian.performance.tools.awsinfrastructure.api.virtualusers.Virtua
 import com.atlassian.performance.tools.awsinfrastructure.jira.NetworkOverrideAvoidingJiraFormula
 import com.atlassian.performance.tools.awsinfrastructure.virtualusers.NetworkOverrideAvoidingVirtualUsersFormula
 import com.atlassian.performance.tools.infrastructure.api.distribution.PublicJiraSoftwareDistribution
-import com.atlassian.performance.tools.infrastructure.api.elk.UbuntuFilebeat
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
 import com.atlassian.performance.tools.io.api.dereference
 import com.atlassian.performance.tools.jiraactions.api.scenario.JiraCoreScenario

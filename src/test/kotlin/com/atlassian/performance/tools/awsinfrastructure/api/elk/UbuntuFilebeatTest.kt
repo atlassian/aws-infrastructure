@@ -63,11 +63,12 @@ class UbuntuFilebeatTest {
             "sudo cp /tmp/filebeat.yml /etc/filebeat/filebeat.yml",
             "sudo cp /tmp/filebeat-processor-script-parseDuration.js /etc/filebeat/filebeat-processor-script-parseDuration.js",
             "sudo cp /tmp/fields-actionmetrics.yml /etc/filebeat/fields-actionmetrics.yml",
-            "echo \"setup.elk.host: 'example.com:5601'\" | sudo tee -a /etc/filebeat/filebeat.yml",
+            "echo \"setup.kibana.host: 'example.com:5601'\" | sudo tee -a /etc/filebeat/filebeat.yml",
             "echo \"output.elasticsearch.hosts: ['example.com:9200']\" | sudo tee -a /etc/filebeat/filebeat.yml",
             "echo \"fields: {}\" | sudo tee -a /etc/filebeat/filebeat.yml",
 
             // validate
+            "sudo filebeat export config -c /etc/filebeat/filebeat.yml",
             "sudo filebeat test config -c /etc/filebeat/filebeat.yml",
 
             // start
