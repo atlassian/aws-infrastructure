@@ -25,6 +25,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 
 ### Added
 - Expose `AwsCli`. Provide workarounds for [JPERF-567] and the like.
+- Distribute internal JSW releases via `JiraSoftwareInternalDistribution`. Resolve [JPERF-567].
 
 ### Fixed
 - Ensure `S3Artifact` works even if the AWS CLI was missing. Provide a workaround for [JPERF-567].
