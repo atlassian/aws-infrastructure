@@ -1,7 +1,7 @@
 package com.atlassian.performance.tools.awsinfrastructure.jira
 
 import com.atlassian.performance.tools.aws.api.Storage
-import com.atlassian.performance.tools.awsinfrastructure.AwsCli
+import com.atlassian.performance.tools.awsinfrastructure.api.aws.AwsCli
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.Sed

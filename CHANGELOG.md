@@ -23,6 +23,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.14.0...master
 
+### Added
+- Expose `AwsCli`. Provide workarounds for [JPERF-567] and the like.
+
+[JPERF-567]: https://ecosystem.atlassian.net/browse/JPERF-567
+
 ## [2.14.0] - 2019-08-23
 [2.14.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.13.1...release-2.14.0
 

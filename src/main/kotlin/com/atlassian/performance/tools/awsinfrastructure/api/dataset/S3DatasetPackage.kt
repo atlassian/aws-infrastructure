@@ -1,7 +1,7 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.dataset
 
 import com.atlassian.performance.tools.aws.api.StorageLocation
-import com.atlassian.performance.tools.awsinfrastructure.AwsCli
+import com.atlassian.performance.tools.awsinfrastructure.api.aws.AwsCli
 import com.atlassian.performance.tools.infrastructure.api.dataset.DatasetPackage
 import com.atlassian.performance.tools.infrastructure.api.dataset.FileArchiver
 import com.atlassian.performance.tools.jvmtasks.api.TaskTimer.time

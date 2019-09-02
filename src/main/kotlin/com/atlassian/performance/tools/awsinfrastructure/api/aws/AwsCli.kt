@@ -1,4 +1,4 @@
-package com.atlassian.performance.tools.awsinfrastructure
+package com.atlassian.performance.tools.awsinfrastructure.api.aws
 
 import com.atlassian.performance.tools.aws.api.StorageLocation
 import com.atlassian.performance.tools.infrastructure.api.os.Ubuntu
@@ -6,7 +6,12 @@ import com.atlassian.performance.tools.ssh.api.SshConnection
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
 
-internal class AwsCli {
+/**
+ * The AWS CLI via SSH.
+ *
+ * @since 2.15.0
+ */
+class AwsCli {
     private companion object {
         private val LOCKS = ConcurrentHashMap<String, Any>()
     }

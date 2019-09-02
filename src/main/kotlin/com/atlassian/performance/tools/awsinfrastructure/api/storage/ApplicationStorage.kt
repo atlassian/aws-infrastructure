@@ -1,6 +1,6 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.storage
 
-import com.atlassian.performance.tools.awsinfrastructure.AwsCli
+import com.atlassian.performance.tools.awsinfrastructure.api.aws.AwsCli
 import com.atlassian.performance.tools.ssh.api.SshConnection
 
 @Deprecated("Use `com.atlassian.performance.tools.infrastructure.api.storage.ProductDistribution` instead.")
