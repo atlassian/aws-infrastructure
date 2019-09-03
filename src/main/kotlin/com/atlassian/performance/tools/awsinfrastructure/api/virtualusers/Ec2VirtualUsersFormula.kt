@@ -18,7 +18,8 @@ class Ec2VirtualUsersFormula private constructor(
     private val nodeOrder: Int,
     private val shadowJar: File,
     private val browser: Browser,
-    private val network: Network?
+    private val network: Network?,
+    private var instanceType: InstanceType
 ) : VirtualUsersFormula<SshVirtualUsers> {
 
     @Deprecated("Use Ec2VirtualUsersFormula.Builder")
@@ -30,7 +31,8 @@ class Ec2VirtualUsersFormula private constructor(
         nodeOrder = nodeOrder,
         shadowJar = shadowJar,
         browser = browser,
-        network = null
+        network = null,
+        instanceType = InstanceType.C48xlarge
     )
 
     @Deprecated("Use Ec2VirtualUsersFormula.Builder")
@@ -40,7 +42,8 @@ class Ec2VirtualUsersFormula private constructor(
         nodeOrder = 1,
         shadowJar = shadowJar,
         browser = Chrome(),
-        network = null
+        network = null,
+        instanceType = InstanceType.C48xlarge
     )
 
     private val logger: Logger = LogManager.getLogger(this::class.java)
@@ -86,7 +89,7 @@ class Ec2VirtualUsersFormula private constructor(
                 .withIamInstanceProfile(
                     IamInstanceProfileSpecification().withName(roleProfile)
                 )
-                .withInstanceType(InstanceType.C48xlarge)
+                .withInstanceType(instanceType)
                 .withSubnetId(network?.subnet?.subnetId)
         }
     )
@@ -97,6 +100,7 @@ class Ec2VirtualUsersFormula private constructor(
         private var browser: Browser = Chrome()
         private var network: Network? = null
         private var nodeOrder: Int = 1
+        private var instanceType: InstanceType = InstanceType.C48xlarge
 
         internal constructor(
             formula: Ec2VirtualUsersFormula
@@ -109,12 +113,14 @@ class Ec2VirtualUsersFormula private constructor(
         }
 
         internal fun network(network: Network) = apply { this.network = network }
+        fun network(instanceType: InstanceType) = apply { this.instanceType = instanceType }
 
         fun build(): VirtualUsersFormula<SshVirtualUsers> = Ec2VirtualUsersFormula(
             shadowJar = shadowJar,
             browser = browser,
             network = network,
-            nodeOrder = nodeOrder
+            nodeOrder = nodeOrder,
+            instanceType = instanceType
         )
     }
 }
