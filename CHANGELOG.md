@@ -21,7 +21,10 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.15.0...master
+[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.16.0...master
+
+## [2.16.0] - 2019-09-03
+[2.16.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.15.0...release-2.16.0
 
 ### Added
 - Expose API to customise instance type in `Ec2VirtualUsersFormula`. Resolve [JPERF-511].
