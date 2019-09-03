@@ -114,6 +114,8 @@ class Ec2VirtualUsersFormula private constructor(
 
         internal fun network(network: Network) = apply { this.network = network }
         fun network(instanceType: InstanceType) = apply { this.instanceType = instanceType }
+        fun browser(browser: Browser) = apply { this.browser = browser }
+        fun nodeOrder(nodeOrder: Int) = apply { this.nodeOrder = nodeOrder }
 
         fun build(): VirtualUsersFormula<SshVirtualUsers> = Ec2VirtualUsersFormula(
             shadowJar = shadowJar,

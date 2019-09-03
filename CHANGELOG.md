@@ -25,6 +25,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 
 ### Added
 - Expose API to customise instance type in `Ec2VirtualUsersFormula`. Resolve [JPERF-511].
+- Expose API to customise `browser` and `nodeOrder` in `Ec2VirtualUsersFormula`.
 
 [JPERF-511]: https://ecosystem.atlassian.net/browse/JPERF-511
 
