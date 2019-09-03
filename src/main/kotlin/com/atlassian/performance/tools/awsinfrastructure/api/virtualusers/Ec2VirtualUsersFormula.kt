@@ -113,7 +113,11 @@ class Ec2VirtualUsersFormula private constructor(
         }
 
         internal fun network(network: Network) = apply { this.network = network }
+        @Deprecated("This method sets instanceType, not network." +
+            "It was introduced by mistake and it'll be removed in the next MAJOR release." +
+            "Please use `instanceType` method instead.")
         fun network(instanceType: InstanceType) = apply { this.instanceType = instanceType }
+        fun instanceType(instanceType: InstanceType) = apply { this.instanceType = instanceType }
         fun browser(browser: Browser) = apply { this.browser = browser }
         fun nodeOrder(nodeOrder: Int) = apply { this.nodeOrder = nodeOrder }
 
