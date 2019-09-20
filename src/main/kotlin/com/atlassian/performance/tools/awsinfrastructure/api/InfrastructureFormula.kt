@@ -3,6 +3,7 @@ package com.atlassian.performance.tools.awsinfrastructure.api
 import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.DataCenterFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.JiraFormula
+import com.atlassian.performance.tools.awsinfrastructure.api.jira.ProvisionedJira
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.StandaloneFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.network.Network
 import com.atlassian.performance.tools.awsinfrastructure.api.network.NetworkFormula
@@ -27,12 +28,24 @@ import java.util.concurrent.Executors
  * - [Ec2VirtualUsersFormula]
  * - [MulticastVirtualUsersFormula]
  */
-class InfrastructureFormula<out T : VirtualUsers>(
+class InfrastructureFormula<out T : VirtualUsers> private constructor(
     private val investment: Investment,
-    private val jiraFormula: JiraFormula,
+    private val jiraFormula: JiraFormula?,
+    private val userProvisionedJira: ProvisionedJira?,
     private val virtualUsersFormula: VirtualUsersFormula<T>,
     private val aws: Aws
 ) {
+
+    constructor(investment: Investment,
+                userProvisionedJira: ProvisionedJira,
+                virtualUsersFormula: VirtualUsersFormula<T>,
+                aws: Aws) : this(investment, null, userProvisionedJira, virtualUsersFormula, aws)
+
+    constructor(investment: Investment,
+                jiraFormula: JiraFormula,
+                virtualUsersFormula: VirtualUsersFormula<T>,
+                aws: Aws) : this(investment, jiraFormula, null, virtualUsersFormula, aws)
+
     fun provision(
         workingDirectory: Path
     ): ProvisionedInfrastructure<T> {
@@ -59,8 +72,9 @@ class InfrastructureFormula<out T : VirtualUsers>(
         }
 
         val network = networkProvisioning.get()
-        val provisionJira = executor.submitWithLogContext("jira") {
-            overrideJiraNetwork(network).provision(
+
+        val provisionedJira =  userProvisionedJira ?: executor.submitWithLogContext("jira") {
+            overrideJiraNetwork(network)!!.provision(
                 investment = investment,
                 pluginsTransport = aws.jiraStorage(nonce),
                 resultsTransport = resultsStorage,
@@ -68,7 +82,7 @@ class InfrastructureFormula<out T : VirtualUsers>(
                 roleProfile = roleProfile,
                 aws = aws
             )
-        }
+        }.get()
 
         val provisionVirtualUsers = executor.submitWithLogContext("virtual users") {
             overrideVuNetwork(network).provision(
@@ -83,7 +97,6 @@ class InfrastructureFormula<out T : VirtualUsers>(
             )
         }
 
-        val provisionedJira = provisionJira.get()
         val provisionedVirtualUsers = provisionVirtualUsers.get()
         val sshKey = keyProvisioning.get()
 
@@ -108,7 +121,7 @@ class InfrastructureFormula<out T : VirtualUsers>(
 
     private fun overrideJiraNetwork(
         network: Network
-    ): JiraFormula = when (jiraFormula) {
+    ): JiraFormula? = when (jiraFormula) {
         is DataCenterFormula -> DataCenterFormula.Builder(jiraFormula).network(network).build()
         is StandaloneFormula -> StandaloneFormula.Builder(jiraFormula).network(network).build()
         else -> jiraFormula
