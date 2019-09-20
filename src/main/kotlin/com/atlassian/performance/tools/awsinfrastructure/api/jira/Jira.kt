@@ -25,7 +25,7 @@ class Jira(
         )
         nodes.map { executor.submitWithLogContext("gather $it") { it.gatherResults() } }
             .forEach { it.get() }
-        time("gather analytics") { nodes.first().gatherAnalyticLogs() }
+        time("gather analytics") { nodes.firstOrNull()?.gatherAnalyticLogs() }
         executor.shutdownNow()
     }
 
