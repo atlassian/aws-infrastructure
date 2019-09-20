@@ -23,6 +23,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.17.0...master
 
+### Added
+- Add `ProvisionedJiraFormula`. Resolve [JPERF-579].
+
+[JPERF-579]: https://ecosystem.atlassian.net/browse/JPERF-579
+
 ## [2.17.0] - 2019-09-04
 [2.17.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.16.0...release-2.17.0
 
