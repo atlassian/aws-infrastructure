@@ -10,6 +10,8 @@ import com.atlassian.performance.tools.awsinfrastructure.api.virtualusers.Ec2Vir
 import com.atlassian.performance.tools.awsinfrastructure.api.virtualusers.MulticastVirtualUsersFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.virtualusers.StackVirtualUsersFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.virtualusers.VirtualUsersFormula
+import com.atlassian.performance.tools.awsinfrastructure.jira.NetworkOverrideAvoidingJiraFormula
+import com.atlassian.performance.tools.awsinfrastructure.virtualusers.NetworkOverrideAvoidingVirtualUsersFormula
 import com.atlassian.performance.tools.awsinfrastructure.virtualusers.S3ResultsTransport
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.virtualusers.VirtualUsers
@@ -109,6 +111,7 @@ class InfrastructureFormula<out T : VirtualUsers>(
     private fun overrideJiraNetwork(
         network: Network
     ): JiraFormula = when (jiraFormula) {
+        is NetworkOverrideAvoidingJiraFormula -> jiraFormula
         is DataCenterFormula -> DataCenterFormula.Builder(jiraFormula).network(network).build()
         is StandaloneFormula -> StandaloneFormula.Builder(jiraFormula).network(network).build()
         else -> jiraFormula
@@ -118,6 +121,7 @@ class InfrastructureFormula<out T : VirtualUsers>(
     private fun overrideVuNetwork(
         network: Network
     ): VirtualUsersFormula<T> = when (virtualUsersFormula) {
+        is NetworkOverrideAvoidingVirtualUsersFormula -> virtualUsersFormula
         is StackVirtualUsersFormula -> StackVirtualUsersFormula.Builder(virtualUsersFormula).network(network).build()
         is Ec2VirtualUsersFormula -> Ec2VirtualUsersFormula.Builder(virtualUsersFormula).network(network).build()
         is MulticastVirtualUsersFormula -> MulticastVirtualUsersFormula.Builder(virtualUsersFormula).network(network).build()

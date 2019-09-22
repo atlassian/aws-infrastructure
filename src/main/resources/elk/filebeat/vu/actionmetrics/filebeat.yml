@@ -1,0 +1,27 @@
+filebeat.inputs:
+  - type: log
+    enabled: true
+    paths:
+      # this is the default location of the logs on the VU hosts
+      - /home/ubuntu/test-results/*/action-metrics.jpt
+
+setup:
+  template:
+    overwrite: true
+    settings:
+      index:
+        number_of_shards: 1
+    fields: ${path.config}/fields-actionmetrics.yml
+
+
+processors:
+  - decode_json_fields:
+      fields: ["message"]
+      target: "actionMetric"
+  - script:
+      lang: javascript
+      id: parseDuration
+      file: ${path.config}/filebeat-processor-script-parseDuration.js
+  - add_host_metadata:
+      netinfo.enabled: true
+  - add_cloud_metadata: ~

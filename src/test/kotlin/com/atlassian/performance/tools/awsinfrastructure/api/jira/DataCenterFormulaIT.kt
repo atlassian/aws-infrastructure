@@ -2,14 +2,17 @@ package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
 import com.atlassian.performance.tools.aws.api.Investment
 import com.atlassian.performance.tools.aws.api.SshKeyFormula
+import com.atlassian.performance.tools.aws.api.currentUser
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime
 import com.atlassian.performance.tools.awsinfrastructure.api.DatasetCatalogue
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C5NineExtraLargeEphemeral
+import com.atlassian.performance.tools.awsinfrastructure.api.elk.Kibana
+import com.atlassian.performance.tools.awsinfrastructure.api.elk.MetricbeatProfiler
+import com.atlassian.performance.tools.awsinfrastructure.api.elk.UbuntuMetricbeat
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.dataset.Dataset
 import com.atlassian.performance.tools.infrastructure.api.distribution.PublicJiraSoftwareDistribution
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
-import com.atlassian.performance.tools.infrastructure.api.jvm.jmx.EnabledRemoteJmx
 import com.atlassian.performance.tools.workspace.api.TaskWorkspace
 import com.atlassian.performance.tools.workspace.api.TestWorkspace
 import com.google.common.util.concurrent.ThreadFactoryBuilder
@@ -41,13 +44,13 @@ class DataCenterFormulaIT {
                 .build()
         )
         listOf(
-            DataCenterProvisioningTest(
+//            DataCenterProvisioningTest(
+//                jiraVersion = jiraVersionSeven,
+//                dataset = datasetSeven
+//            ),
+            DataCenterJmxProvisioningTest(
                 jiraVersion = jiraVersionSeven,
                 dataset = datasetSeven
-            ),
-            DataCenterJmxProvisioningTest(
-                jiraVersion = jiraVersionEight,
-                dataset = datasetEight
             )
         )
             .map { test ->
@@ -153,7 +156,7 @@ class DataCenterFormulaIT {
                 prefix = nonce
             )
             val config = JiraNodeConfig.Builder()
-                .remoteJmx(EnabledRemoteJmx())
+                .name("dc-node")
                 .build()
             val dcFormula = DataCenterFormula.Builder(
                 productDistribution = PublicJiraSoftwareDistribution(jiraVersion),
@@ -165,6 +168,24 @@ class DataCenterFormulaIT {
                     (1..2).map {
                         JiraNodeConfig.Builder(config)
                             .name("${config.name}-$it")
+                            .profiler(
+                                MetricbeatProfiler(
+                                    UbuntuMetricbeat(
+                                        kibana = Kibana(
+                                            address = URI("http://34.253.121.248:5601"),
+                                            elasticsearchHosts = listOf(URI("http://34.253.121.248:9200"))
+                                        ),
+                                        fields = mapOf(
+                                            "jpt-infra-name" to "jira-node-$it",
+                                            "jpt-infra-role" to "jira-node",
+                                            "jpt-jira-version" to jiraVersion,
+                                            "jpt-dataset" to dataset.label,
+                                            "jpt-nonce" to nonce,
+                                            "jpt-user" to currentUser()
+                                        )
+                                    )
+                                )
+                            )
                             .build()
                     }
                 )
@@ -181,13 +202,8 @@ class DataCenterFormulaIT {
                 roleProfile = aws.shortTermStorageAccess(),
                 aws = aws
             )
-            val resource = provisionedJira.resource
 
-            provisionedJira.jira.jmxClients.forEach { client ->
-                client.execute { connector -> assertThat(connector.mBeanServerConnection.mBeanCount).isGreaterThan(0) }
-            }
-
-            resource.release().get(3, TimeUnit.MINUTES)
+            provisionedJira.resource.release().get(3, TimeUnit.MINUTES)
         }
     }
 

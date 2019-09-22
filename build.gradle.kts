@@ -41,9 +41,10 @@ configurations.all {
 }
 
 dependencies {
+
     api("com.atlassian.performance.tools:infrastructure:[4.13.0,5.0.0)")
     api("com.atlassian.performance.tools:aws-resources:[1.1.1,2.0.0)")
-    api("com.atlassian.performance.tools:jira-actions:[2.0.0,4.0.0)")
+    api("com.atlassian.performance.tools:jira-actions:3.9.1-SNAPSHOT")
     api("com.atlassian.performance.tools:ssh:[2.0.0,3.0.0)")
     api("com.atlassian.performance.tools:virtual-users:[3.3.0,4.0.0)")
     api("com.amazonaws:aws-java-sdk-ec2:1.11.424")
@@ -54,7 +55,7 @@ dependencies {
     implementation("org.glassfish:javax.json:1.1")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.4")
     implementation("com.google.guava:guava:23.6-jre")
-    implementation("com.atlassian.performance.tools:concurrency:[1.0.0,2.0.0)")
+    implementation("com.atlassian.performance.tools:concurrency:[1.1.0,2.0.0)")
     log4j(
         "api",
         "core",
@@ -83,6 +84,9 @@ val testIntegration = task<Test>("testIntegration") {
         include("**/*IT.class")
     }
     maxParallelForks = 5
+    val shadowJarTask = tasks.getByPath(":test-vu:shadowJar")
+    dependsOn(shadowJarTask)
+    systemProperty("jpt.virtual-users.shadow-jar", shadowJarTask.outputs.files.files.first())
 }
 
 tasks["check"].dependsOn(testIntegration)
@@ -96,5 +100,11 @@ tasks.withType<Test> {
     testLogging {
         events = setOf(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
         exceptionFormat = TestExceptionFormat.FULL
+    }
+}
+
+tasks.compileTestKotlin {
+    kotlinOptions {
+        this.freeCompilerArgs += "-Xjvm-default=enable"
     }
 }
