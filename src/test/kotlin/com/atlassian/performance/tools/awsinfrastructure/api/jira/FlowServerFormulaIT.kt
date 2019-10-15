@@ -74,11 +74,11 @@ class FlowServerFormulaIT {
 
         val provisionedJira = serverFormula.provision(
             investment = investment,
-            pluginsTransport = IntegrationTestRuntime.aws.jiraStorage(nonce),
-            resultsTransport = IntegrationTestRuntime.aws.resultsStorage(nonce),
+            pluginsTransport = aws.jiraStorage(nonce),
+            resultsTransport = aws.resultsStorage(nonce),
             key = CompletableFuture.completedFuture(sshKey),
-            roleProfile = IntegrationTestRuntime.aws.shortTermStorageAccess(),
-            aws = IntegrationTestRuntime.aws
+            roleProfile = aws.shortTermStorageAccess(),
+            aws = aws
         )
 
         provisionedJira.resource.release().get(1, TimeUnit.MINUTES)
