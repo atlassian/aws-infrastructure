@@ -15,13 +15,13 @@ import com.atlassian.performance.tools.infrastructure.api.database.MySqlDatabase
 import com.atlassian.performance.tools.infrastructure.api.dataset.Dataset
 import com.atlassian.performance.tools.infrastructure.api.dataset.HttpDatasetPackage
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomePackage
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.JiraNodeFlow
 import org.junit.Test
 import java.net.URI
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
+import java.util.function.Consumer
 
 class FlowServerFormulaIT {
 
@@ -64,9 +64,7 @@ class FlowServerFormulaIT {
         val serverFormula = FlowServerFormula.Builder()
             .node(
                 JiraNodeProvisioning.Builder(dataset.jiraHomeSource)
-                    .flow(
-                        JiraNodeFlow().apply { hookPreInstall(mysqlHook) }
-                    )
+                    .customizeFlow(Consumer { it.hookPreInstall(mysqlHook) })
                     .build()
             )
             .network(network)

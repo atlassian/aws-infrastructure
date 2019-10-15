@@ -15,6 +15,7 @@ import com.atlassian.performance.tools.infrastructure.api.jira.flow.start.JiraLa
 import com.atlassian.performance.tools.infrastructure.api.jira.flow.start.JiraStart
 import com.atlassian.performance.tools.infrastructure.api.jvm.OracleJDK
 import net.jcip.annotations.NotThreadSafe
+import java.util.function.Consumer
 
 class JiraNodeProvisioning private constructor(
     val flow: JiraNodeFlow,
@@ -43,13 +44,12 @@ class JiraNodeProvisioning private constructor(
                 OracleJDK()
             )
         )
-        private var start: JiraStart = HookedJiraStart(
-            JiraLaunchScript()
-        )
+        private var start: JiraStart = HookedJiraStart(JiraLaunchScript())
 
         constructor() : this(EmptyJiraHome())
 
         fun flow(flow: JiraNodeFlow) = apply { this.flow = flow }
+        fun customizeFlow(customization: Consumer<JiraNodeFlow>) = apply { customization.accept(flow) }
         fun installation(installation: JiraInstallation) = apply { this.installation = installation }
         fun start(start: JiraStart) = apply { this.start = start }
 
