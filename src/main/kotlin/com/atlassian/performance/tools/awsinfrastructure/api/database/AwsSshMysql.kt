@@ -11,9 +11,9 @@ import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
 import com.atlassian.performance.tools.infrastructure.api.database.Database
 import com.atlassian.performance.tools.infrastructure.api.database.DatabaseIpConfig
 import com.atlassian.performance.tools.infrastructure.api.database.MysqlConnector
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.JiraNodeFlow
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.TcpServer
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.server.TcpServerHook
+import com.atlassian.performance.tools.infrastructure.api.jira.hook.PreInstallHooks
+import com.atlassian.performance.tools.infrastructure.api.jira.hook.TcpServer
+import com.atlassian.performance.tools.infrastructure.api.jira.hook.server.PreInstallHook
 import com.atlassian.performance.tools.ssh.api.Ssh
 import com.atlassian.performance.tools.ssh.api.SshConnection
 import com.atlassian.performance.tools.ssh.api.SshHost
@@ -31,11 +31,11 @@ class AwsSshMysql(
     private val network: Network,
     private val key: SshKey,
     private val stackCreationTimeout: Duration
-) : TcpServerHook {
+) : PreInstallHook {
 
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
-    override fun run(ssh: SshConnection, server: TcpServer, flow: JiraNodeFlow) {
+    override fun run(ssh: SshConnection, server: TcpServer, hooks: PreInstallHooks) {
         val stack = StackFormula(
             investment = investment,
             cloudformationTemplate = javaClass
@@ -76,8 +76,8 @@ class AwsSshMysql(
             database.start(server.toPublicHttp(), it)
             logger.info("Database is started")
         }
-        flow.hookPostInstall(MysqlConnector())
-        flow.hookPostInstall(DatabaseIpConfig(ip))
+        hooks.hook(MysqlConnector())
+        hooks.hook(DatabaseIpConfig(ip))
     }
 }
 

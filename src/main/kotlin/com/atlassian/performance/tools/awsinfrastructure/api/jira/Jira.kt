@@ -35,9 +35,10 @@ class Jira(
 }
 
 internal fun minimumFeatures(
-    uri: URI
+    uri: URI,
+    nodes: List<StartedNode>
 ): Jira = Jira(
-    emptyList(),
+    nodes,
     RemoteLocation(SshHost("UNSUPPORTED", "UNSUPPORTED", Paths.get(".")), "UNSUPPORTED"),
     null,
     uri,

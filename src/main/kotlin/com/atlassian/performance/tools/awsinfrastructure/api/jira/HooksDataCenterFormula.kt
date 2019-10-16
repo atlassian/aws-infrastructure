@@ -20,9 +20,10 @@ import com.atlassian.performance.tools.awsinfrastructure.loadbalancer.ApacheProx
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource
 import com.atlassian.performance.tools.infrastructure.api.jira.SharedHome
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.TcpServer
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.InstalledJira
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.server.StartedJira
+import com.atlassian.performance.tools.infrastructure.api.jira.hook.JiraNodeHooks
+import com.atlassian.performance.tools.infrastructure.api.jira.hook.TcpServer
+import com.atlassian.performance.tools.infrastructure.api.jira.hook.install.InstalledJira
+import com.atlassian.performance.tools.infrastructure.api.jira.hook.server.StartedJira
 import com.atlassian.performance.tools.infrastructure.api.loadbalancer.LoadBalancer
 import com.atlassian.performance.tools.jvmtasks.api.TaskTimer.time
 import com.atlassian.performance.tools.ssh.api.Ssh
@@ -30,14 +31,13 @@ import com.atlassian.performance.tools.ssh.api.SshHost
 import org.apache.logging.log4j.CloseableThreadContext
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-import java.nio.file.Path
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 
-class FlowDataCenterFormula private constructor(
+class HooksDataCenterFormula private constructor(
     private val nodes: List<JiraNodeProvisioning>,
     private val loadBalancerFormula: LoadBalancerFormula,
     private val sharedHomeSource: JiraHomeSource,
@@ -67,17 +67,20 @@ class FlowDataCenterFormula private constructor(
         }
         val futureSharedHome = provisionSharedHome(machines, sshKey, pluginsTransport, executor)
         val futureLoadBalancer = provisionLoadBalancer(investment, jiraNodes, network, sshKey, aws, executor)
-        nodes.forEach { it.flow.hookPostInstall(SharedHomeHook(futureSharedHome.get())) }
+        nodes.forEach { it.hooks.hook(SharedHomeHook(futureSharedHome.get())) } // copy defensively one-to-one
         val provisionedLoadBalancer = futureLoadBalancer.get()
         val loadBalancer = provisionedLoadBalancer.loadBalancer
         hackInTheLbHooks(loadBalancer)
         val futureInstalledNodes = installNodes(jiraNodes, sshKey.file, executor)
-        val startedNodes = startNodes(futureInstalledNodes, sshKey.file.path)
+        val startedNodes = startNodes(futureInstalledNodes)
         executor.shutdownNow()
         time("wait for loadbalancer") {
             loadBalancer.waitUntilHealthy(Duration.ofMinutes(5))
         }
-        val jira = minimumFeatures(loadBalancer.uri)
+        val jira = minimumFeatures(
+            uri = loadBalancer.uri,
+            nodes = startedNodes.map { it.toStartedNode(resultsTransport) }
+        )
         logger.info("$jira is set up, will expire ${stack.expiry}")
         return@time ProvisionedJira(
             jira = jira,
@@ -146,7 +149,7 @@ class FlowDataCenterFormula private constructor(
 
     private fun hackInTheLbHooks(loadBalancer: LoadBalancer) {
         if (loadBalancer is ApacheProxyLoadBalancer) {
-            nodes.forEach { it.flow.hookPreStart(ApacheProxyFix(loadBalancer.uri)) }
+            nodes.forEach { it.hooks.hook(ApacheProxyFix(loadBalancer.uri)) }
         }
     }
 
@@ -178,7 +181,7 @@ class FlowDataCenterFormula private constructor(
         jiraNodes: List<Instance>,
         sshKey: SshKeyFile,
         executor: ExecutorService
-    ): List<CompletableFuture<InstalledJira>> = jiraNodes
+    ): List<CompletableFuture<InstalledNodeBridge>> = jiraNodes
         .onEach { instance ->
             CloseableThreadContext.push("a jira node").use {
                 sshKey.facilitateSsh(instance.publicIpAddress)
@@ -187,31 +190,29 @@ class FlowDataCenterFormula private constructor(
         .mapIndexed { index, instance ->
             val server = TcpServer(instance.publicIpAddress, 8080, "dc-$index")
             val node = nodes[index]
+            val ssh = Ssh(
+                SshHost(server.ip, "ubuntu", sshKey.path),
+                connectivityPatience = 5
+            )
             return@mapIndexed executor.submitWithLogContext("provision ${server.name}") {
-                Ssh(
-                    SshHost(server.ip, "ubuntu", sshKey.path),
-                    connectivityPatience = 5
-                ).newConnection().use { ssh ->
-                    node.installation.install(ssh, server, node.flow) // TODO include server.name in exceptions
+                val jira = ssh.newConnection().use { sshConnection ->
+                    node.installation.install(sshConnection, server, node.hooks) // TODO include server.name in exceptions
                 }
+                return@submitWithLogContext InstalledNodeBridge(jira, ssh, node)
             }
         }
 
     private fun startNodes(
-        installedNodes: List<CompletableFuture<InstalledJira>>,
-        keyPath: Path
-    ): List<StartedJira> = installedNodes
+        installedNodes: List<CompletableFuture<InstalledNodeBridge>>
+    ): List<StartedNodeBridge> = installedNodes
         .map { it.get() }
-        .mapIndexed { index, installed ->
-            val server = installed.server
-            val node = nodes[index]
-            return@mapIndexed time("start ${server.name}") {
-                Ssh(
-                    SshHost(server.ip, "ubuntu", keyPath),
-                    connectivityPatience = 5
-                ).newConnection().use { ssh ->
-                    node.start.start(ssh, installed, node.flow)
+        .map { jira ->
+            time("start ${jira.jira.server.name}") {
+                val ssh = jira.ssh
+                val startedJira = ssh.newConnection().use { sshConnection ->
+                    jira.node.start.start(sshConnection, jira.jira, jira.node.hooks)
                 }
+                StartedNodeBridge(startedJira, ssh, jira.node.hooks)
             }
         }
 
@@ -236,7 +237,7 @@ class FlowDataCenterFormula private constructor(
         fun stackPatience(stackPatience: Duration) = apply { this.stackPatience = stackPatience }
         internal fun network(network: Network) = apply { this.network = network }
 
-        fun build(): FlowDataCenterFormula = FlowDataCenterFormula(
+        fun build(): HooksDataCenterFormula = HooksDataCenterFormula(
             nodes = nodes,
             loadBalancerFormula = loadBalancer,
             sharedHomeSource = sharedHome,
@@ -244,6 +245,27 @@ class FlowDataCenterFormula private constructor(
             volume = volume,
             stackPatience = stackPatience,
             overriddenNetwork = network
+        )
+    }
+
+    private class InstalledNodeBridge(
+        val jira: InstalledJira,
+        val ssh: Ssh,
+        val node: JiraNodeProvisioning
+    )
+
+    private class StartedNodeBridge(
+        private val jira: StartedJira,
+        private val ssh: Ssh,
+        private val hooks: JiraNodeHooks
+    ) {
+        fun toStartedNode(
+            resultsTransport: Storage
+        ): StartedNode = StartedNode.legacyHooks(
+            hooks = hooks,
+            name = jira.installed.server.name,
+            resultsTransport = resultsTransport,
+            ssh = ssh
         )
     }
 }

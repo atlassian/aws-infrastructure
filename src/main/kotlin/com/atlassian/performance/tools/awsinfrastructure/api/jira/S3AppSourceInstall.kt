@@ -4,17 +4,17 @@ import com.atlassian.performance.tools.aws.api.Storage
 import com.atlassian.performance.tools.awsinfrastructure.AwsCli
 import com.atlassian.performance.tools.infrastructure.api.app.AppSource
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.JiraNodeFlow
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.InstalledJira
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.InstalledJiraHook
+import com.atlassian.performance.tools.infrastructure.api.jira.hook.PostInstallHooks
+import com.atlassian.performance.tools.infrastructure.api.jira.hook.install.InstalledJira
+import com.atlassian.performance.tools.infrastructure.api.jira.hook.install.PostInstallHook
 import com.atlassian.performance.tools.ssh.api.SshConnection
 
 class S3AppSourceInstall(
     private val apps: List<AppSource>,
     private val transport: Storage
-) : InstalledJiraHook {
+) : PostInstallHook {
 
-    override fun run(ssh: SshConnection, jira: InstalledJira, flow: JiraNodeFlow) {
+    override fun run(ssh: SshConnection, jira: InstalledJira, hooks: PostInstallHooks) {
         Apps(apps)
             .listFiles()
             .forEach { transport.upload(it) }

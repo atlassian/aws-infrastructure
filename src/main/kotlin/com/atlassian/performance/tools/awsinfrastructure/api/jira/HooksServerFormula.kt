@@ -11,7 +11,7 @@ import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.M5ExtraLargeEphemeral
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.TcpServer
+import com.atlassian.performance.tools.infrastructure.api.jira.hook.TcpServer
 import com.atlassian.performance.tools.jvmtasks.api.TaskTimer.time
 import com.atlassian.performance.tools.ssh.api.Ssh
 import com.atlassian.performance.tools.ssh.api.SshHost
@@ -24,7 +24,7 @@ import java.time.Duration
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 
-class FlowServerFormula private constructor(
+class HooksServerFormula private constructor(
     private val node: JiraNodeProvisioning,
     private val jiraComputer: Computer,
     private val jiraVolume: Volume,
@@ -97,7 +97,7 @@ class FlowServerFormula private constructor(
         val jiraAddress = jiraServer.toPublicHttp()
         val jiraSsh = Ssh(SshHost(jiraIp, "ubuntu", keyPath), connectivityPatience = 5)
         val installedJira = jiraSsh.newConnection().use { ssh ->
-            node.installation.install(ssh, jiraServer, node.flow)
+            node.installation.install(ssh, jiraServer, node.hooks)
         }
         CloseableThreadContext.push("Jira node").use {
             key.get().file.facilitateSsh(jiraIp)
@@ -105,10 +105,13 @@ class FlowServerFormula private constructor(
         executor.shutdownNow()
         time("start") {
             jiraSsh.newConnection().use { ssh ->
-                node.start.start(ssh, installedJira, node.flow)
+                node.start.start(ssh, installedJira, node.hooks)
             }
         }
-        val jira = minimumFeatures(jiraAddress)
+        val jira = minimumFeatures(
+            jiraAddress,
+            listOf(StartedNode.legacyHooks(node.hooks, "jira", resultsTransport, jiraSsh))
+        )
         logger.info("$jira is set up, will expire ${stack.expiry}")
         return@time ProvisionedJira(jira = jira, resource = stack)
     }
@@ -125,7 +128,7 @@ class FlowServerFormula private constructor(
         fun node(node: JiraNodeProvisioning) = apply { this.node = node }
         internal fun network(network: Network) = apply { this.network = network }
 
-        fun build(): FlowServerFormula = FlowServerFormula(
+        fun build(): HooksServerFormula = HooksServerFormula(
             node = node,
             jiraComputer = jiraComputer,
             jiraVolume = jiraVolume,
