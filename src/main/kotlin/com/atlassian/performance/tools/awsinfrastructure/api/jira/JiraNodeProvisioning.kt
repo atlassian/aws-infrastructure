@@ -21,7 +21,7 @@ class JiraNodeProvisioning private constructor(
 
     @NotThreadSafe
     class Builder(
-        jiraHome: JiraHomeSource
+        jiraHome: JiraHomeSource // shortcut for the `installation` default. does it smell?
     ) {
         private var hooks: JiraNodeHooks = JiraNodeHooks.default()
         private var installation: JiraInstallation = HookedJiraInstallation(

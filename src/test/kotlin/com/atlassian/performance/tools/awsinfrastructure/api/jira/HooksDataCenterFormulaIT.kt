@@ -66,9 +66,8 @@ class HooksDataCenterFormulaIT {
             sshKey,
             Duration.ofMinutes(4)
         ) // TODO builder
-
         val dcFormula = HooksDataCenterFormula.Builder(dataset.jiraHomeSource)
-            .mysql(mysql)
+            .instance(JiraInstanceHooks().also { it.hook(mysql) })
             .nodes(
                 (1..2).map {
                     JiraNodeProvisioning.Builder(dataset.jiraHomeSource).build()

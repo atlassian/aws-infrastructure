@@ -22,6 +22,7 @@ import org.apache.logging.log4j.Logger
 import java.net.URI
 import java.time.Duration
 
+@Deprecated("This will create a DB for every node. Bad for DC! Use [AwsMysqlServer]")
 class AwsSshMysql(
     private val database: Database,
     private val aws: Aws,

@@ -9,11 +9,15 @@ import com.atlassian.performance.tools.awsinfrastructure.api.Network
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.M5ExtraLargeEphemeral
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
-import com.atlassian.performance.tools.awsinfrastructure.api.jira.JiraNodeProvisioning
+import com.atlassian.performance.tools.awsinfrastructure.api.jira.InstanceUriHook
+import com.atlassian.performance.tools.awsinfrastructure.api.jira.JiraInstanceHooks
+import com.atlassian.performance.tools.awsinfrastructure.api.jira.PreProvisionHook
 import com.atlassian.performance.tools.infrastructure.api.database.DatabaseIpConfig
 import com.atlassian.performance.tools.infrastructure.api.database.DockerMysqlServer
 import com.atlassian.performance.tools.infrastructure.api.database.MysqlConnector
 import com.atlassian.performance.tools.infrastructure.api.dataset.HttpDatasetPackage
+import com.atlassian.performance.tools.infrastructure.api.jira.hook.JiraNodeHooks
+import com.atlassian.performance.tools.ssh.api.Ssh
 import com.atlassian.performance.tools.ssh.api.SshHost
 import java.net.URI
 import java.time.Duration
@@ -27,8 +31,9 @@ class AwsMysqlServer(
     private val network: Network,
     private val key: SshKey,
     private val stackCreationTimeout: Duration
-) {
-    fun provision(): ProvisionedAwsMysqlServer {
+) : PreProvisionHook {
+
+    override fun run(instanceHooks: JiraInstanceHooks, nodeHooks: List<JiraNodeHooks>) {
         val stack = StackFormula(
             investment = investment,
             cloudformationTemplate = javaClass
@@ -61,7 +66,11 @@ class AwsMysqlServer(
         val ip = stack.listMachines().single().publicIpAddress
         val host = SshHost(ip, "ubuntu", key.file.path)
         mysql.setup(host)
-        return ProvisionedAwsMysqlServer(ip)
+        nodeHooks.forEach {
+            it.hook(DatabaseIpConfig(ip))
+            it.hook(MysqlConnector())
+        }
+        instanceHooks.hook(FixJiraUriViaMysql(host))
     }
 
     companion object { // TODO remove?
@@ -91,13 +100,16 @@ class AwsMysqlServer(
     }
 }
 
-class ProvisionedAwsMysqlServer(
-    private val ip: String
-) {
-    fun injectToJiraNodes(nodes: List<JiraNodeProvisioning>) {
-        nodes.forEach {
-            it.hooks.hook(DatabaseIpConfig(ip))
-            it.hooks.hook(MysqlConnector())
+private class FixJiraUriViaMysql(
+    private val sshHost: SshHost
+) : InstanceUriHook {
+    override fun run(instance: URI, instanceHooks: JiraInstanceHooks, nodeHooks: List<JiraNodeHooks>) {
+        Ssh(sshHost).newConnection().use { ssh ->
+            val mysqlClient = "mysql -h 127.0.0.1 -u root"
+            val db = "jiradb"
+            val update = "UPDATE $db.propertystring SET propertyvalue = '$instance'"
+            val where = "WHERE id IN (select id from $db.propertyentry where property_key like '%baseurl%')"
+            ssh.execute("$mysqlClient -e \"$update $where;\"")
         }
     }
 }

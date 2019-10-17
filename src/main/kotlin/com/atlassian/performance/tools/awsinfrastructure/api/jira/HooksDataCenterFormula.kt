@@ -7,7 +7,6 @@ import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.NetworkFormula
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
 import com.atlassian.performance.tools.awsinfrastructure.api.Network
-import com.atlassian.performance.tools.awsinfrastructure.api.database.AwsMysqlServer
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C5NineExtraLargeEphemeral
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
@@ -40,10 +39,10 @@ import java.util.concurrent.Executors
 import java.util.concurrent.Future
 
 class HooksDataCenterFormula private constructor(
+    private val instance: JiraInstanceHooks,
     private val nodes: List<JiraNodeProvisioning>,
     private val loadBalancerFormula: LoadBalancerFormula,
     private val sharedHomeSource: JiraHomeSource,
-    private val mysql: AwsMysqlServer?,
     private val computer: Computer,
     private val volume: Volume,
     private val stackPatience: Duration,
@@ -60,6 +59,8 @@ class HooksDataCenterFormula private constructor(
         aws: Aws
     ): ProvisionedJira = time("provision Jira Data Center") {
         logger.info("Setting up Jira DC...")
+        val nodeHooks = nodes.map { it.hooks }
+        instance.runPreProvisionHooks(nodeHooks)
         val network = overriddenNetwork ?: NetworkFormula(investment, aws).provision()
         val sshKey = key.get()
         val stack = provisionStack(investment, sshKey, roleProfile, aws, network)
@@ -68,7 +69,6 @@ class HooksDataCenterFormula private constructor(
         val executor = Executors.newCachedThreadPool { runnable ->
             Thread(runnable, "dc-provisioning-${runnable.hashCode()}")
         }
-        mysql?.provision()?.injectToJiraNodes(nodes)
         val futureSharedHome = provisionSharedHome(machines, sshKey, pluginsTransport, executor)
         val futureLoadBalancer = provisionLoadBalancer(investment, jiraNodes, network, sshKey, aws, executor)
         nodes.forEach { it.hooks.hook(SharedHomeHook(futureSharedHome.get())) } // TODO copy defensively one-to-one
@@ -81,8 +81,10 @@ class HooksDataCenterFormula private constructor(
         time("wait for loadbalancer") {
             loadBalancer.waitUntilHealthy(Duration.ofMinutes(5))
         }
+        val instanceUri = loadBalancer.uri
+        instance.runInstanceUriHooks(instanceUri, nodeHooks)
         val jira = minimumFeatures(
-            uri = loadBalancer.uri,
+            uri = instanceUri,
             nodes = startedNodes.map { it.toStartedNode(resultsTransport) }
         )
         logger.info("$jira is set up, will expire ${stack.expiry}")
@@ -224,32 +226,31 @@ class HooksDataCenterFormula private constructor(
     class Builder(
         jiraHome: JiraHomeSource
     ) {
+        private var instance: JiraInstanceHooks = JiraInstanceHooks()
         private var nodes: List<JiraNodeProvisioning> = (1..2).map {
             JiraNodeProvisioning.Builder(jiraHome).build()
         }
         private var loadBalancer: LoadBalancerFormula = ApacheEc2LoadBalancerFormula()
         private var sharedHome: JiraHomeSource = jiraHome
-        private var mysql: AwsMysqlServer? = null
         private var computer: Computer = C5NineExtraLargeEphemeral()
         private var volume: Volume = Volume(100)
         private var stackPatience: Duration = Duration.ofMinutes(30)
         private var network: Network? = null
 
+        fun instance(instance: JiraInstanceHooks) = apply { this.instance = instance }
         fun nodes(nodes: List<JiraNodeProvisioning>) = apply { this.nodes = nodes }
         fun loadBalancer(loadBalancer: LoadBalancerFormula) = apply { this.loadBalancer = loadBalancer }
         fun sharedHome(sharedHome: JiraHomeSource) = apply { this.sharedHome = sharedHome }
-        fun mysql(mysql: AwsMysqlServer) = apply { this.mysql = mysql }
         fun computer(computer: Computer) = apply { this.computer = computer }
         fun volume(volume: Volume) = apply { this.volume = volume }
         fun stackPatience(stackPatience: Duration) = apply { this.stackPatience = stackPatience }
         internal fun network(network: Network) = apply { this.network = network }
 
-
         fun build(): HooksDataCenterFormula = HooksDataCenterFormula(
+            instance = instance,
             nodes = nodes,
             loadBalancerFormula = loadBalancer,
             sharedHomeSource = sharedHome,
-            mysql = mysql,
             computer = computer,
             volume = volume,
             stackPatience = stackPatience,
