@@ -6,7 +6,6 @@ import com.atlassian.performance.tools.infrastructure.api.jira.JiraGcLog
 import com.atlassian.performance.tools.infrastructure.api.jira.hook.JiraNodeHooks
 import com.atlassian.performance.tools.infrastructure.api.process.RemoteMonitoringProcess
 import com.atlassian.performance.tools.ssh.api.Ssh
-import java.nio.file.Files
 import java.time.Duration
 
 class StartedNode private constructor(
@@ -54,13 +53,17 @@ class StartedNode private constructor(
      */
     private fun gatherResultsTheNewWay(hooks: JiraNodeHooks) {
         ssh.newConnection().use { sshConnection ->
-            val reports = hooks.listReports().flatMap { it.locate(sshConnection) }
-            val downloads = Files.createTempDirectory("apt-infra-test")
-            reports.forEach { remote ->
-                val local = downloads.resolve("./$remote")
-                sshConnection.download(remote, local)
-                resultsTransport.upload(local.toFile())
-            }
+            hooks
+                .listReports()
+                .flatMap { it.locate(sshConnection) }
+                .forEach { remote ->
+                    AwsCli().uploadFile(
+                        resultsTransport.location,
+                        sshConnection,
+                        remote,
+                        Duration.ofMinutes(1)
+                    )
+                }
         }
     }
 

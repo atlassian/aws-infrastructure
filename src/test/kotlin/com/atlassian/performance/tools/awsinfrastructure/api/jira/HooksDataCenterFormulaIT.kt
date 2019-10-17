@@ -15,8 +15,10 @@ import com.atlassian.performance.tools.infrastructure.api.database.MySqlDatabase
 import com.atlassian.performance.tools.infrastructure.api.dataset.Dataset
 import com.atlassian.performance.tools.infrastructure.api.dataset.HttpDatasetPackage
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomePackage
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import java.net.URI
+import java.nio.file.Files
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -74,17 +76,31 @@ class HooksDataCenterFormulaIT {
             )
             .network(network)
             .build()
+        val resultsTransport = aws.resultsStorage(nonce)
 
         val provisionedJira = dcFormula.provision(
             investment = investment,
             pluginsTransport = aws.jiraStorage(nonce),
-            resultsTransport = aws.resultsStorage(nonce),
+            resultsTransport = resultsTransport,
             key = CompletableFuture.completedFuture(sshKey),
             roleProfile = aws.shortTermStorageAccess(),
             aws = aws
         )
+        provisionedJira.jira.gatherResults()
 
+        val results = resultsTransport
+            .download(Files.createTempDirectory("hooks-dc-formula"))
+            .toFile()
+            .listFiles()
+            ?.map { it.name }
         provisionedJira.resource.release().get(1, TimeUnit.MINUTES)
+        assertThat(results).contains(
+            "atlassian-jira.log",
+            "catalina.out",
+            "jpt-iostat.log",
+            "jpt-jstat.log",
+            "jpt-vmstat.log"
+        )
     }
 
     private fun provisionDependencies(
