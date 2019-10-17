@@ -1,0 +1,170 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Serves a Jira Data Center cluster without a load balancer
+Parameters:
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  InstanceProfile:
+    Type: String
+  Ami:
+    Type: String
+  JiraInstanceType:
+    Type: String
+  JiraVolumeSize:
+    Type: Number
+  Vpc:
+    Type: String
+  Subnet:
+    Type: String
+Resources:
+  jira1:
+    Type: AWS::EC2::Instance
+    Properties:
+      SecurityGroupIds:
+        - Ref: SshSecurityGroup
+        - Ref: RmiSecurityGroup
+        - Ref: TomcatSecurityGroup
+        - Ref: SubnetSecurityGroup
+      InstanceType: !Ref JiraInstanceType
+      SubnetId:
+        Ref: Subnet
+      KeyName:
+        Ref: KeyName
+      ImageId: !Ref Ami
+      Tags:
+        -
+          Key: jpt-jira
+          Value: true
+      IamInstanceProfile: !Ref InstanceProfile
+      BlockDeviceMappings:
+        -
+          DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: !Ref JiraVolumeSize
+            VolumeType: gp2
+  jira2:
+    Type: AWS::EC2::Instance
+    Properties:
+      SecurityGroupIds:
+        - Ref: SshSecurityGroup
+        - Ref: RmiSecurityGroup
+        - Ref: TomcatSecurityGroup
+        - Ref: SubnetSecurityGroup
+      InstanceType: !Ref JiraInstanceType
+      SubnetId:
+        Ref: Subnet
+      KeyName:
+        Ref: KeyName
+      ImageId: !Ref Ami
+      Tags:
+        -
+          Key: jpt-jira
+          Value: true
+      IamInstanceProfile: !Ref InstanceProfile
+      BlockDeviceMappings:
+        -
+          DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: !Ref JiraVolumeSize
+            VolumeType: gp2
+  SharedHome:
+    Type: AWS::EC2::Instance
+    Properties:
+      SecurityGroupIds:
+      - Ref: SshSecurityGroup
+      - Ref: SubnetSecurityGroup
+      InstanceType: !Ref JiraInstanceType
+      SubnetId:
+        Ref: Subnet
+      KeyName:
+        Ref: KeyName
+      ImageId: !Ref Ami
+      Tags:
+        -
+          Key: jpt-shared-home
+          Value: true
+      IamInstanceProfile: !Ref InstanceProfile
+      BlockDeviceMappings:
+        -
+          DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: !Ref JiraVolumeSize
+            VolumeType: gp2
+  SshSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        Ref: Vpc
+      GroupDescription: Enables SSH access
+      SecurityGroupIngress:
+        -
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+  RmiSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        Ref: Vpc
+      GroupDescription: Enables RMI access
+      SecurityGroupIngress:
+        -
+          IpProtocol: tcp
+          FromPort: 40001
+          ToPort: 40001
+          CidrIp: 0.0.0.0/0
+        -
+          IpProtocol: tcp
+          FromPort: 40011
+          ToPort: 40011
+          CidrIp: 0.0.0.0/0
+  TomcatSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        Ref: Vpc
+      GroupDescription: Enables Tomcat HTTP access
+      SecurityGroupIngress:
+        -
+          IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: 0.0.0.0/0
+  MountTargetSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        Ref: Vpc
+      GroupDescription: Security group for mount target
+      SecurityGroupIngress:
+        -
+          IpProtocol: tcp
+          FromPort: 2049
+          ToPort: 2049
+          CidrIp: 0.0.0.0/0
+  MySqlSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        Ref: Vpc
+      GroupDescription: Enables MySql access
+      SecurityGroupIngress:
+        -
+          IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 0.0.0.0/0
+  SubnetSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        Ref: Vpc
+      GroupDescription: Enable communication between nodes
+      SecurityGroupIngress:
+        -
+          IpProtocol: tcp
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 10.0.0.0/24

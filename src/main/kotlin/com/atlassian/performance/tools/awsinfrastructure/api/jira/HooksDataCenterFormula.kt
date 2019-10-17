@@ -7,6 +7,7 @@ import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.NetworkFormula
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
 import com.atlassian.performance.tools.awsinfrastructure.api.Network
+import com.atlassian.performance.tools.awsinfrastructure.api.database.AwsMysqlServer
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C5NineExtraLargeEphemeral
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
@@ -14,6 +15,7 @@ import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.Apache
 import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.ApacheProxyLoadBalancer
 import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.LoadBalancerFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.ProvisionedLoadBalancer
+import com.atlassian.performance.tools.awsinfrastructure.jira.DcHook
 import com.atlassian.performance.tools.awsinfrastructure.jira.home.SharedHomeFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.home.SharedHomeHook
 import com.atlassian.performance.tools.awsinfrastructure.loadbalancer.ApacheProxyFix
@@ -41,6 +43,7 @@ class HooksDataCenterFormula private constructor(
     private val nodes: List<JiraNodeProvisioning>,
     private val loadBalancerFormula: LoadBalancerFormula,
     private val sharedHomeSource: JiraHomeSource,
+    private val mysql: AwsMysqlServer?,
     private val computer: Computer,
     private val volume: Volume,
     private val stackPatience: Duration,
@@ -65,9 +68,10 @@ class HooksDataCenterFormula private constructor(
         val executor = Executors.newCachedThreadPool { runnable ->
             Thread(runnable, "dc-provisioning-${runnable.hashCode()}")
         }
+        mysql?.provision()?.injectToJiraNodes(nodes)
         val futureSharedHome = provisionSharedHome(machines, sshKey, pluginsTransport, executor)
         val futureLoadBalancer = provisionLoadBalancer(investment, jiraNodes, network, sshKey, aws, executor)
-        nodes.forEach { it.hooks.hook(SharedHomeHook(futureSharedHome.get())) } // copy defensively one-to-one
+        nodes.forEach { it.hooks.hook(SharedHomeHook(futureSharedHome.get())) } // TODO copy defensively one-to-one
         val provisionedLoadBalancer = futureLoadBalancer.get()
         val loadBalancer = provisionedLoadBalancer.loadBalancer
         hackInTheLbHooks(loadBalancer)
@@ -100,7 +104,7 @@ class HooksDataCenterFormula private constructor(
     ): ProvisionedStack = time("provision stack") {
         StackFormula(
             investment = investment,
-            cloudformationTemplate = TemplateBuilder("2-nodes-dc.yaml").build(), // TODO.adaptTo(configs),
+            cloudformationTemplate = TemplateBuilder("2-nodes-dc-no-db.yaml").build(), // TODO.adaptTo(configs),
             parameters = listOf(
                 Parameter()
                     .withParameterKey("KeyName")
@@ -190,6 +194,7 @@ class HooksDataCenterFormula private constructor(
         .mapIndexed { index, instance ->
             val server = TcpServer(instance.publicIpAddress, 8080, "dc-$index")
             val node = nodes[index]
+            node.hooks.hook(DcHook(instance.privateIpAddress))
             val ssh = Ssh(
                 SshHost(server.ip, "ubuntu", sshKey.path),
                 connectivityPatience = 5
@@ -224,6 +229,7 @@ class HooksDataCenterFormula private constructor(
         }
         private var loadBalancer: LoadBalancerFormula = ApacheEc2LoadBalancerFormula()
         private var sharedHome: JiraHomeSource = jiraHome
+        private var mysql: AwsMysqlServer? = null
         private var computer: Computer = C5NineExtraLargeEphemeral()
         private var volume: Volume = Volume(100)
         private var stackPatience: Duration = Duration.ofMinutes(30)
@@ -232,15 +238,18 @@ class HooksDataCenterFormula private constructor(
         fun nodes(nodes: List<JiraNodeProvisioning>) = apply { this.nodes = nodes }
         fun loadBalancer(loadBalancer: LoadBalancerFormula) = apply { this.loadBalancer = loadBalancer }
         fun sharedHome(sharedHome: JiraHomeSource) = apply { this.sharedHome = sharedHome }
+        fun mysql(mysql: AwsMysqlServer) = apply { this.mysql = mysql }
         fun computer(computer: Computer) = apply { this.computer = computer }
         fun volume(volume: Volume) = apply { this.volume = volume }
         fun stackPatience(stackPatience: Duration) = apply { this.stackPatience = stackPatience }
         internal fun network(network: Network) = apply { this.network = network }
 
+
         fun build(): HooksDataCenterFormula = HooksDataCenterFormula(
             nodes = nodes,
             loadBalancerFormula = loadBalancer,
             sharedHomeSource = sharedHome,
+            mysql = mysql,
             computer = computer,
             volume = volume,
             stackPatience = stackPatience,
