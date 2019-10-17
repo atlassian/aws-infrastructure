@@ -3,26 +3,72 @@ package com.atlassian.performance.tools.awsinfrastructure.api.jira
 import com.atlassian.performance.tools.aws.api.Storage
 import com.atlassian.performance.tools.awsinfrastructure.AwsCli
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraGcLog
+import com.atlassian.performance.tools.infrastructure.api.jira.hook.JiraNodeHooks
 import com.atlassian.performance.tools.infrastructure.api.process.RemoteMonitoringProcess
 import com.atlassian.performance.tools.ssh.api.Ssh
+import java.nio.file.Files
 import java.time.Duration
 
-class StartedNode(
+class StartedNode private constructor(
     private val name: String,
     private val jiraHome: String,
     private val analyticLogs: String,
     private val resultsTransport: Storage,
     private val unpackedProduct: String,
     private val monitoringProcesses: List<RemoteMonitoringProcess>,
-    private val ssh: Ssh
+    private val ssh: Ssh,
+    private val hooks: JiraNodeHooks?
 ) {
+
+    constructor(
+        name: String,
+        jiraHome: String,
+        analyticLogs: String,
+        resultsTransport: Storage,
+        unpackedProduct: String,
+        monitoringProcesses: List<RemoteMonitoringProcess>,
+        ssh: Ssh
+    ) : this(
+        name,
+        jiraHome,
+        analyticLogs,
+        resultsTransport,
+        unpackedProduct,
+        monitoringProcesses,
+        ssh,
+        null
+    )
+
     private val resultsDirectory = "results"
 
     fun gatherResults() {
+        if (hooks != null) {
+            gatherResultsTheNewWay(hooks)
+        } else {
+            gatherResultsTheOldWay()
+        }
+    }
+
+    /**
+     * Legacy bridge
+     */
+    private fun gatherResultsTheNewWay(hooks: JiraNodeHooks) {
+        ssh.newConnection().use { sshConnection ->
+            val reports = hooks.listReports().flatMap { it.locate(sshConnection) }
+            val downloads = Files.createTempDirectory("apt-infra-test")
+            reports.forEach { remote ->
+                val local = downloads.resolve("./$remote")
+                sshConnection.download(remote, local)
+                resultsTransport.upload(local.toFile())
+            }
+        }
+    }
+
+    private fun gatherResultsTheOldWay() {
         ssh.newConnection().use { shell ->
             monitoringProcesses.forEach { it.stop(shell) }
             val nodeResultsDirectory = "$resultsDirectory/'$name'"
-            val threadDumpsFolder =  "thread-dumps"
+            val threadDumpsFolder = "thread-dumps"
             listOf(
                 "mkdir -p $nodeResultsDirectory",
                 "cp $unpackedProduct/logs/catalina.out $nodeResultsDirectory",
@@ -48,6 +94,9 @@ class StartedNode(
     }
 
     fun gatherAnalyticLogs() {
+        if (hooks != null) {
+            return
+        }
         ssh.newConnection().use {
             it.execute("cp -r $analyticLogs/analytics-logs $resultsDirectory")
             it.execute("find $resultsDirectory/analytics-logs/ -maxdepth 1 -type f -name '*.gz' -exec gunzip {} +")
@@ -68,9 +117,28 @@ class StartedNode(
             resultsTransport = this.resultsTransport,
             unpackedProduct = this.unpackedProduct,
             monitoringProcesses = this.monitoringProcesses,
-            ssh = this.ssh
+            ssh = this.ssh,
+            hooks = this.hooks
         )
     }
 
     override fun toString() = name
+
+    internal companion object {
+        fun legacyHooks(
+            hooks: JiraNodeHooks,
+            name: String,
+            resultsTransport: Storage,
+            ssh: Ssh
+        ): StartedNode = StartedNode(
+            name,
+            "BOGUS",
+            "BOGUS",
+            resultsTransport,
+            "BOGUS",
+            emptyList(),
+            ssh,
+            hooks
+        )
+    }
 }

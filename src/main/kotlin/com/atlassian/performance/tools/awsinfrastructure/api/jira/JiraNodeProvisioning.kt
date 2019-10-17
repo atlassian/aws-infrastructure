@@ -3,21 +3,18 @@ package com.atlassian.performance.tools.awsinfrastructure.api.jira
 import com.atlassian.performance.tools.infrastructure.api.distribution.PublicJiraSoftwareDistribution
 import com.atlassian.performance.tools.infrastructure.api.jira.EmptyJiraHome
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource
-import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.JiraNodeFlow
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.DefaultPostInstallHook
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.HookedJiraInstallation
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.JiraInstallation
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.install.ParallelInstallation
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.start.DefaultStartedJiraHook
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.start.HookedJiraStart
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.start.JiraLaunchScript
-import com.atlassian.performance.tools.infrastructure.api.jira.flow.start.JiraStart
+import com.atlassian.performance.tools.infrastructure.api.jira.hook.JiraNodeHooks
+import com.atlassian.performance.tools.infrastructure.api.jira.hook.install.HookedJiraInstallation
+import com.atlassian.performance.tools.infrastructure.api.jira.hook.install.JiraInstallation
+import com.atlassian.performance.tools.infrastructure.api.jira.hook.install.ParallelInstallation
+import com.atlassian.performance.tools.infrastructure.api.jira.hook.start.HookedJiraStart
+import com.atlassian.performance.tools.infrastructure.api.jira.hook.start.JiraLaunchScript
+import com.atlassian.performance.tools.infrastructure.api.jira.hook.start.JiraStart
 import com.atlassian.performance.tools.infrastructure.api.jvm.OracleJDK
 import net.jcip.annotations.NotThreadSafe
 
 class JiraNodeProvisioning private constructor(
-    val flow: JiraNodeFlow,
+    val hooks: JiraNodeHooks,
     val installation: JiraInstallation,
     val start: JiraStart
 ) {
@@ -26,16 +23,7 @@ class JiraNodeProvisioning private constructor(
     class Builder(
         jiraHome: JiraHomeSource
     ) {
-        private var flow: JiraNodeFlow = JiraNodeFlow().apply {
-            hookPostStart(
-                DefaultStartedJiraHook()
-            )
-            hookPostInstall(
-                DefaultPostInstallHook(
-                    JiraNodeConfig.Builder().build()
-                )
-            )
-        }
+        private var hooks: JiraNodeHooks = JiraNodeHooks.default()
         private var installation: JiraInstallation = HookedJiraInstallation(
             ParallelInstallation(
                 jiraHome,
@@ -43,18 +31,16 @@ class JiraNodeProvisioning private constructor(
                 OracleJDK()
             )
         )
-        private var start: JiraStart = HookedJiraStart(
-            JiraLaunchScript()
-        )
+        private var start: JiraStart = HookedJiraStart(JiraLaunchScript())
 
         constructor() : this(EmptyJiraHome())
 
-        fun flow(flow: JiraNodeFlow) = apply { this.flow = flow }
+        fun hooks(hooks: JiraNodeHooks) = apply { this.hooks = hooks }
         fun installation(installation: JiraInstallation) = apply { this.installation = installation }
         fun start(start: JiraStart) = apply { this.start = start }
 
         fun build() = JiraNodeProvisioning(
-            flow = flow,
+            hooks = hooks,
             installation = installation,
             start = start
         )
