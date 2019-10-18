@@ -15,6 +15,10 @@ import com.atlassian.performance.tools.infrastructure.api.database.MySqlDatabase
 import com.atlassian.performance.tools.infrastructure.api.dataset.Dataset
 import com.atlassian.performance.tools.infrastructure.api.dataset.HttpDatasetPackage
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomePackage
+import com.atlassian.performance.tools.infrastructure.api.jira.JiraLaunchTimeouts
+import com.atlassian.performance.tools.infrastructure.api.jira.hook.JiraNodeHooks
+import com.atlassian.performance.tools.infrastructure.api.jira.hook.instance.JiraInstanceHooks
+import com.atlassian.performance.tools.infrastructure.api.jira.hook.start.RestUpgrade
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import java.net.URI
@@ -70,7 +74,12 @@ class HooksDataCenterFormulaIT {
             .instance(JiraInstanceHooks().also { it.hook(mysql) })
             .nodes(
                 (1..2).map {
-                    JiraNodeProvisioning.Builder(dataset.jiraHomeSource).build()
+                    JiraNodeProvisioning.Builder(dataset.jiraHomeSource)
+                        .hooks(
+                            JiraNodeHooks.default()
+                                .also { it.hook(RestUpgrade(JiraLaunchTimeouts.Builder().build(), "admin", "admin")) }
+                        )
+                        .build()
                 }
             )
             .network(network)

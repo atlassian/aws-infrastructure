@@ -9,14 +9,15 @@ import com.atlassian.performance.tools.awsinfrastructure.api.Network
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.M5ExtraLargeEphemeral
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
-import com.atlassian.performance.tools.awsinfrastructure.api.jira.InstanceUriHook
-import com.atlassian.performance.tools.awsinfrastructure.api.jira.JiraInstanceHooks
-import com.atlassian.performance.tools.awsinfrastructure.api.jira.PreProvisionHook
 import com.atlassian.performance.tools.infrastructure.api.database.DatabaseIpConfig
 import com.atlassian.performance.tools.infrastructure.api.database.DockerMysqlServer
 import com.atlassian.performance.tools.infrastructure.api.database.MysqlConnector
 import com.atlassian.performance.tools.infrastructure.api.dataset.HttpDatasetPackage
 import com.atlassian.performance.tools.infrastructure.api.jira.hook.JiraNodeHooks
+import com.atlassian.performance.tools.infrastructure.api.jira.hook.instance.InstanceUriHook
+import com.atlassian.performance.tools.infrastructure.api.jira.hook.instance.InstanceUriHooks
+import com.atlassian.performance.tools.infrastructure.api.jira.hook.instance.PreProvisionHook
+import com.atlassian.performance.tools.infrastructure.api.jira.hook.instance.PreProvisionHooks
 import com.atlassian.performance.tools.ssh.api.Ssh
 import com.atlassian.performance.tools.ssh.api.SshHost
 import java.net.URI
@@ -33,7 +34,7 @@ class AwsMysqlServer(
     private val stackCreationTimeout: Duration
 ) : PreProvisionHook {
 
-    override fun run(instanceHooks: JiraInstanceHooks, nodeHooks: List<JiraNodeHooks>) {
+    override fun run(instanceHooks: PreProvisionHooks, nodeHooks: List<JiraNodeHooks>) {
         val stack = StackFormula(
             investment = investment,
             cloudformationTemplate = javaClass
@@ -103,7 +104,8 @@ class AwsMysqlServer(
 private class FixJiraUriViaMysql(
     private val sshHost: SshHost
 ) : InstanceUriHook {
-    override fun run(instance: URI, instanceHooks: JiraInstanceHooks, nodeHooks: List<JiraNodeHooks>) {
+
+    override fun run(instance: URI, instanceHooks: InstanceUriHooks, nodeHooks: List<JiraNodeHooks>) {
         Ssh(sshHost).newConnection().use { ssh ->
             val mysqlClient = "mysql -h 127.0.0.1 -u root"
             val db = "jiradb"

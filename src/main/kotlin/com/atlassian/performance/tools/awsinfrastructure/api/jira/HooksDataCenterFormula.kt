@@ -24,6 +24,7 @@ import com.atlassian.performance.tools.infrastructure.api.jira.SharedHome
 import com.atlassian.performance.tools.infrastructure.api.jira.hook.JiraNodeHooks
 import com.atlassian.performance.tools.infrastructure.api.jira.hook.TcpServer
 import com.atlassian.performance.tools.infrastructure.api.jira.hook.install.InstalledJira
+import com.atlassian.performance.tools.infrastructure.api.jira.hook.instance.JiraInstanceHooks
 import com.atlassian.performance.tools.infrastructure.api.jira.hook.server.StartedJira
 import com.atlassian.performance.tools.infrastructure.api.loadbalancer.LoadBalancer
 import com.atlassian.performance.tools.jvmtasks.api.TaskTimer.time
