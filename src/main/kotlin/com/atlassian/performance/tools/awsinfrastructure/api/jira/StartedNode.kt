@@ -57,7 +57,7 @@ class StartedNode private constructor(
                 .listReports()
                 .flatMap { it.locate(sshConnection) }
                 .forEach { remote ->
-                    AwsCli().uploadFile(
+                    AwsCli().upload(
                         resultsTransport.location,
                         sshConnection,
                         remote,

@@ -7,12 +7,10 @@ import com.atlassian.performance.tools.aws.api.SshKeyFormula
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime
 import com.atlassian.performance.tools.awsinfrastructure.NetworkFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.Network
-import com.atlassian.performance.tools.awsinfrastructure.api.database.AwsMysqlServer
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.M5ExtraLargeEphemeral
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
+import com.atlassian.performance.tools.awsinfrastructure.host.TcpHostFormula
 import com.atlassian.performance.tools.infrastructure.api.database.DockerMysqlServer
-import com.atlassian.performance.tools.infrastructure.api.database.MySqlDatabase
-import com.atlassian.performance.tools.infrastructure.api.dataset.Dataset
 import com.atlassian.performance.tools.infrastructure.api.dataset.HttpDatasetPackage
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomePackage
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraLaunchTimeouts
@@ -34,20 +32,12 @@ class HooksDataCenterFormulaIT {
     private val datasetUri = URI("https://s3-eu-west-1.amazonaws.com/")
         .resolve("jpt-custom-datasets-storage-a008820-datasetbucket-1sjxdtrv5hdhj/")
         .resolve("dataset-f8dba866-9d1b-492e-b76c-f4a78ac3958c/")
-    private val dataset = datasetUri
-        .let { uri ->
-            Dataset(
-                label = "7k issues JSW 7.2.0",
-                database = MySqlDatabase(HttpDatasetPackage(
-                    uri = uri.resolve("database.tar.bz2"),
-                    downloadTimeout = Duration.ofMinutes(6)
-                )),
-                jiraHomeSource = JiraHomePackage(HttpDatasetPackage(
-                    uri = uri.resolve("jirahome.tar.bz2"),
-                    downloadTimeout = Duration.ofMinutes(6)
-                ))
-            )
-        }
+    private val jiraHome = JiraHomePackage(
+        HttpDatasetPackage(
+            uri = datasetUri.resolve("jirahome.tar.bz2"),
+            downloadTimeout = Duration.ofMinutes(6)
+        )
+    )
     private val lifespan = Duration.ofMinutes(30)
 
     @Test
@@ -55,26 +45,12 @@ class HooksDataCenterFormulaIT {
         val aws = IntegrationTestRuntime.aws
         val nonce = UUID.randomUUID().toString()
         val (investment, sshKey, network) = provisionDependencies(aws, nonce)
-        val mysql = AwsMysqlServer(
-            DockerMysqlServer.Builder(
-                HttpDatasetPackage(
-                    uri = datasetUri.resolve("database.tar.bz2"),
-                    downloadTimeout = Duration.ofMinutes(6)
-                )
-            ).build(),
-            aws,
-            investment,
-            M5ExtraLargeEphemeral(),
-            Volume(100),
-            network,
-            sshKey,
-            Duration.ofMinutes(4)
-        ) // TODO builder
-        val dcFormula = HooksDataCenterFormula.Builder(dataset.jiraHomeSource)
+        val mysql = prepareMysql(aws, sshKey, network, investment)
+        val dcFormula = HooksDataCenterFormula.Builder(jiraHome)
             .instance(JiraInstanceHooks().also { it.hook(mysql) })
             .nodes(
                 (1..2).map {
-                    JiraNodeProvisioning.Builder(dataset.jiraHomeSource)
+                    JiraNodeProvisioning.Builder(jiraHome)
                         .hooks(
                             JiraNodeHooks.default()
                                 .also { it.hook(RestUpgrade(JiraLaunchTimeouts.Builder().build(), "admin", "admin")) }
@@ -128,6 +104,30 @@ class HooksDataCenterFormulaIT {
         val network = NetworkFormula(investment, aws).provision()
         return AwsDcDependencies(investment, sshKey, network)
     }
+
+    private fun prepareMysql(
+        aws: Aws,
+        sshKey: SshKey,
+        network: Network,
+        investment: Investment
+    ): DockerMysqlServer = DockerMysqlServer.Builder(
+        hostSupplier = TcpHostFormula.Builder(
+            aws,
+            sshKey,
+            network
+        )
+            .port(3306)
+            .name("MySQL server")
+            .investment(investment)
+            .computer(M5ExtraLargeEphemeral())
+            .volume(Volume(100))
+            .stackTimeout(Duration.ofMinutes(4))
+            .build(),
+        source = HttpDatasetPackage(
+            uri = datasetUri.resolve("database.tar.bz2"),
+            downloadTimeout = Duration.ofMinutes(6)
+        )
+    ).build()
 
     private data class AwsDcDependencies(
         val investment: Investment,

@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Serves a Jira Data Center cluster without a load balancer
+Description: Serves a Jira Data Center cluster with Jira nodes and shared home
 Parameters:
   KeyName:
     Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
@@ -33,13 +33,11 @@ Resources:
         Ref: KeyName
       ImageId: !Ref Ami
       Tags:
-        -
-          Key: jpt-jira
+        - Key: jpt-jira
           Value: true
       IamInstanceProfile: !Ref InstanceProfile
       BlockDeviceMappings:
-        -
-          DeviceName: /dev/sda1
+        - DeviceName: /dev/sda1
           Ebs:
             VolumeSize: !Ref JiraVolumeSize
             VolumeType: gp2
@@ -58,13 +56,11 @@ Resources:
         Ref: KeyName
       ImageId: !Ref Ami
       Tags:
-        -
-          Key: jpt-jira
+        - Key: jpt-jira
           Value: true
       IamInstanceProfile: !Ref InstanceProfile
       BlockDeviceMappings:
-        -
-          DeviceName: /dev/sda1
+        - DeviceName: /dev/sda1
           Ebs:
             VolumeSize: !Ref JiraVolumeSize
             VolumeType: gp2
@@ -72,8 +68,8 @@ Resources:
     Type: AWS::EC2::Instance
     Properties:
       SecurityGroupIds:
-      - Ref: SshSecurityGroup
-      - Ref: SubnetSecurityGroup
+        - Ref: SshSecurityGroup
+        - Ref: SubnetSecurityGroup
       InstanceType: !Ref JiraInstanceType
       SubnetId:
         Ref: Subnet
@@ -81,13 +77,11 @@ Resources:
         Ref: KeyName
       ImageId: !Ref Ami
       Tags:
-        -
-          Key: jpt-shared-home
+        - Key: jpt-shared-home
           Value: true
       IamInstanceProfile: !Ref InstanceProfile
       BlockDeviceMappings:
-        -
-          DeviceName: /dev/sda1
+        - DeviceName: /dev/sda1
           Ebs:
             VolumeSize: !Ref JiraVolumeSize
             VolumeType: gp2
@@ -98,8 +92,7 @@ Resources:
         Ref: Vpc
       GroupDescription: Enables SSH access
       SecurityGroupIngress:
-        -
-          IpProtocol: tcp
+        - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
           CidrIp: 0.0.0.0/0
@@ -110,13 +103,11 @@ Resources:
         Ref: Vpc
       GroupDescription: Enables RMI access
       SecurityGroupIngress:
-        -
-          IpProtocol: tcp
+        - IpProtocol: tcp
           FromPort: 40001
           ToPort: 40001
           CidrIp: 0.0.0.0/0
-        -
-          IpProtocol: tcp
+        - IpProtocol: tcp
           FromPort: 40011
           ToPort: 40011
           CidrIp: 0.0.0.0/0
@@ -127,8 +118,7 @@ Resources:
         Ref: Vpc
       GroupDescription: Enables Tomcat HTTP access
       SecurityGroupIngress:
-        -
-          IpProtocol: tcp
+        - IpProtocol: tcp
           FromPort: 8080
           ToPort: 8080
           CidrIp: 0.0.0.0/0
@@ -139,22 +129,9 @@ Resources:
         Ref: Vpc
       GroupDescription: Security group for mount target
       SecurityGroupIngress:
-        -
-          IpProtocol: tcp
+        - IpProtocol: tcp
           FromPort: 2049
           ToPort: 2049
-          CidrIp: 0.0.0.0/0
-  MySqlSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      VpcId:
-        Ref: Vpc
-      GroupDescription: Enables MySql access
-      SecurityGroupIngress:
-        -
-          IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
           CidrIp: 0.0.0.0/0
   SubnetSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -163,8 +140,7 @@ Resources:
         Ref: Vpc
       GroupDescription: Enable communication between nodes
       SecurityGroupIngress:
-        -
-          IpProtocol: tcp
+        - IpProtocol: tcp
           FromPort: 0
           ToPort: 65535
           CidrIp: 10.0.0.0/24

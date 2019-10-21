@@ -1,10 +1,12 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Serves JIRA Standalone with DB running on separate machine.
+Description: A single-port TCP host with SSH access.
 Parameters:
   KeyName:
     Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
     Type: AWS::EC2::KeyPair::KeyName
     ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  TcpPort:
+    Type: Number
   Ami:
     Type: String
   InstanceType:
@@ -15,43 +17,44 @@ Parameters:
     Type: String
   Subnet:
     Type: String
+  LogicalName:
+    Type: String
 Resources:
-  Mysql:
+  Host:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: !Ref InstanceType
-      SubnetId:
-        Ref: Subnet
+      SubnetId: !Ref Subnet
       SecurityGroupIds:
+        - Ref: HostSecurityGroup
         - Ref: SshSecurityGroup
-        - Ref: MySqlSecurityGroup
-      KeyName:
-        Ref: KeyName
+      KeyName: !Ref KeyName
       ImageId: !Ref Ami
       BlockDeviceMappings:
         - DeviceName: /dev/sda1
           Ebs:
             VolumeSize: !Ref VolumeSize
             VolumeType: gp2
+      Tags:
+        - Key: LogicalName
+          Value: !Ref LogicalName
   SshSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      VpcId:
-        Ref: Vpc
+      VpcId: !Ref Vpc
       GroupDescription: Enables SSH access
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
           CidrIp: 0.0.0.0/0
-  MySqlSecurityGroup:
+  HostSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      VpcId:
-        Ref: Vpc
-      GroupDescription: Enables MySql access
+      VpcId: !Ref Vpc
+      GroupDescription: Enables host access
       SecurityGroupIngress:
         - IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
+          FromPort: !Ref TcpPort
+          ToPort: !Ref TcpPort
           CidrIp: 0.0.0.0/0
