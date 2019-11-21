@@ -13,13 +13,15 @@ Parameters:
     Type: String
   Subnet:
     Type: String
+  InstanceType:
+    Type: String
 Resources:
   VirtualUsers:
     Type: AWS::EC2::Instance
     Properties:
       SubnetId:
         Ref: Subnet
-      InstanceType: c4.8xlarge
+      InstanceType: !Ref InstanceType
       SecurityGroupIds:
         - Ref: SshSecurityGroup
       KeyName:
