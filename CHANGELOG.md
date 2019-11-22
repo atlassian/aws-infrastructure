@@ -22,7 +22,10 @@ Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.18.0...master
-- Added the possibility to specify the instance type for virtual user nodes
+
+### Added
+- Add `instanceType` to `StackVirtualUsersFormula` and `MulticastVirtualUsersFormula`.
+  Allow avoiding low capacity instance types.
 
 ## [2.18.0] - 2019-10-17
 [2.18.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.17.0...release-2.18.0
