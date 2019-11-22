@@ -1,5 +1,6 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.virtualusers
 
+import com.amazonaws.services.ec2.model.InstanceType
 import com.atlassian.performance.tools.aws.api.Investment
 import com.atlassian.performance.tools.aws.api.SshKeyFormula
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.aws
@@ -31,6 +32,7 @@ class Ec2VirtualUsersFormulaIT {
 
         Ec2VirtualUsersFormula.Builder(jar)
             .network(networkFormula.provision())
+            .instanceType(InstanceType.C59xlarge)
             .build()
             .provision(
                 investment = investment,

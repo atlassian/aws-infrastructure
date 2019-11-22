@@ -1,5 +1,6 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.virtualusers
 
+import com.amazonaws.services.ec2.model.InstanceType
 import com.atlassian.performance.tools.aws.api.Investment
 import com.atlassian.performance.tools.aws.api.SshKeyFormula
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.aws
@@ -34,7 +35,9 @@ class StackVirtualUsersFormulaIT {
         )
         val virtualUsersFormula = StackVirtualUsersFormula.Builder(
             shadowJar = File(this.javaClass.getResource(shadowJar).toURI())
-        ).build()
+        )
+            .instanceType(InstanceType.C59xlarge)
+            .build()
 
         val provisionedVirtualUsers = virtualUsersFormula.provision(
             investment = Investment(
