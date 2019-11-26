@@ -167,6 +167,7 @@ class StackVirtualUsersFormula private constructor(
             browser = formula.browser
             stackCreationTimeout = formula.stackCreationTimeout
             network = formula.overriddenNetwork
+            instanceType = formula.instanceType
         }
 
         fun nodeOrder(nodeOrder: Int): Builder = apply { this.nodeOrder = nodeOrder }
