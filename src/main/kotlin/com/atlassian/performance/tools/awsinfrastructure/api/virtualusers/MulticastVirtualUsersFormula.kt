@@ -1,5 +1,6 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.virtualusers
 
+import com.amazonaws.services.ec2.model.InstanceType
 import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.api.network.Network
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
@@ -20,7 +21,8 @@ class MulticastVirtualUsersFormula private constructor(
     private val nodes: Int,
     private val splunkForwarder: SplunkForwarder,
     private val browser: Browser,
-    private val network: Network?
+    private val network: Network?,
+    private val instanceType: InstanceType
 ) : VirtualUsersFormula<MulticastVirtualUsers<SshVirtualUsers>> {
 
     @Deprecated("Use MulticastVirtualUsersFormula.Builder")
@@ -34,7 +36,8 @@ class MulticastVirtualUsersFormula private constructor(
         nodes = nodes,
         splunkForwarder = splunkForwarder,
         browser = browser,
-        network = null
+        network = null,
+        instanceType = InstanceType.C48xlarge
     )
 
     @Deprecated("Use MulticastVirtualUsersFormula.Builder")
@@ -46,7 +49,8 @@ class MulticastVirtualUsersFormula private constructor(
         nodes = nodes,
         splunkForwarder = DisabledSplunkForwarder(),
         browser = Chrome(),
-        network = null
+        network = null,
+        instanceType = InstanceType.C48xlarge
     )
 
     override fun provision(
@@ -73,6 +77,7 @@ class MulticastVirtualUsersFormula private constructor(
                         .nodeOrder(nodeOrder)
                         .splunkForwarder(splunkForwarder)
                         .browser(browser)
+                        .instanceType(instanceType)
                         .also { if (network != null) it.network(network) }
                         .build()
                         .provision(
@@ -102,6 +107,7 @@ class MulticastVirtualUsersFormula private constructor(
         private var browser: Browser = Chrome()
         private var network: Network? = null
         private var splunkForwarder: SplunkForwarder = DisabledSplunkForwarder()
+        private var instanceType: InstanceType = InstanceType.C48xlarge
 
         internal constructor(
             formula: MulticastVirtualUsersFormula
@@ -121,13 +127,15 @@ class MulticastVirtualUsersFormula private constructor(
          */
         fun network(network: Network) = apply { this.network = network }
         fun splunkForwarder(splunkForwarder: SplunkForwarder) = apply { this.splunkForwarder = splunkForwarder }
+        fun instanceType(instanceType: InstanceType): MulticastVirtualUsersFormula.Builder = apply { this.instanceType = instanceType }
 
         fun build(): VirtualUsersFormula<MulticastVirtualUsers<SshVirtualUsers>> = MulticastVirtualUsersFormula(
             nodes = nodes,
             shadowJar = shadowJar,
             splunkForwarder = splunkForwarder,
             browser = browser,
-            network = network
+            network = network,
+            instanceType = instanceType
         )
     }
 }

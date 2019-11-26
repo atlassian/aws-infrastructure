@@ -1,6 +1,7 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.virtualusers
 
 import com.amazonaws.services.cloudformation.model.Parameter
+import com.amazonaws.services.ec2.model.InstanceType
 import com.amazonaws.services.ec2.model.Tag
 import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.api.network.Network
@@ -30,7 +31,8 @@ class StackVirtualUsersFormula private constructor(
     private val splunkForwarder: SplunkForwarder,
     private val browser: Browser,
     private val stackCreationTimeout: Duration,
-    private val overriddenNetwork: Network? = null
+    private val overriddenNetwork: Network? = null,
+    private val instanceType: InstanceType
 ) : VirtualUsersFormula<SshVirtualUsers> {
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
@@ -47,7 +49,8 @@ class StackVirtualUsersFormula private constructor(
         shadowJar = shadowJar,
         splunkForwarder = splunkForwarder,
         browser = browser,
-        stackCreationTimeout = Duration.ofMinutes(30)
+        stackCreationTimeout = Duration.ofMinutes(30),
+        instanceType = InstanceType.C48xlarge
     )
 
     @Deprecated(message = "Use StackVirtualUsersFormula.Builder instead.")
@@ -58,7 +61,8 @@ class StackVirtualUsersFormula private constructor(
         shadowJar = shadowJar,
         splunkForwarder = DisabledSplunkForwarder(),
         browser = Chrome(),
-        stackCreationTimeout = Duration.ofMinutes(30)
+        stackCreationTimeout = Duration.ofMinutes(30),
+        instanceType = InstanceType.C48xlarge
     )
 
     @Deprecated(message = "Use StackVirtualUsersFormula.Builder instead.")
@@ -70,7 +74,8 @@ class StackVirtualUsersFormula private constructor(
         shadowJar = shadowJar,
         splunkForwarder = splunkForwarder,
         browser = Chrome(),
-        stackCreationTimeout = Duration.ofMinutes(30)
+        stackCreationTimeout = Duration.ofMinutes(30),
+        instanceType = InstanceType.C48xlarge
     )
 
     override fun provision(
@@ -101,7 +106,10 @@ class StackVirtualUsersFormula private constructor(
                     .withParameterValue(network.vpc.vpcId),
                 Parameter()
                     .withParameterKey("Subnet")
-                    .withParameterValue(network.subnet.subnetId)
+                    .withParameterValue(network.subnet.subnetId),
+                Parameter()
+                    .withParameterKey("InstanceType")
+                    .withParameterValue(instanceType.toString())
             ),
             aws = aws,
             pollingTimeout = stackCreationTimeout
@@ -147,6 +155,7 @@ class StackVirtualUsersFormula private constructor(
         private var browser: Browser = Chrome()
         private var stackCreationTimeout: Duration = Duration.ofMinutes(30)
         private var network: Network? = null
+        private var instanceType: InstanceType = InstanceType.C48xlarge
 
         internal constructor(
             formula: StackVirtualUsersFormula
@@ -164,6 +173,7 @@ class StackVirtualUsersFormula private constructor(
         fun splunkForwarder(splunkForwarder: SplunkForwarder): Builder = apply { this.splunkForwarder = splunkForwarder }
         fun browser(browser: Browser): Builder = apply { this.browser = browser }
         fun stackCreationTimeout(stackCreationTimeout: Duration): Builder = apply { this.stackCreationTimeout = stackCreationTimeout }
+        fun instanceType(instanceType: InstanceType): Builder = apply { this.instanceType = instanceType }
         internal fun network(network: Network): Builder = apply { this.network = network }
 
         fun build(): StackVirtualUsersFormula = StackVirtualUsersFormula(
@@ -172,7 +182,8 @@ class StackVirtualUsersFormula private constructor(
             splunkForwarder = splunkForwarder,
             browser = browser,
             stackCreationTimeout = stackCreationTimeout,
-            overriddenNetwork = network
+            overriddenNetwork = network,
+            instanceType = instanceType
         )
     }
 }

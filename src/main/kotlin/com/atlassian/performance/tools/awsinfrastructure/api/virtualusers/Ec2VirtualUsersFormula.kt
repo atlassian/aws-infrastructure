@@ -19,7 +19,7 @@ class Ec2VirtualUsersFormula private constructor(
     private val shadowJar: File,
     private val browser: Browser,
     private val network: Network?,
-    private var instanceType: InstanceType
+    private val instanceType: InstanceType
 ) : VirtualUsersFormula<SshVirtualUsers> {
 
     @Deprecated("Use Ec2VirtualUsersFormula.Builder")
