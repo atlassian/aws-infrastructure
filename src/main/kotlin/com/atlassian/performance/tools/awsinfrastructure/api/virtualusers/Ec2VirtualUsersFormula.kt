@@ -110,6 +110,7 @@ class Ec2VirtualUsersFormula private constructor(
             browser = formula.browser
             network = formula.network
             nodeOrder = formula.nodeOrder
+            instanceType = formula.instanceType
         }
 
         internal fun network(network: Network) = apply { this.network = network }
