@@ -118,6 +118,7 @@ class MulticastVirtualUsersFormula private constructor(
             browser = formula.browser
             network = formula.network
             splunkForwarder = formula.splunkForwarder
+            instanceType = formula.instanceType
         }
 
         fun browser(browser: Browser) = apply { this.browser = browser }
