@@ -4,14 +4,15 @@ import com.amazonaws.services.cloudformation.model.Parameter
 import com.amazonaws.services.ec2.model.Tag
 import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.ApplicationStorageWrapper
-import com.atlassian.performance.tools.awsinfrastructure.api.network.Network
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
 import com.atlassian.performance.tools.awsinfrastructure.api.RemoteLocation
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C4EightExtraLargeElastic
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.M4ExtraLargeElastic
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
+import com.atlassian.performance.tools.awsinfrastructure.api.network.Network
 import com.atlassian.performance.tools.awsinfrastructure.api.network.NetworkFormula
+import com.atlassian.performance.tools.awsinfrastructure.api.virtualusers.InstanceAddressSelector
 import com.atlassian.performance.tools.awsinfrastructure.jira.StandaloneNodeFormula
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
@@ -153,10 +154,10 @@ class StandaloneFormula private constructor(
         val keyPath = key.get().file.path
 
         val machines = jiraStack.listMachines()
-        val databaseIp = machines.single { it.tags.contains(Tag("jpt-database", "true")) }.publicIpAddress
+        val databaseIp = InstanceAddressSelector.getReachableIpAddress(machines.single { it.tags.contains(Tag("jpt-database", "true")) })
         val databaseHost = SshHost(databaseIp, "ubuntu", keyPath)
         val databaseSsh = Ssh(databaseHost, connectivityPatience = 4)
-        val jiraIp = machines.single { it.tags.contains(Tag("jpt-jira", "true")) }.publicIpAddress
+        val jiraIp = InstanceAddressSelector.getReachableIpAddress(machines.single { it.tags.contains(Tag("jpt-jira", "true")) })
         val jiraAddress = URI("http://$jiraIp:8080/")
 
         val setupDatabase = executor.submitWithLogContext("database") {

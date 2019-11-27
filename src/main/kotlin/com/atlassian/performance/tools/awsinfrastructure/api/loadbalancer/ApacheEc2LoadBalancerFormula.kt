@@ -3,6 +3,7 @@ package com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer
 import com.amazonaws.services.ec2.AmazonEC2
 import com.amazonaws.services.ec2.model.*
 import com.atlassian.performance.tools.aws.api.*
+import com.atlassian.performance.tools.awsinfrastructure.api.virtualusers.InstanceAddressSelector
 import com.atlassian.performance.tools.infrastructure.api.Sed
 import com.atlassian.performance.tools.infrastructure.api.loadbalancer.LoadBalancer
 import com.atlassian.performance.tools.jvmtasks.api.ExponentialBackoff
@@ -43,7 +44,10 @@ class ApacheEc2LoadBalancerFormula : LoadBalancerFormula {
         )
         key.file.facilitateSsh(ssh.host.ipAddress)
         val loadBalancer = ApacheProxyLoadBalancer(
-            nodes = instances.map { URI("http://${it.publicIpAddress}:8080/") },
+            nodes = instances.map {
+                val ipAddress = InstanceAddressSelector.getReachableIpAddress(it)
+                URI("http://$ipAddress:8080/")
+            },
             httpPort = balancerPort,
             ssh = ssh
         )
