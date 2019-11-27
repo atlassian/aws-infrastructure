@@ -15,6 +15,7 @@ import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.Apache
 import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.LoadBalancerFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.network.Network
 import com.atlassian.performance.tools.awsinfrastructure.api.network.NetworkFormula
+import com.atlassian.performance.tools.awsinfrastructure.api.virtualusers.InstanceAddressSelector
 import com.atlassian.performance.tools.awsinfrastructure.jira.DataCenterNodeFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.DiagnosableNodeFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.StandaloneNodeFormula
@@ -165,9 +166,9 @@ class DataCenterFormula private constructor(
 
         val machines = jiraStack.listMachines()
         val jiraNodes = machines.filter { it.tags.contains(Tag("jpt-jira", "true")) }
-        val databaseIp = machines.single { it.tags.contains(Tag("jpt-database", "true")) }.publicIpAddress
+        val databaseIp = InstanceAddressSelector.getReachableIpAddress(machines.single { it.tags.contains(Tag("jpt-database", "true")) })
         val sharedHomeMachine = machines.single { it.tags.contains(Tag("jpt-shared-home", "true")) }
-        val sharedHomeIp = sharedHomeMachine.publicIpAddress
+        val sharedHomeIp = InstanceAddressSelector.getReachableIpAddress(sharedHomeMachine)
         val sharedHomePrivateIp = sharedHomeMachine.privateIpAddress
         val sharedHomeSsh = Ssh(
             host = SshHost(sharedHomeIp, "ubuntu", keyPath),
@@ -203,11 +204,12 @@ class DataCenterFormula private constructor(
             .asSequence()
             .onEach { instance ->
                 CloseableThreadContext.push("a jira node").use {
-                    key.get().file.facilitateSsh(instance.publicIpAddress)
+                    key.get().file.facilitateSsh(InstanceAddressSelector.getReachableIpAddress(instance))
                 }
             }
             .mapIndexed { i: Int, instance ->
-                val ssh = Ssh(SshHost(instance.publicIpAddress, "ubuntu", keyPath), connectivityPatience = 5)
+                val ipAddress = InstanceAddressSelector.getReachableIpAddress(instance)
+                val ssh = Ssh(SshHost(ipAddress, "ubuntu", keyPath), connectivityPatience = 5)
                 DiagnosableNodeFormula(
                     delegate = DataCenterNodeFormula(
                         base = StandaloneNodeFormula(
@@ -273,7 +275,7 @@ class DataCenterFormula private constructor(
             ),
             database = databaseDataLocation,
             address = loadBalancer.uri,
-            jmxClients = jiraNodes.mapIndexed { i, node -> configs[i].remoteJmx.getClient(node.publicIpAddress) }
+            jmxClients = jiraNodes.mapIndexed { i, node -> configs[i].remoteJmx.getClient(InstanceAddressSelector.getReachableIpAddress(node)) }
         )
         logger.info("$jira is set up, will expire ${jiraStack.expiry}")
         return@time ProvisionedJira(

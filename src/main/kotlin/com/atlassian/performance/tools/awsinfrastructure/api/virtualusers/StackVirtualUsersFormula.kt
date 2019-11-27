@@ -118,7 +118,7 @@ class StackVirtualUsersFormula private constructor(
         val virtualUsersMachine = virtualUsersStack
             .listMachines()
             .single { it.tags.contains(Tag("jpt-virtual-users", "true")) }
-        val virtualUsersIp = virtualUsersMachine.publicIpAddress
+        val virtualUsersIp = InstanceAddressSelector.getReachableIpAddress(virtualUsersMachine)
         val virtualUsersHost = SshHost(virtualUsersIp, "ubuntu", key.get().file.path)
         val virtualUsersSsh = Ssh(virtualUsersHost, connectivityPatience = 4)
 
