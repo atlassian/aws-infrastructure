@@ -31,8 +31,16 @@ class InfrastructureFormula<out T : VirtualUsers>(
     private val investment: Investment,
     private val jiraFormula: JiraFormula,
     private val virtualUsersFormula: VirtualUsersFormula<T>,
-    private val aws: Aws
+    private val aws: Aws,
+    private var preProvisionedNetwork: Network?
 ) {
+    constructor(
+        investment: Investment,
+        jiraFormula: JiraFormula,
+        virtualUsersFormula: VirtualUsersFormula<T>,
+        aws: Aws
+    ) : this(investment, jiraFormula, virtualUsersFormula, aws, null)
+
     fun provision(
         workingDirectory: Path
     ): ProvisionedInfrastructure<T> {
@@ -54,11 +62,11 @@ class InfrastructureFormula<out T : VirtualUsers>(
                 lifespan = investment.lifespan
             ).provision()
         }
-        val networkProvisioning = executor.submitWithLogContext("network") {
-            NetworkFormula(investment, aws).provision()
-        }
 
-        val network = networkProvisioning.get()
+        val network = preProvisionedNetwork ?: executor.submitWithLogContext("network") {
+            NetworkFormula(investment, aws).provision()
+        }.get()
+
         val provisionJira = executor.submitWithLogContext("jira") {
             overrideJiraNetwork(network).provision(
                 investment = investment,

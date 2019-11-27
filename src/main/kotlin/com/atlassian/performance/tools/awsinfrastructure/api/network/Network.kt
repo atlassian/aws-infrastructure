@@ -9,4 +9,8 @@ import com.amazonaws.services.ec2.model.Vpc
 class Network(
     val vpc: Vpc,
     val subnet: Subnet
-)
+) {
+    override fun toString(): String {
+        return "Network(vpc=$vpc, subnet=$subnet)"
+    }
+}
