@@ -23,6 +23,9 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.19.0...master
 
+### Fixed
+- Include `instanceType` in copying builders of `VirtualUserFormula` implementations.
+
 ## [2.19.0] - 2019-11-22
 [2.19.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.18.0...release-2.19.0
 
