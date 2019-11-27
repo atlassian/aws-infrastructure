@@ -30,10 +30,11 @@ class NetworkFormula(
         )
         logger.info("Provisioning network...")
         val stack = stackFormula.provision()
-        logger.info("Network provisioned")
-        return Network(
+        val network = Network(
             stack.findVpc("Vpc"),
             stack.findSubnet("TheOnlySubnet")
         )
+        logger.info("Network provisioned: $network")
+        return network
     }
 }
