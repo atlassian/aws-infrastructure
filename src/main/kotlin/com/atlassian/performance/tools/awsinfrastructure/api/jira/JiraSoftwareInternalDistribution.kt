@@ -1,7 +1,7 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
 import com.atlassian.performance.tools.awsinfrastructure.api.storage.S3Artifact
-import com.atlassian.performance.tools.awsinfrastructure.aws.S3Distribution
+import com.atlassian.performance.tools.awsinfrastructure.api.storage.S3TarGzDistribution
 import com.atlassian.performance.tools.infrastructure.api.distribution.ProductDistribution
 import com.atlassian.performance.tools.ssh.api.SshConnection
 import java.time.Duration
@@ -28,7 +28,7 @@ class JiraSoftwareInternalDistribution(
         ssh: SshConnection,
         destination: String
     ): String {
-        val distribution = S3Distribution(
+        val distribution = S3TarGzDistribution(
             S3Artifact(
                 region = "us-east-1",
                 bucketName = "downloads-internal-us-east-1",
