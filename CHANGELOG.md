@@ -23,6 +23,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.19.1...master
 
+### Added
+- Add `JiraSoftwareDevDistribution`. Resolve [JPERF-594].
+
+[JPERF-594]: https://ecosystem.atlassian.net/browse/JPERF-594
+
 ## [2.19.1] - 2019-11-27
 [2.19.1]: https://github.com/atlassian/aws-infrastructure/compare/release-2.19.0...release-2.19.1
 
