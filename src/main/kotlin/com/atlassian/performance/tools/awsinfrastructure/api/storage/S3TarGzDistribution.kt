@@ -1,12 +1,16 @@
-package com.atlassian.performance.tools.awsinfrastructure.aws
+package com.atlassian.performance.tools.awsinfrastructure.api.storage
 
-import com.atlassian.performance.tools.awsinfrastructure.api.storage.S3Artifact
 import com.atlassian.performance.tools.infrastructure.api.distribution.ProductDistribution
 import com.atlassian.performance.tools.ssh.api.SshConnection
 import org.apache.logging.log4j.Level
 import java.time.Duration
 
-internal class S3Distribution(
+/**
+ * Distributes software via `tar.gz` packages stored on AWS S3.
+ *
+ * @since 2.20.0
+ */
+class S3TarGzDistribution(
     private val s3Artifact: S3Artifact,
     private val unpackTimeout: Duration
 ) : ProductDistribution {
