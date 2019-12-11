@@ -31,6 +31,9 @@ Dropping a requirement of a major version of a dependency is a new contract.
 - Expose `S3TarGzDistribution` to facilitate alternative `ProductDistribution` implementations.
   Avoid the likes of [JPERF-594] in the future.
 
+### Fixed
+- [JPERF-595] Eliminated sudo warnings emitted when the hostname was not resolvable
+
 [JPERF-594]: https://ecosystem.atlassian.net/browse/JPERF-594
 
 ## [2.19.1] - 2019-11-27
