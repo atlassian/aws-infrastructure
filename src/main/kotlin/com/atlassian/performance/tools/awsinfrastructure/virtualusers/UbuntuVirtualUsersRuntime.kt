@@ -20,6 +20,7 @@ internal class UbuntuVirtualUsersRuntime {
     ): String {
         shadowJarTransport.upload(shadowJar)
         sshHost.newConnection().use { ssh ->
+            ssh.safeExecute("hostname=$(hostname) ; ping -c 1 \$hostname 2>/dev/null || echo $(echo \$hostname | sed -e s/ip-// -e s/-/./g) \$hostname | sudo tee -a /etc/hosts >/dev/null 2>&1")
             AwsCli().download(shadowJarTransport.location, ssh, target = ".")
             browser.install(ssh)
             OpenJDK().install(ssh)
