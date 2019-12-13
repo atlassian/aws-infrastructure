@@ -12,9 +12,12 @@ import com.atlassian.performance.tools.infrastructure.api.virtualusers.Multicast
 import com.atlassian.performance.tools.infrastructure.api.virtualusers.ResultsTransport
 import com.atlassian.performance.tools.infrastructure.api.virtualusers.SshVirtualUsers
 import com.google.common.util.concurrent.ThreadFactoryBuilder
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import java.io.File
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
+import java.util.concurrent.atomic.AtomicInteger
 
 class MulticastVirtualUsersFormula private constructor(
     private val shadowJar: File,
@@ -24,6 +27,7 @@ class MulticastVirtualUsersFormula private constructor(
     private val network: Network?,
     private val instanceType: InstanceType
 ) : VirtualUsersFormula<MulticastVirtualUsers<SshVirtualUsers>> {
+    private val logger: Logger = LogManager.getLogger(this::class.java)
 
     @Deprecated("Use MulticastVirtualUsersFormula.Builder")
     constructor(
@@ -68,10 +72,12 @@ class MulticastVirtualUsersFormula private constructor(
                 .build()
         )
 
+        logger.info("Provisioning $nodes virtual user node(s)...")
+        val pendingVuNodes = AtomicInteger(nodes)
         val provisionedVirtualUsers = (1..nodes)
             .map { nodeOrder ->
                 executor.submitWithLogContext("provision virtual users $nodeOrder") {
-                    StackVirtualUsersFormula.Builder(
+                    val provisionedVirtualUserNode = StackVirtualUsersFormula.Builder(
                         shadowJar = shadowJar
                     )
                         .nodeOrder(nodeOrder)
@@ -88,6 +94,8 @@ class MulticastVirtualUsersFormula private constructor(
                             roleProfile = roleProfile,
                             aws = aws
                         )
+                    logger.info("Virtual user nodes pending: " + pendingVuNodes.decrementAndGet())
+                    provisionedVirtualUserNode
                 }
             }
             .map { it.get() }
