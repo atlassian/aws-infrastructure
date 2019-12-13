@@ -86,7 +86,7 @@ class StackVirtualUsersFormula private constructor(
         roleProfile: String,
         aws: Aws
     ): ProvisionedVirtualUsers<SshVirtualUsers> {
-        logger.info("Setting up $name...")
+        logger.debug("Setting up $name...")
         val network = overriddenNetwork ?: NetworkFormula(investment, aws).provision()
         val virtualUsersStack = StackFormula(
             investment = investment,
@@ -134,7 +134,7 @@ class StackVirtualUsersFormula private constructor(
             it.execute("mkdir splunkforward")
             splunkForwarder.run(it, name, logsPath = "/home/ubuntu/splunkforward/")
         }
-        logger.info("$name is ready to apply load")
+        logger.debug("$name is ready to apply load")
         return ProvisionedVirtualUsers(
             virtualUsers = SshVirtualUsers(
                 nodeOrder = nodeOrder,
