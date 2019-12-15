@@ -1,4 +1,4 @@
-package com.atlassian.performance.tools.awsinfrastructure.api.virtualusers
+package com.atlassian.performance.tools.awsinfrastructure
 
 import com.amazonaws.services.ec2.model.Instance
 import com.atlassian.performance.tools.jvmtasks.api.ExponentialBackoff
@@ -18,7 +18,7 @@ class InstanceAddressSelector {
     companion object {
         private val logger: Logger = LogManager.getLogger(this::class.java)
 
-        private val reachableAddresses: ConcurrentHashMap<String, String> = ConcurrentHashMap();
+        private val reachableAddresses: ConcurrentHashMap<String, String> = ConcurrentHashMap()
         private val executor = Executors.newCachedThreadPool()
 
         internal fun getReachableIpAddress(instance: Instance, port: Int = 22): String {

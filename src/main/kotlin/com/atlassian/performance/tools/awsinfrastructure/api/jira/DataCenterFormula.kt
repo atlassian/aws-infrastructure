@@ -1,9 +1,10 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
 import com.amazonaws.services.cloudformation.model.Parameter
-import com.amazonaws.services.ec2.model.Tag
 import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.ApplicationStorageWrapper
+import com.atlassian.performance.tools.awsinfrastructure.InstanceAddressSelector
+import com.atlassian.performance.tools.awsinfrastructure.InstanceFilters
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
 import com.atlassian.performance.tools.awsinfrastructure.api.RemoteLocation
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C4EightExtraLargeElastic
@@ -15,7 +16,6 @@ import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.Apache
 import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.LoadBalancerFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.network.Network
 import com.atlassian.performance.tools.awsinfrastructure.api.network.NetworkFormula
-import com.atlassian.performance.tools.awsinfrastructure.api.virtualusers.InstanceAddressSelector
 import com.atlassian.performance.tools.awsinfrastructure.jira.DataCenterNodeFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.DiagnosableNodeFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.StandaloneNodeFormula
@@ -165,9 +165,9 @@ class DataCenterFormula private constructor(
         val keyPath = key.get().file.path
 
         val machines = jiraStack.listMachines()
-        val jiraNodes = machines.filter { it.tags.contains(Tag("jpt-jira", "true")) }
-        val databaseIp = InstanceAddressSelector.getReachableIpAddress(machines.single { it.tags.contains(Tag("jpt-database", "true")) })
-        val sharedHomeMachine = machines.single { it.tags.contains(Tag("jpt-shared-home", "true")) }
+        val jiraNodes = InstanceFilters().jiraInstances(machines)
+        val databaseIp = InstanceAddressSelector.getReachableIpAddress(InstanceFilters().dbInstance(machines))
+        val sharedHomeMachine = InstanceFilters().sharedHome(machines)
         val sharedHomeIp = InstanceAddressSelector.getReachableIpAddress(sharedHomeMachine)
         val sharedHomePrivateIp = sharedHomeMachine.privateIpAddress
         val sharedHomeSsh = Ssh(

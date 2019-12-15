@@ -3,7 +3,7 @@ package com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer
 import com.amazonaws.services.ec2.AmazonEC2
 import com.amazonaws.services.ec2.model.*
 import com.atlassian.performance.tools.aws.api.*
-import com.atlassian.performance.tools.awsinfrastructure.api.virtualusers.InstanceAddressSelector
+import com.atlassian.performance.tools.awsinfrastructure.InstanceAddressSelector
 import com.atlassian.performance.tools.infrastructure.api.Sed
 import com.atlassian.performance.tools.infrastructure.api.loadbalancer.LoadBalancer
 import com.atlassian.performance.tools.jvmtasks.api.ExponentialBackoff

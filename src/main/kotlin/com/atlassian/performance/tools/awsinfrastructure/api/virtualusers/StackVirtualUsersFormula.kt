@@ -2,8 +2,9 @@ package com.atlassian.performance.tools.awsinfrastructure.api.virtualusers
 
 import com.amazonaws.services.cloudformation.model.Parameter
 import com.amazonaws.services.ec2.model.InstanceType
-import com.amazonaws.services.ec2.model.Tag
 import com.atlassian.performance.tools.aws.api.*
+import com.atlassian.performance.tools.awsinfrastructure.InstanceAddressSelector
+import com.atlassian.performance.tools.awsinfrastructure.InstanceFilters
 import com.atlassian.performance.tools.awsinfrastructure.api.network.Network
 import com.atlassian.performance.tools.awsinfrastructure.api.network.NetworkFormula
 import com.atlassian.performance.tools.awsinfrastructure.virtualusers.UbuntuVirtualUsersRuntime
@@ -115,9 +116,7 @@ class StackVirtualUsersFormula private constructor(
             pollingTimeout = stackCreationTimeout
         ).provision()
 
-        val virtualUsersMachine = virtualUsersStack
-            .listMachines()
-            .single { it.tags.contains(Tag("jpt-virtual-users", "true")) }
+        val virtualUsersMachine = InstanceFilters().vuNodes(virtualUsersStack.listMachines())
         val virtualUsersIp = InstanceAddressSelector.getReachableIpAddress(virtualUsersMachine)
         val virtualUsersHost = SshHost(virtualUsersIp, "ubuntu", key.get().file.path)
         val virtualUsersSsh = Ssh(virtualUsersHost, connectivityPatience = 4)
