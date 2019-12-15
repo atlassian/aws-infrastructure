@@ -1,4 +1,4 @@
-package com.atlassian.performance.tools.awsinfrastructure.api.virtualusers
+package com.atlassian.performance.tools.awsinfrastructure
 
 import com.amazonaws.services.ec2.model.Instance
 import org.hamcrest.CoreMatchers.equalTo

@@ -12,7 +12,8 @@ import com.atlassian.performance.tools.awsinfrastructure.api.hardware.M4ExtraLar
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
 import com.atlassian.performance.tools.awsinfrastructure.api.network.Network
 import com.atlassian.performance.tools.awsinfrastructure.api.network.NetworkFormula
-import com.atlassian.performance.tools.awsinfrastructure.api.virtualusers.InstanceAddressSelector
+import com.atlassian.performance.tools.awsinfrastructure.InstanceAddressSelector
+import com.atlassian.performance.tools.awsinfrastructure.InstanceFilters
 import com.atlassian.performance.tools.awsinfrastructure.jira.StandaloneNodeFormula
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
@@ -154,10 +155,10 @@ class StandaloneFormula private constructor(
         val keyPath = key.get().file.path
 
         val machines = jiraStack.listMachines()
-        val databaseIp = InstanceAddressSelector.getReachableIpAddress(machines.single { it.tags.contains(Tag("jpt-database", "true")) })
+        val databaseIp = InstanceAddressSelector.getReachableIpAddress(InstanceFilters().dbInstance(machines))
         val databaseHost = SshHost(databaseIp, "ubuntu", keyPath)
         val databaseSsh = Ssh(databaseHost, connectivityPatience = 4)
-        val jiraIp = InstanceAddressSelector.getReachableIpAddress(machines.single { it.tags.contains(Tag("jpt-jira", "true")) })
+        val jiraIp = InstanceAddressSelector.getReachableIpAddress(InstanceFilters().jiraInstances(machines).single())
         val jiraAddress = URI("http://$jiraIp:8080/")
 
         val setupDatabase = executor.submitWithLogContext("database") {
