@@ -23,6 +23,14 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.20.0...master
 
+### Fixed
+- Eliminate sudo warnings emitted when the hostname was not resolvable. Fix [JPERF-595].
+- Dial down the provisioning logging amount.
+- Enrich the provisioning logging messages.
+- Fix `UriJiraFormula` failing to download results due to zero nodes and zero threads.
+
+[JPERF-595]: https://ecosystem.atlassian.net/browse/JPERF-595
+
 ## [2.20.0] - 2019-12-11
 [2.20.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.19.1...release-2.20.0
 
@@ -30,9 +38,6 @@ Dropping a requirement of a major version of a dependency is a new contract.
 - Add `JiraSoftwareDevDistribution`. Resolve [JPERF-594].
 - Expose `S3TarGzDistribution` to facilitate alternative `ProductDistribution` implementations.
   Avoid the likes of [JPERF-594] in the future.
-
-### Fixed
-- [JPERF-595] Eliminated sudo warnings emitted when the hostname was not resolvable
 
 [JPERF-594]: https://ecosystem.atlassian.net/browse/JPERF-594
 
