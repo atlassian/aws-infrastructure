@@ -3,6 +3,7 @@ package com.atlassian.performance.tools.awsinfrastructure.api.virtualusers
 import com.amazonaws.services.cloudformation.model.Parameter
 import com.amazonaws.services.ec2.model.InstanceType
 import com.atlassian.performance.tools.aws.api.*
+import com.atlassian.performance.tools.awsinfrastructure.AmiNameResolver
 import com.atlassian.performance.tools.awsinfrastructure.InstanceAddressSelector
 import com.atlassian.performance.tools.awsinfrastructure.InstanceFilters
 import com.atlassian.performance.tools.awsinfrastructure.api.network.Network
@@ -101,7 +102,7 @@ class StackVirtualUsersFormula private constructor(
                     .withParameterValue(roleProfile),
                 Parameter()
                     .withParameterKey("Ami")
-                    .withParameterValue(aws.defaultAmi),
+                    .withParameterValue(AmiNameResolver.vuAmi(aws)),
                 Parameter()
                     .withParameterKey("Vpc")
                     .withParameterValue(network.vpc.vpcId),
