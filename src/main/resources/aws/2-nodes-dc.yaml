@@ -104,6 +104,7 @@ Resources:
       SecurityGroupIds:
         - Ref: SshSecurityGroup
         - Ref: MySqlSecurityGroup
+        - Ref: PostgresSecurityGroup
       KeyName:
         Ref: KeyName
       ImageId: !Ref Ami
@@ -182,6 +183,17 @@ Resources:
           IpProtocol: tcp
           FromPort: 3306
           ToPort: 3306
+          CidrIp: 0.0.0.0/0
+  PostgresSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        Ref: Vpc
+      GroupDescription: Enables Postgres access
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
           CidrIp: 0.0.0.0/0
   SubnetSecurityGroup:
     Type: AWS::EC2::SecurityGroup
