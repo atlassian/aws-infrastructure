@@ -1,7 +1,6 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
 import com.amazonaws.services.cloudformation.model.Parameter
-import com.amazonaws.services.ec2.model.Tag
 import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.ApplicationStorageWrapper
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
@@ -18,7 +17,7 @@ import com.atlassian.performance.tools.awsinfrastructure.jira.StandaloneNodeForm
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
 import com.atlassian.performance.tools.infrastructure.api.database.Database
-import com.atlassian.performance.tools.infrastructure.api.database.MySqlDatabase
+import com.atlassian.performance.tools.infrastructure.api.database.PostgresDatabase
 import com.atlassian.performance.tools.infrastructure.api.distribution.ProductDistribution
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
@@ -181,7 +180,7 @@ class StandaloneFormula private constructor(
         CloseableThreadContext.push("Jira node").use {
             key.get().file.facilitateSsh(jiraIp)
         }
-        val isMySql = database is MySqlDatabase
+        val isPostgres = database is PostgresDatabase
         val nodeFormula = StandaloneNodeFormula(
             config = config,
             jiraHomeSource = jiraHomeSource,
@@ -191,7 +190,7 @@ class StandaloneFormula private constructor(
             productDistribution = productDistribution,
             ssh = ssh,
             computer = computer,
-            isMySql = isMySql
+            isPostgres = isPostgres
         )
 
         uploadPlugins.get()

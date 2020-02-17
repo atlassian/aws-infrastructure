@@ -21,13 +21,7 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.21.0...master
-
-## [2.21.0] - 2020-02-04
-[2.21.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.20.1...2.21.0
-
-### Added
-- Add support for postgres database.
+[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.20.1...master
 
 ## [2.20.1] - 2020-01-31
 [2.20.1]: https://github.com/atlassian/aws-infrastructure/compare/release-2.20.0...2.20.1

@@ -30,7 +30,7 @@ internal class StandaloneNodeFormula(
     private val ssh: Ssh,
     private val config: JiraNodeConfig,
     private val computer: Computer,
-    private val isMySql: Boolean
+    private val isPostgres: Boolean
 ) : NodeFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
     private val jdk = config.jdk
@@ -115,7 +115,7 @@ internal class StandaloneNodeFormula(
         connection: SshConnection,
         dbconfigXml: String
     ) {
-        if (!isMySql) {
+        if (isPostgres) {
             connection.execute("sudo rm -f $dbconfigXml")
 
             var dbconfigContent = """

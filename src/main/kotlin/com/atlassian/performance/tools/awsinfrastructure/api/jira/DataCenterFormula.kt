@@ -23,7 +23,7 @@ import com.atlassian.performance.tools.awsinfrastructure.jira.home.SharedHomeFor
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
 import com.atlassian.performance.tools.infrastructure.api.database.Database
-import com.atlassian.performance.tools.infrastructure.api.database.MySqlDatabase
+import com.atlassian.performance.tools.infrastructure.api.database.PostgresDatabase
 import com.atlassian.performance.tools.infrastructure.api.distribution.ProductDistribution
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
@@ -211,7 +211,7 @@ class DataCenterFormula private constructor(
             .mapIndexed { i: Int, instance ->
                 val ipAddress = InstanceAddressSelector.getReachableIpAddress(instance)
                 val ssh = Ssh(SshHost(ipAddress, "ubuntu", keyPath), connectivityPatience = 5)
-                val isMySql = database is MySqlDatabase
+                val isPostgres = database is PostgresDatabase
                 DiagnosableNodeFormula(
                     delegate = DataCenterNodeFormula(
                         base = StandaloneNodeFormula(
@@ -223,7 +223,7 @@ class DataCenterFormula private constructor(
                             ssh = ssh,
                             config = configs[i],
                             computer = computer,
-                            isMySql = isMySql
+                            isPostgres = isPostgres
                         ),
                         nodeIndex = i,
                         sharedHome = sharedHome,
