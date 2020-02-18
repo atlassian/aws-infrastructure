@@ -180,7 +180,7 @@ class StandaloneFormula private constructor(
         CloseableThreadContext.push("Jira node").use {
             key.get().file.facilitateSsh(jiraIp)
         }
-        val isPostgres = database is PostgresDatabase
+        val isPostgres = database.type() == "postgres"
         val nodeFormula = StandaloneNodeFormula(
             config = config,
             jiraHomeSource = jiraHomeSource,

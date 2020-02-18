@@ -211,7 +211,7 @@ class DataCenterFormula private constructor(
             .mapIndexed { i: Int, instance ->
                 val ipAddress = InstanceAddressSelector.getReachableIpAddress(instance)
                 val ssh = Ssh(SshHost(ipAddress, "ubuntu", keyPath), connectivityPatience = 5)
-                val isPostgres = database is PostgresDatabase
+                val isPostgres = database.type() == "postgres"
                 DiagnosableNodeFormula(
                     delegate = DataCenterNodeFormula(
                         base = StandaloneNodeFormula(
