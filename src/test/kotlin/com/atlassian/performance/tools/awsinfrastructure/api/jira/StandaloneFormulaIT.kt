@@ -4,6 +4,7 @@ import com.atlassian.performance.tools.aws.api.Investment
 import com.atlassian.performance.tools.aws.api.SshKeyFormula
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.aws
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.taskWorkspace
+import com.atlassian.performance.tools.awsinfrastructure.api.CustomDatasetSource
 import com.atlassian.performance.tools.awsinfrastructure.api.DatasetCatalogue
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C5NineExtraLargeEphemeral
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
@@ -40,7 +41,7 @@ class StandaloneFormulaIT {
             .build()
         val copiedFormula = StandaloneFormula.Builder(serverFormula).build()
 
-        val resource = copiedFormula.provision(
+        val provisioned = copiedFormula.provision(
             investment = Investment(
                 useCase = "Test JSD Server provisioning",
                 lifespan = lifespan
@@ -50,8 +51,10 @@ class StandaloneFormulaIT {
             key = CompletableFuture.completedFuture(keyFormula.provision()),
             roleProfile = aws.shortTermStorageAccess(),
             aws = aws
-        ).resource
+        )
+        val location = aws.customDatasetStorage("SFIT-${UUID.randomUUID()}").location
+        CustomDatasetSource(provisioned.jira.jiraHome, provisioned.jira.database!!).storeInS3(location)
 
-        resource.release().get(1, TimeUnit.MINUTES)
+        provisioned.resource.release().get(1, TimeUnit.MINUTES)
     }
 }
