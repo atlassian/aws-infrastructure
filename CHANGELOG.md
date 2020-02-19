@@ -23,6 +23,18 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.20.1...master
 
+### Added
+- Add `InfrastructureFormula.Builder`.
+- Support pre-provisioned `Network` in `InfrastructureFormula`.
+
+### Fixed
+- Support private IP in:
+  - `DataCenterFormula`
+  - `StandaloneFormula`
+  - `ApacheEc2LoadBalancerFormula`
+  - `StackVirtualUsersFormula`
+- Upgrade to Ubuntu 19.10 Eoan in `StackVirtualUsersFormula`.
+
 ## [2.20.1] - 2019-12-17
 [2.20.1]: https://github.com/atlassian/aws-infrastructure/compare/release-2.20.0...release-2.20.1
 
