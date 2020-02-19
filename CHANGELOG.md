@@ -27,8 +27,8 @@ Dropping a requirement of a major version of a dependency is a new contract.
 [2.20.1]: https://github.com/atlassian/aws-infrastructure/compare/release-2.20.0...release-2.20.1
 
 ### Fixed
-- Eliminate sudo warnings emitted when the hostname was not resolvable. Fix [JPERF-595].
-- Dial down the provisioning logging amount.
+- Eliminate sudo warnings about unresolvable hostname. Fix [JPERF-595].
+- Reduce provisioning logging.
 - Enrich the provisioning logging messages.
 - Fix `UriJiraFormula` failing to download results due to zero nodes and zero threads.
 
