@@ -1,3 +1,3 @@
-* @dagguh @wyrzyk @sebapawlak
-loadbalancer/ @marcinsasinowski @dagguh @wyrzyk @sebapawlak
-AwsDatasetModification.kt @mcmurphy2000 @dagguh @wyrzyk @sebapawlak
+* @atlassian/jpt
+loadbalancer/ @atlassian/jpt @marcinsasinowski
+AwsDatasetModification.kt @atlassian/jpt @mcmurphy2000
