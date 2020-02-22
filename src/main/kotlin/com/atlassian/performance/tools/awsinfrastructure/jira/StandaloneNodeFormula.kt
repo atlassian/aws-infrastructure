@@ -11,6 +11,7 @@ import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
 import com.atlassian.performance.tools.infrastructure.api.jira.SetenvSh
 import com.atlassian.performance.tools.infrastructure.api.os.Ubuntu
+import com.atlassian.performance.tools.io.api.readResourceText
 import com.atlassian.performance.tools.jvmtasks.api.Backoff
 import com.atlassian.performance.tools.jvmtasks.api.IdempotentAction
 import com.atlassian.performance.tools.ssh.api.Ssh
@@ -29,7 +30,8 @@ internal class StandaloneNodeFormula(
     private val productDistribution: ProductDistribution,
     private val ssh: Ssh,
     private val config: JiraNodeConfig,
-    private val computer: Computer
+    private val computer: Computer,
+    private val isPostgres: Boolean
 ) : NodeFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
     private val jdk = config.jdk
@@ -114,6 +116,12 @@ internal class StandaloneNodeFormula(
         connection: SshConnection,
         dbconfigXml: String
     ) {
+        if (isPostgres) {
+            connection.execute("sudo rm -f $dbconfigXml")
+            var dbconfigContent = readResourceText("postgres/dbconfig.xml")
+            connection.execute("sudo printf '$dbconfigContent' > $dbconfigXml")
+        }
+
         Sed().replace(
             connection = connection,
             expression = "(<url>.*(@(//)?|//))" + "([^:/]+)" + "(.*</url>)",

@@ -21,7 +21,10 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.20.0...master
+[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.20.1...master
+
+## [2.20.1] - 2020-01-31
+[2.20.1]: https://github.com/atlassian/aws-infrastructure/compare/release-2.20.0...2.20.1
 
 ### Fixed
 - Eliminate sudo warnings emitted when the hostname was not resolvable. Fix [JPERF-595].
