@@ -1,6 +1,7 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.aws
 
 import com.amazonaws.services.ec2.model.InstanceType
+import com.amazonaws.services.ec2.model.ShutdownBehavior
 import com.atlassian.performance.tools.aws.api.Investment
 import com.atlassian.performance.tools.aws.api.SshInstance
 import com.atlassian.performance.tools.aws.api.SshKeyFormula
@@ -46,6 +47,7 @@ class AwsCliIT {
             vpcId = network.vpc.vpcId,
             customizeLaunch = { launch ->
                 launch
+                    .withInstanceInitiatedShutdownBehavior(ShutdownBehavior.Terminate)
                     .withSubnetId(network.subnet.subnetId)
                     .withInstanceType(InstanceType.T3Nano)
             }

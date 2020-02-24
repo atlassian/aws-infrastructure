@@ -38,6 +38,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.Future
 
 /**
+ * The EC2 instances provisioned with this class will have 'instance initiated shutdown' parameter set to 'terminate'.
  * @param [configs] applied to nodes in the same order as they are provisioned and started
  * @param [computer] hardware specs used by the Jira nodes and the shared home node
  */

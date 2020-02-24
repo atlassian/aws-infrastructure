@@ -1,9 +1,10 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
 import com.amazonaws.services.cloudformation.model.Parameter
-import com.amazonaws.services.ec2.model.Tag
 import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.ApplicationStorageWrapper
+import com.atlassian.performance.tools.awsinfrastructure.InstanceAddressSelector
+import com.atlassian.performance.tools.awsinfrastructure.InstanceFilters
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
 import com.atlassian.performance.tools.awsinfrastructure.api.RemoteLocation
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C4EightExtraLargeElastic
@@ -12,8 +13,6 @@ import com.atlassian.performance.tools.awsinfrastructure.api.hardware.M4ExtraLar
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
 import com.atlassian.performance.tools.awsinfrastructure.api.network.Network
 import com.atlassian.performance.tools.awsinfrastructure.api.network.NetworkFormula
-import com.atlassian.performance.tools.awsinfrastructure.InstanceAddressSelector
-import com.atlassian.performance.tools.awsinfrastructure.InstanceFilters
 import com.atlassian.performance.tools.awsinfrastructure.jira.StandaloneNodeFormula
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
@@ -33,6 +32,9 @@ import java.time.Duration
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 
+/**
+ * The EC2 instances provisioned with this class will have 'instance initiated shutdown' parameter set to 'terminate'.
+ */
 class StandaloneFormula private constructor(
     private val apps: Apps,
     internal val productDistribution: ProductDistribution,

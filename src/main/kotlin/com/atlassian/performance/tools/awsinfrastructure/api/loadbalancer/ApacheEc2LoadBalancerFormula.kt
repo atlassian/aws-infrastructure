@@ -37,6 +37,7 @@ class ApacheEc2LoadBalancerFormula : LoadBalancerFormula {
             vpcId = vpc.vpcId,
             customizeLaunch = { launch ->
                 launch
+                    .withInstanceInitiatedShutdownBehavior(ShutdownBehavior.Terminate)
                     .withSecurityGroupIds(httpAccess.groupId)
                     .withSubnetId(subnet.subnetId)
                     .withInstanceType(InstanceType.M5Large)

@@ -25,6 +25,8 @@ import java.time.Duration
 import java.util.concurrent.Future
 
 /**
+ * The EC2 instances provisioned with this class will have 'instance initiated shutdown' parameter set to 'terminate'.
+ *
  * @param [splunkForwarder] Forwards logs from `/home/ubuntu/splunkforward`.
  */
 class StackVirtualUsersFormula private constructor(
