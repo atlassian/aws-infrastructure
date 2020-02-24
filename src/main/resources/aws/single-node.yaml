@@ -34,6 +34,7 @@ Resources:
       KeyName:
         Ref: KeyName
       ImageId: !Ref Ami
+      InstanceInitiatedShutdownBehavior: terminate
       Tags:
         -
           Key: jpt-database
@@ -57,6 +58,7 @@ Resources:
       KeyName:
         Ref: KeyName
       ImageId: !Ref Ami
+      InstanceInitiatedShutdownBehavior: terminate
       Tags:
         -
           Key: jpt-jira

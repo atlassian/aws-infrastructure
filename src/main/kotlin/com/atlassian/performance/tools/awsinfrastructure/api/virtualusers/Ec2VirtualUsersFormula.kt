@@ -2,6 +2,7 @@ package com.atlassian.performance.tools.awsinfrastructure.api.virtualusers
 
 import com.amazonaws.services.ec2.model.IamInstanceProfileSpecification
 import com.amazonaws.services.ec2.model.InstanceType
+import com.amazonaws.services.ec2.model.ShutdownBehavior
 import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.api.network.Network
 import com.atlassian.performance.tools.awsinfrastructure.virtualusers.UbuntuVirtualUsersRuntime
@@ -89,6 +90,7 @@ class Ec2VirtualUsersFormula private constructor(
                 .withIamInstanceProfile(
                     IamInstanceProfileSpecification().withName(roleProfile)
                 )
+                .withInstanceInitiatedShutdownBehavior(ShutdownBehavior.Terminate)
                 .withInstanceType(instanceType)
                 .withSubnetId(network?.subnet?.subnetId)
         }

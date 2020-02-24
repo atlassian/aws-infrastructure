@@ -22,10 +22,10 @@ Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.20.1...master
-
 ### Added
 - Add `InfrastructureFormula.Builder`.
 - Support pre-provisioned `Network` in `InfrastructureFormula`.
+- instance initiated shutdown will now terminate the EC2 instance instead of stopping it - applies to VU, DB and Jira nodes
 
 ### Fixed
 - Support private IP in:
