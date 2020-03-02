@@ -21,11 +21,15 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.20.1...master
+[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.21.0...master
+
+## [2.21.0] - 2020-03-02
+[2.21.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.20.1...release-2.21.0
+
 ### Added
 - Add `InfrastructureFormula.Builder`.
 - Support pre-provisioned `Network` in `InfrastructureFormula`.
-- instance initiated shutdown will now terminate the EC2 instance instead of stopping it - applies to VU, DB and Jira nodes
+- Make instances-initiated shutdown terminate the EC2 instance instead of stopping it - applies to VU, DB and Jira nodes.
 
 ### Fixed
 - Support private IP in:
@@ -34,6 +38,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
   - `ApacheEc2LoadBalancerFormula`
   - `StackVirtualUsersFormula`
 - Upgrade to Ubuntu 19.10 Eoan in `StackVirtualUsersFormula`.
+
+## [2.20.2] - 2020-03-02
+[2.20.2]: https://github.com/atlassian/aws-infrastructure/compare/release-2.20.1...release-2.20.2
+
+This is an erroneous release. Please use `2.21.0` instead.
 
 ## [2.20.1] - 2019-12-17
 [2.20.1]: https://github.com/atlassian/aws-infrastructure/compare/release-2.20.0...release-2.20.1
