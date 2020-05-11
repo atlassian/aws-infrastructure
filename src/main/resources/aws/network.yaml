@@ -1,8 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: A network for clustered services
-Parameters:
-  AvailabilityZone:
-    Type: AWS::EC2::AvailabilityZone::Name
 Resources:
   Vpc:
     Type: AWS::EC2::VPC
@@ -16,7 +13,6 @@ Resources:
       MapPublicIpOnLaunch: true
       CidrBlock: 10.0.0.0/24
       VpcId: !Ref Vpc
-      AvailabilityZone: !Ref AvailabilityZone
       Tags:
         - Key: Application
           Value:
