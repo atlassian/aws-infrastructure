@@ -23,6 +23,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.21.0...master
 
+### Fixed
+- Let AWS pick the Availability Zone to balance resource capacity. Resolve [JPERF-637].
+
+[JPERF-637]: https://ecosystem.atlassian.net/browse/JPERF-637
+ 
 ## [2.21.0] - 2020-03-02
 [2.21.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.20.1...release-2.21.0
 
