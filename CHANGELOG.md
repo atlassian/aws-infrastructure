@@ -24,7 +24,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.21.0...master
 
 ### Fixed
-- Do not explicitly specify Availability Zone when requesting resources to reduce insufficient capacity errors. Resolve [JPERF-637].
+- Let AWS pick the Availability Zone to balance resource capacity. Resolve [JPERF-637].
 
 [JPERF-637]: https://ecosystem.atlassian.net/browse/JPERF-637
  
