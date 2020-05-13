@@ -21,10 +21,14 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.21.0...master
+[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.21.1...master
+
+## [2.21.1] - 2020-05-13
+[2.21.1]: https://github.com/atlassian/aws-infrastructure/compare/release-2.21.0...release-2.21.1
 
 ### Fixed
 - Let AWS pick the Availability Zone to balance resource capacity. Resolve [JPERF-637].
+- Fix Jira home path generation for Splunk Forwarder.
 
 [JPERF-637]: https://ecosystem.atlassian.net/browse/JPERF-637
  
