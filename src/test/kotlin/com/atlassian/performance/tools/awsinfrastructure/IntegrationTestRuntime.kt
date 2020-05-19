@@ -14,6 +14,7 @@ object IntegrationTestRuntime {
     init {
         ConfigurationFactory.setConfigurationFactory(LogConfigurationFactory(taskWorkspace))
         aws = Aws.Builder(Regions.EU_WEST_1)
+            .availabilityZoneFilter(Predicate { it.zoneName !in listOf("eu-west-1a") })
             .regionsWithHousekeeping(listOf(Regions.EU_WEST_1))
             .batchingCloudformationRefreshPeriod(Duration.ofSeconds(15))
             .build()
