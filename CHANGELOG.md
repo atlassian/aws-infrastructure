@@ -21,7 +21,13 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.21.1...master
+[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.21.2...master
+
+## [2.21.2] - 2020-05-26
+[2.21.2]: https://github.com/atlassian/aws-infrastructure/compare/release-2.21.1...release-2.21.2
+
+### Fixed
+- Restore previous behaviour and force Availability Zone when creating AWS resources. Resolve [JPERF-643].
 
 ## [2.21.1] - 2020-05-13
 [2.21.1]: https://github.com/atlassian/aws-infrastructure/compare/release-2.21.0...release-2.21.1
