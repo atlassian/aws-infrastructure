@@ -3,6 +3,7 @@ package com.atlassian.performance.tools.awsinfrastructure.api.aws
 import com.atlassian.performance.tools.aws.api.StorageLocation
 import com.atlassian.performance.tools.infrastructure.api.os.Ubuntu
 import com.atlassian.performance.tools.ssh.api.SshConnection
+import org.apache.logging.log4j.Level
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
 
@@ -19,7 +20,8 @@ class AwsCli {
     fun ensureAwsCli(ssh: SshConnection) {
         val lock = LOCKS.computeIfAbsent(ssh.getHost().ipAddress) { Object() }
         synchronized(lock) {
-            if (!ssh.safeExecute("aws --version").isSuccessful()) {
+            val awsCliExecutionResult = ssh.safeExecute("aws --version", Duration.ofSeconds(30), Level.TRACE, Level.TRACE)
+            if (!awsCliExecutionResult.isSuccessful()) {
                 Ubuntu().install(ssh, listOf("zip", "python"), Duration.ofMinutes(3))
                 ssh.execute(
                     cmd = "curl --silent https://s3.amazonaws.com/aws-cli/awscli-bundle-1.15.51.zip -o awscli-bundle.zip",
