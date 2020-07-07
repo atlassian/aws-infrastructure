@@ -23,6 +23,9 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.21.3...master
 
+### Fixed
+- Upgrade to Ubuntu 20.04 Focal in `StackVirtualUsersFormula`.
+
 ## [2.21.3] - 2020-07-03
 [2.21.3]: https://github.com/atlassian/aws-infrastructure/compare/release-2.21.2...release-2.21.3
 
