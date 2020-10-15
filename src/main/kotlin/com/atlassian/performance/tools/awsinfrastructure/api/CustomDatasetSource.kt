@@ -133,6 +133,12 @@ class CustomDatasetSource private constructor(
         private var jiraHome: RemoteLocation,
         private var database: RemoteLocation
     ) {
+
+        constructor(json: JsonObject) : this(
+            jiraHome = RemoteLocation(json.getJsonObject("jiraHome")),
+            database = RemoteLocation(json.getJsonObject("database"))
+        )
+
         private var jiraHomeArchiveTimeout: Duration = Duration.ofMinutes(25)
         private var jiraHomeUploadTimeout: Duration = Duration.ofMinutes(10)
         private var jiraHomeMoveTimeout: Duration = Duration.ofMinutes(1)
@@ -148,10 +154,6 @@ class CustomDatasetSource private constructor(
         fun databaseArchiveTimeout(databaseArchiveTimeout: Duration) = apply { this.databaseArchiveTimeout = databaseArchiveTimeout }
         fun databaseUploadTimeout(databaseUploadTimeout: Duration) = apply { this.databaseUploadTimeout = databaseUploadTimeout }
         fun databaseMoveTimeout(databaseMoveTimeout: Duration) = apply { this.databaseMoveTimeout = databaseMoveTimeout }
-        fun fromJson(json: JsonObject) {
-            jiraHome = RemoteLocation(json.getJsonObject("jiraHome"))
-            database = RemoteLocation(json.getJsonObject("database"))
-        }
 
         fun build() = CustomDatasetSource(
             jiraHome,
