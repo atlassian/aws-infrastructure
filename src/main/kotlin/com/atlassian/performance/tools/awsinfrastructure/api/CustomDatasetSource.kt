@@ -13,9 +13,11 @@ import java.util.concurrent.Executors
 import javax.json.Json
 import javax.json.JsonObject
 
-class CustomDatasetSource(
+class CustomDatasetSource private constructor(
     val jiraHome: RemoteLocation,
-    val database: RemoteLocation
+    val database: RemoteLocation,
+    private val jiraHomeTimeouts: Timeouts,
+    private val databaseTimeouts: Timeouts
 ) {
     object FileNames {
         const val DATABASE = "database"
@@ -24,6 +26,27 @@ class CustomDatasetSource(
 
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
+    @Deprecated("Use Builder.CustomDatasetSource instead")
+    constructor(
+        jiraHome: RemoteLocation,
+        database: RemoteLocation
+    ) : this(
+        jiraHome,
+        database,
+        Timeouts(
+            Duration.ofMinutes(25),
+            Duration.ofMinutes(10),
+            Duration.ofMinutes(1)
+        ),
+        Timeouts(
+            Duration.ofMinutes(25),
+            Duration.ofMinutes(10),
+            Duration.ofMinutes(1)
+        )
+    )
+
+    @Suppress("DEPRECATION")
+    @Deprecated("Use Use Builder.CustomDatasetSource.fromJson instead")
     constructor(json: JsonObject) : this(
         jiraHome = RemoteLocation(json.getJsonObject("jiraHome")),
         database = RemoteLocation(json.getJsonObject("database"))
@@ -60,20 +83,20 @@ class CustomDatasetSource(
             val renamed = jiraHome.move(FileNames.JIRAHOME, Duration.ofMinutes(1))
             try {
                 renamed
-                    .archive(Duration.ofMinutes(25))
-                    .upload(location, Duration.ofMinutes(10))
+                    .archive(jiraHomeTimeouts.archive)
+                    .upload(location, jiraHomeTimeouts.upload)
             } finally {
-                renamed.move(jiraHome.location, Duration.ofMinutes(1))
+                renamed.move(jiraHome.location, jiraHomeTimeouts.move)
             }
         }
         val databaseUpload = executor.submitWithLogContext("database") {
             val renamed = database.move(FileNames.DATABASE, Duration.ofMinutes(1))
             try {
                 renamed
-                    .archive(Duration.ofMinutes(25))
-                    .upload(location, Duration.ofMinutes(10))
+                    .archive(databaseTimeouts.archive)
+                    .upload(location, databaseTimeouts.upload)
             } finally {
-                renamed.move(database.location, Duration.ofMinutes(1))
+                renamed.move(database.location, databaseTimeouts.move)
             }
         }
 
@@ -98,5 +121,51 @@ class CustomDatasetSource(
 
     override fun toString(): String {
         return "CustomDatasetSource(jiraHome=$jiraHome, database=$database)"
+    }
+
+    private class Timeouts(
+        val archive: Duration,
+        val upload: Duration,
+        val move: Duration
+    )
+
+    class Builder(
+        private var jiraHome: RemoteLocation,
+        private var database: RemoteLocation
+    ) {
+        private var jiraHomeArchiveTimeout: Duration = Duration.ofMinutes(25)
+        private var jiraHomeUploadTimeout: Duration = Duration.ofMinutes(10)
+        private var jiraHomeMoveTimeout: Duration = Duration.ofMinutes(1)
+        private var databaseArchiveTimeout: Duration = Duration.ofMinutes(25)
+        private var databaseUploadTimeout: Duration = Duration.ofMinutes(10)
+        private var databaseMoveTimeout: Duration = Duration.ofMinutes(1)
+
+        fun jiraHome(jiraHome: RemoteLocation) = apply { this.jiraHome = jiraHome }
+        fun database(database: RemoteLocation) = apply { this.database = database }
+        fun jiraHomeArchiveTimeout(jiraHomeArchiveTimeout: Duration) = apply { this.jiraHomeArchiveTimeout = jiraHomeArchiveTimeout }
+        fun jiraHomeUploadTimeout(jiraHomeUploadTimeout: Duration) = apply { this.jiraHomeUploadTimeout = jiraHomeUploadTimeout }
+        fun jiraHomeMoveTimeout(jiraHomeMoveTimeout: Duration) = apply { this.jiraHomeMoveTimeout = jiraHomeMoveTimeout }
+        fun databaseArchiveTimeout(databaseArchiveTimeout: Duration) = apply { this.databaseArchiveTimeout = databaseArchiveTimeout }
+        fun databaseUploadTimeout(databaseUploadTimeout: Duration) = apply { this.databaseUploadTimeout = databaseUploadTimeout }
+        fun databaseMoveTimeout(databaseMoveTimeout: Duration) = apply { this.databaseMoveTimeout = databaseMoveTimeout }
+        fun fromJson(json: JsonObject) {
+            jiraHome = RemoteLocation(json.getJsonObject("jiraHome"))
+            database = RemoteLocation(json.getJsonObject("database"))
+        }
+
+        fun build() = CustomDatasetSource(
+            jiraHome,
+            database,
+            Timeouts(
+                jiraHomeArchiveTimeout,
+                jiraHomeUploadTimeout,
+                jiraHomeMoveTimeout
+            ),
+            Timeouts(
+                databaseArchiveTimeout,
+                databaseUploadTimeout,
+                databaseMoveTimeout
+            )
+        )
     }
 }
