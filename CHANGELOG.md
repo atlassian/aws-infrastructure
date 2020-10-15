@@ -23,6 +23,13 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.21.4...master
 
+### Added
+- Add `CustomDatasetSource.Builder`.
+- Parametrize timeouts in `CustomDatasetSource`.
+
+### Deprecated
+- Deprecate `CustomDatasetSource` constructor in favor of `CustomDatasetSource.Builder`.
+
 ## [2.21.4] - 2020-07-10
 [2.21.4]: https://github.com/atlassian/aws-infrastructure/compare/release-2.21.3...release-2.21.4
 
