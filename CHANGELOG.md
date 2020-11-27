@@ -23,7 +23,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.22.1...master
 
-## [2.22.1]
+## [2.22.1] - 2020-11-27
 [2.22.1]: https://github.com/atlassian/aws-infrastructure/compare/release-2.22.0...2.22.1
 
 ### Fixed
