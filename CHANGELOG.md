@@ -21,9 +21,15 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.22.0...master
- - Fix regular expression for database url customization with `default_storage_engine`.
+[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.22.1...master
 
+## [2.22.1] - 2020-11-27
+[2.22.1]: https://github.com/atlassian/aws-infrastructure/compare/release-2.22.0...2.22.1
+
+### Fixed
+ - Fix regular expression for database url customization with `default_storage_engine` as part of [JPERF-671].
+ 
+ [JPERF-671]: https://ecosystem.atlassian.net/browse/JPERF-671
 
 ## [2.22.0] - 2020-11-04
 [2.22.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.21.4...release-2.22.0
