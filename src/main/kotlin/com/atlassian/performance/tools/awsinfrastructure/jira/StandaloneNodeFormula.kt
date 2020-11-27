@@ -120,6 +120,12 @@ internal class StandaloneNodeFormula(
             output = """\1$databaseIp\5""",
             file = dbconfigXml
         )
+        Sed().replace(
+            connection = connection,
+            expression = "(<url>.*\\?.*)(sessionVariables=)" + ".*" + "(=InnoDB)(.*</url>)",
+            output = """\1\2default_storage_engine\3\4""",
+            file = dbconfigXml
+        )
     }
 
     private fun mountEphemeralDrive(
