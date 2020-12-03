@@ -23,6 +23,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.22.1...master
 
+### Fixed
+- Quiet down mkfs.ext4 so that it doesn't pollute warn/error logs with version number string. Fix [JPERF-632].
+
+[JPERF-632]: https://ecosystem.atlassian.net/browse/JPERF-632
+
 ## [2.22.1] - 2020-11-27
 [2.22.1]: https://github.com/atlassian/aws-infrastructure/compare/release-2.22.0...2.22.1
 
