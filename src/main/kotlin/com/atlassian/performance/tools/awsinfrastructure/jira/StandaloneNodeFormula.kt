@@ -128,18 +128,6 @@ internal class StandaloneNodeFormula(
         )
     }
 
-    private fun mountEphemeralDrive(
-        connection: SshConnection
-    ) {
-        connection.execute("sudo tar -cf /home/ubuntu.tar .")
-        connection.execute("sudo mkfs.ext4 /dev/nvme1n1")
-        connection.execute("sudo mount -t ext4 /dev/nvme1n1 /home/ubuntu")
-        connection.execute("sudo chown ubuntu /home/ubuntu")
-        connection.execute("cd /home/ubuntu")
-        connection.execute("tar -xf /home/ubuntu.tar")
-        connection.execute("sudo rm /home/ubuntu.tar")
-    }
-
     private fun downloadMysqlConnector(
         url: String,
         connection: SshConnection
