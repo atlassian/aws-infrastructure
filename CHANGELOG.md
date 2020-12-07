@@ -21,7 +21,10 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.22.1...master
+[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.22.2...master
+
+## [2.22.2] - 2020-12-07
+[2.22.2]: https://github.com/atlassian/aws-infrastructure/compare/release-2.22.1...2.22.2
 
 ### Fixed
 - Quiet down mkfs.ext4 so that it doesn't pollute warn/error logs with version number string. Fix [JPERF-632].
