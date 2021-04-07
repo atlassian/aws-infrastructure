@@ -39,6 +39,7 @@ Resources:
           Ebs:
             VolumeSize: 30
             VolumeType: gp2
+            Encrypted: true
   SshSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
