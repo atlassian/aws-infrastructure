@@ -42,7 +42,8 @@ class MulticastVirtualUsersFormula private constructor(
         splunkForwarder = splunkForwarder,
         browser = browser,
         network = null,
-        instanceType = InstanceType.C48xlarge
+        instanceType = InstanceType.C48xlarge,
+        sshCidrIp = ""
     )
 
     @Deprecated("Use MulticastVirtualUsersFormula.Builder")
@@ -55,7 +56,8 @@ class MulticastVirtualUsersFormula private constructor(
         splunkForwarder = DisabledSplunkForwarder(),
         browser = Chrome(),
         network = null,
-        instanceType = InstanceType.C48xlarge
+        instanceType = InstanceType.C48xlarge,
+        sshCidrIp = ""
     )
 
     override fun provision(
