@@ -55,7 +55,8 @@ class StackVirtualUsersFormula private constructor(
         splunkForwarder = splunkForwarder,
         browser = browser,
         stackCreationTimeout = Duration.ofMinutes(30),
-        instanceType = InstanceType.C48xlarge
+        instanceType = InstanceType.C48xlarge,
+        sshCidrIp = ""
     )
 
     @Deprecated(message = "Use StackVirtualUsersFormula.Builder instead.")
@@ -67,7 +68,8 @@ class StackVirtualUsersFormula private constructor(
         splunkForwarder = DisabledSplunkForwarder(),
         browser = Chrome(),
         stackCreationTimeout = Duration.ofMinutes(30),
-        instanceType = InstanceType.C48xlarge
+        instanceType = InstanceType.C48xlarge,
+        sshCidrIp = ""
     )
 
     @Deprecated(message = "Use StackVirtualUsersFormula.Builder instead.")
@@ -80,7 +82,8 @@ class StackVirtualUsersFormula private constructor(
         splunkForwarder = splunkForwarder,
         browser = Chrome(),
         stackCreationTimeout = Duration.ofMinutes(30),
-        instanceType = InstanceType.C48xlarge
+        instanceType = InstanceType.C48xlarge,
+        sshCidrIp = ""
     )
 
     override fun provision(
