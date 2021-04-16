@@ -15,6 +15,11 @@ Parameters:
     Type: String
   InstanceType:
     Type: String
+  SSHCidrIp:
+    Description: CIDR IP range of SSH access to be allowed in the security group
+    Type: String
+Conditions:
+  SetSSHCidrIp: !Not [!Equals [!Ref SSHCidrIp, ""]]
 Resources:
   VirtualUsers:
     Type: AWS::EC2::Instance
@@ -51,4 +56,5 @@ Resources:
           IpProtocol: tcp
           FromPort: 22
           ToPort: 22
-          CidrIp: 0.0.0.0/0
+          CidrIp:
+            !If [SetSSHCidrIp, !Ref SSHCidrIp, 0.0.0.0/0]
