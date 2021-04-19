@@ -24,16 +24,21 @@ Dropping a requirement of a major version of a dependency is a new contract.
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.23.0...master
 
 ### Fixed
-- Fixed a bug which does not override CIDR IP range of SSH ingress to virtual user EC2 nodes for `virtual-users.yaml`
+- Fix a bug which does not override CIDR IP range of SSH ingress to virtual user EC2 nodes for `virtual-users.yaml`. Fix [JPERF-733].
+
+[JPERF-733]: https://ecosystem.atlassian.net/browse/JPERF-733
 
 ## [2.23.0] - 2021-04-16
 [2.23.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.22.2...release-2.23.0
 
 ### Added
-- Add the ability to parameterize CIDR IP range of SSH ingress to virtual user EC2 nodes for `virtual-users.yaml`
+- Add the ability to parameterize CIDR IP range of SSH ingress to virtual user EC2 nodes for `virtual-users.yaml`. Resolve [JPERF-733].
+- Add the ability to enable EBS volume encryption.
+
+[JPERF-733]: https://ecosystem.atlassian.net/browse/JPERF-733
 
 ## [2.22.2] - 2020-12-07
-[2.22.2]: https://github.com/atlassian/aws-infrastructure/compare/release-2.22.1...2.22.2
+[2.22.2]: https://github.com/atlassian/aws-infrastructure/compare/release-2.22.1...release-2.22.2
 
 ### Fixed
 - Quiet down mkfs.ext4 so that it doesn't pollute warn/error logs with version number string. Fix [JPERF-632].
@@ -41,7 +46,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 [JPERF-632]: https://ecosystem.atlassian.net/browse/JPERF-632
 
 ## [2.22.1] - 2020-11-27
-[2.22.1]: https://github.com/atlassian/aws-infrastructure/compare/release-2.22.0...2.22.1
+[2.22.1]: https://github.com/atlassian/aws-infrastructure/compare/release-2.22.0...release-2.22.1
 
 ### Fixed
  - Fix regular expression for database url customization with `default_storage_engine` as part of [JPERF-671].
