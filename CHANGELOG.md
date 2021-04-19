@@ -23,6 +23,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.23.0...master
 
+### Fixed
+- Fix a bug which does not override CIDR IP range of SSH ingress to virtual user EC2 nodes for `virtual-users.yaml`. Fix [JPERF-733].
+
+[JPERF-733]: https://ecosystem.atlassian.net/browse/JPERF-733
+
 ## [2.23.0] - 2021-04-16
 [2.23.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.22.2...release-2.23.0
 

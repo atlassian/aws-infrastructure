@@ -120,7 +120,7 @@ class StackVirtualUsersFormula private constructor(
                     .withParameterValue(instanceType.toString()),
                 Parameter()
                     .withParameterKey("SSHCidrIp")
-                    .withParameterValue("")
+                    .withParameterValue(sshCidrIp)
             ),
             aws = aws,
             pollingTimeout = stackCreationTimeout
