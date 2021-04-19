@@ -21,7 +21,13 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.22.2...master
+[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.23.0...master
+
+### Fixed
+- Fixed a bug which does not override CIDR IP range of SSH ingress to virtual user EC2 nodes for `virtual-users.yaml`
+
+## [2.23.0] - 2021-04-16
+[2.23.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.22.2...release-2.23.0
 
 ### Added
 - Add the ability to parameterize CIDR IP range of SSH ingress to virtual user EC2 nodes for `virtual-users.yaml`
