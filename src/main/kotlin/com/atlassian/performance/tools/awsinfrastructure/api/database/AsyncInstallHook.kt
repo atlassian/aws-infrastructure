@@ -1,12 +1,13 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.database
 
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
-import com.atlassian.performance.tools.infrastructure.api.jira.hook.PostInstallHooks
-import com.atlassian.performance.tools.infrastructure.api.jira.hook.PreInstallHooks
-import com.atlassian.performance.tools.infrastructure.api.jira.hook.TcpServer
-import com.atlassian.performance.tools.infrastructure.api.jira.hook.install.InstalledJira
-import com.atlassian.performance.tools.infrastructure.api.jira.hook.install.PostInstallHook
-import com.atlassian.performance.tools.infrastructure.api.jira.hook.server.PreInstallHook
+import com.atlassian.performance.tools.infrastructure.api.jira.install.InstalledJira
+import com.atlassian.performance.tools.infrastructure.api.jira.install.TcpHost
+import com.atlassian.performance.tools.infrastructure.api.jira.install.hook.PostInstallHook
+import com.atlassian.performance.tools.infrastructure.api.jira.install.hook.PostInstallHooks
+import com.atlassian.performance.tools.infrastructure.api.jira.install.hook.PreInstallHook
+import com.atlassian.performance.tools.infrastructure.api.jira.install.hook.PreInstallHooks
+import com.atlassian.performance.tools.infrastructure.api.jira.report.Reports
 import com.atlassian.performance.tools.ssh.api.SshConnection
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
@@ -18,20 +19,20 @@ class AsyncInstallHook(
     private val hook: PreInstallHook
 ) : PreInstallHook {
 
-    override fun run(ssh: SshConnection, server: TcpServer, hooks: PreInstallHooks) {
+    override fun call(ssh: SshConnection, host: TcpHost, hooks: PreInstallHooks, reports: Reports) {
         val thread = Executors.newSingleThreadExecutor()
         val future = thread.submitWithLogContext("async-hook") {
-            hook.run(ssh, server, hooks)
+            hook.call(ssh, host, hooks, reports)
         }
-        hooks.hook(FutureBlockingHook(future))
+        hooks.postInstall.insert(FutureHook(future))
     }
 }
 
-private class FutureBlockingHook(
+private class FutureHook(
     private val future: Future<*>
 ) : PostInstallHook {
 
-    override fun run(ssh: SshConnection, jira: InstalledJira, hooks: PostInstallHooks) {
+    override fun call(ssh: SshConnection, jira: InstalledJira, hooks: PostInstallHooks, reports: Reports) {
         future.get()
     }
 }
