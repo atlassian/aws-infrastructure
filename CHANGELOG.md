@@ -69,6 +69,9 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [2.21.4] - 2020-07-10
 [2.21.4]: https://github.com/atlassian/aws-infrastructure/compare/release-2.21.3...release-2.21.4
 
+### Changed
+- Upgraded AWS SDK to 1.11.817 with support for ARM-based instances
+
 ### Fixed
 - Upgrade to Ubuntu 20.04 Focal in `StackVirtualUsersFormula`.
 
