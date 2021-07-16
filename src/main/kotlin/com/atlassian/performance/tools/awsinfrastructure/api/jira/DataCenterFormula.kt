@@ -110,7 +110,6 @@ class DataCenterFormula private constructor(
         aws: Aws
     ): ProvisionedJira = time("provision Jira Data Center") {
         logger.info("Setting up Jira...")
-
         val executor = Executors.newCachedThreadPool(
             ThreadFactoryBuilder()
                 .setNameFormat("data-center-provisioning-thread-%d")
@@ -118,7 +117,7 @@ class DataCenterFormula private constructor(
         )
         val network = overriddenNetwork ?: NetworkFormula(investment, aws).provision()
         val template = TemplateBuilder("2-nodes-dc.yaml").adaptTo(configs)
-        val stackProvisioning = executor.submitWithLogContext("provision stack") {
+        val stackProvisioning: Future<ProvisionedStack> = executor.submitWithLogContext("provision stack") {
             StackFormula(
                 investment = investment,
                 cloudformationTemplate = template,

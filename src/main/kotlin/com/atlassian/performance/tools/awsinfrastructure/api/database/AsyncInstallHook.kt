@@ -1,8 +1,8 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.database
 
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
+import com.atlassian.performance.tools.infrastructure.api.jira.install.HttpNode
 import com.atlassian.performance.tools.infrastructure.api.jira.install.InstalledJira
-import com.atlassian.performance.tools.infrastructure.api.jira.install.TcpHost
 import com.atlassian.performance.tools.infrastructure.api.jira.install.hook.PostInstallHook
 import com.atlassian.performance.tools.infrastructure.api.jira.install.hook.PostInstallHooks
 import com.atlassian.performance.tools.infrastructure.api.jira.install.hook.PreInstallHook
@@ -19,10 +19,10 @@ class AsyncInstallHook(
     private val hook: PreInstallHook
 ) : PreInstallHook {
 
-    override fun call(ssh: SshConnection, host: TcpHost, hooks: PreInstallHooks, reports: Reports) {
+    override fun call(ssh: SshConnection, http: HttpNode, hooks: PreInstallHooks, reports: Reports) {
         val thread = Executors.newSingleThreadExecutor()
         val future = thread.submitWithLogContext("async-hook") {
-            hook.call(ssh, host, hooks, reports)
+            hook.call(ssh, http, hooks, reports)
         }
         hooks.postInstall.insert(FutureHook(future))
     }

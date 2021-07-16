@@ -1,16 +1,11 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
-import com.atlassian.performance.tools.aws.api.Aws
 import com.atlassian.performance.tools.aws.api.Investment
-import com.atlassian.performance.tools.aws.api.SshKey
 import com.atlassian.performance.tools.aws.api.SshKeyFormula
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime
 import com.atlassian.performance.tools.awsinfrastructure.NetworkFormula
-import com.atlassian.performance.tools.awsinfrastructure.api.DatasetCatalogue
-import com.atlassian.performance.tools.awsinfrastructure.api.Network
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.M5ExtraLargeEphemeral
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
-import com.atlassian.performance.tools.awsinfrastructure.host.TcpHostFormula
 import com.atlassian.performance.tools.infrastructure.api.database.DockerMysqlServer
 import com.atlassian.performance.tools.infrastructure.api.dataset.HttpDatasetPackage
 import com.atlassian.performance.tools.infrastructure.api.distribution.PublicJiraSoftwareDistribution
@@ -19,8 +14,8 @@ import com.atlassian.performance.tools.infrastructure.api.jira.JiraLaunchTimeout
 import com.atlassian.performance.tools.infrastructure.api.jira.install.ParallelInstallation
 import com.atlassian.performance.tools.infrastructure.api.jira.install.hook.PreInstallHooks
 import com.atlassian.performance.tools.infrastructure.api.jira.instance.JiraDataCenterPlan
+import com.atlassian.performance.tools.infrastructure.api.jira.instance.JiraNodePlan
 import com.atlassian.performance.tools.infrastructure.api.jira.instance.PreInstanceHooks
-import com.atlassian.performance.tools.infrastructure.api.jira.node.JiraNodePlan
 import com.atlassian.performance.tools.infrastructure.api.jira.sharedhome.NfsSharedHome
 import com.atlassian.performance.tools.infrastructure.api.jira.start.JiraLaunchScript
 import com.atlassian.performance.tools.infrastructure.api.jira.start.hook.RestUpgrade
@@ -32,6 +27,7 @@ import java.net.URI
 import java.nio.file.Files
 import java.time.Duration
 import java.util.*
+import java.util.concurrent.CompletableFuture
 
 class HooksDataCenterFormulaIT {
 
@@ -56,8 +52,8 @@ class HooksDataCenterFormulaIT {
         // given
         val aws = IntegrationTestRuntime.aws
         val nonce = UUID.randomUUID().toString()
-        val infrastructure: JiraInfrastructure = provisionDependencies(aws, nonce)
-        val database = DockerMysqlServer.Builder(infrastructure.forMysql(), mysql)
+        val stack: JiraStack = provisionDependencies(aws, nonce)
+        val database = DockerMysqlServer.Builder(stack.forDatabase(), mysql)
             .source(
                 HttpDatasetPackage(
                     uri = datasetUri.resolve("database.tar.bz2"),
@@ -67,10 +63,10 @@ class HooksDataCenterFormulaIT {
             .build()
         val upgrade = RestUpgrade(JiraLaunchTimeouts.Builder().build(), "admin", "admin")
         val installation = ParallelInstallation(jiraHome, PublicJiraSoftwareDistribution("8.13.0"), AdoptOpenJDK())
-        val dcPlan = JiraDataCenterPlan.Builder(infrastructure.forJiraNodes())
+        val dcPlan = JiraDataCenterPlan.Builder(stack.forJiraNodes())
             .nodePlans(
                 (1..2).map {
-                    JiraNodePlan.Builder()
+                    JiraNodePlan.Builder(stack)
                         .installation(installation)
                         .start(JiraLaunchScript())
                         .hooks(PreInstallHooks.default().also { it.postStart.insert(upgrade) })
@@ -80,16 +76,28 @@ class HooksDataCenterFormulaIT {
             .instanceHooks(
                 PreInstanceHooks.default()
                     .also { it.insert(database) }
-                    .also { it.insert(NfsSharedHome(jiraHome, infrastructure.forSharedHome())) }
+                    .also { it.insert(NfsSharedHome(jiraHome, stack.forSharedHome())) }
             )
-            .balancerPlan(ApacheProxyPlan(infrastructure.forLoadBalancer()))
+            .balancerPlan(ApacheProxyPlan(stack.forLoadBalancer()))
             .build()
 
         // when
-        dcPlan.materialize()
-        val reports = dcPlan.report().downloadTo(Files.createTempDirectory("jira-dc-plan-"))
+        val dataCenter = dcPlan.materialize()
 
         // then
+        dataCenter.nodes.forEach { node ->
+            val installed = node.installed
+            val serverXml = installed
+                .installation
+                .resolve("conf/server.xml")
+                .download(Files.createTempFile("downloaded-config", ".xml"))
+            assertThat(serverXml.readText()).contains("<Connector port=\"${installed.http.tcp.port}\"")
+            assertThat(node.pid).isPositive()
+            installed.http.tcp.ssh.newConnection().use { ssh ->
+                ssh.execute("wget ${dataCenter.address}")
+            }
+        }
+        val reports = dcPlan.report().downloadTo(Files.createTempDirectory("jira-dc-plan-"))
         assertThat(reports).isDirectory()
         val fileTree = reports
             .walkTopDown()
@@ -111,7 +119,7 @@ class HooksDataCenterFormulaIT {
     private fun provisionDependencies(
         aws: Aws,
         nonce: String
-    ): AwsDcDependencies {
+    ): JiraStack {
         val sshKey = SshKeyFormula(
             ec2 = aws.ec2,
             workingDirectory = workspace.directory,
@@ -123,30 +131,15 @@ class HooksDataCenterFormulaIT {
             lifespan = lifespan
         )
         val network = NetworkFormula(investment, aws).provision()
-        return AwsDcDependencies(investment, sshKey, network)
-    }
-
-    private fun prepareMysql(
-        aws: Aws,
-        sshKey: SshKey,
-        network: Network,
-        investment: Investment
-    ): DockerMysqlServer = DockerMysqlServer.Builder(
-        hostSupplier = TcpHostFormula.Builder(
+        return JiraStack.Builder(
             aws,
-            sshKey,
-            network
+            network,
+            investment,
+            CompletableFuture.completedFuture(sshKey),
+            aws.shortTermStorageAccess()
         )
-            .port(3306)
-            .name("MySQL server")
-            .investment(investment)
-            .computer(M5ExtraLargeEphemeral())
-            .volume(Volume(100))
-            .stackTimeout(Duration.ofMinutes(4))
-            .build(),
-        source = HttpDatasetPackage(
-            uri = datasetUri.resolve("database.tar.bz2"),
-            downloadTimeout = Duration.ofMinutes(6)
-        )
-    ).build()
+            .databaseComputer(M5ExtraLargeEphemeral())
+            .databaseVolume(Volume(100))
+            .build()
+    }
 }
