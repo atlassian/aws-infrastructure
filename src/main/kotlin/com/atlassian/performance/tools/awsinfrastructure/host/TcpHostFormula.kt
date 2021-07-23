@@ -10,8 +10,7 @@ import com.atlassian.performance.tools.awsinfrastructure.api.Network
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.EbsEc2Instance
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
-import com.atlassian.performance.tools.infrastructure.api.host.TcpHost
-import com.atlassian.performance.tools.infrastructure.api.jira.hook.TcpServer
+import com.atlassian.performance.tools.infrastructure.api.jira.install.TcpNode
 import com.atlassian.performance.tools.io.api.readResourceText
 import com.atlassian.performance.tools.ssh.api.Ssh
 import com.atlassian.performance.tools.ssh.api.SshHost
@@ -28,9 +27,9 @@ class TcpHostFormula private constructor(
     private val sshKey: SshKey,
     private val investment: Investment,
     private val stackTimeout: Duration
-) : Supplier<TcpHost> {
+) : Supplier<TcpNode> {
 
-    override fun get(): TcpHost {
+    override fun get(): TcpNode {
         val stack = StackFormula(
             investment = investment,
             cloudformationTemplate = readResourceText("aws/ssh-tcp-host.yaml"),
@@ -63,17 +62,16 @@ class TcpHostFormula private constructor(
             aws = aws,
             pollingTimeout = stackTimeout
         ).provision()
-        val ip = stack.listMachines().single().publicIpAddress
-        return TcpHost(
-            server = TcpServer(
-                ip = ip,
-                port = port,
-                name = name
-            ),
+        val machine = stack.listMachines().single()
+        return TcpNode(
             ssh = Ssh(
-                host = SshHost(ip, "ubuntu", sshKey.file.path),
+                host = SshHost(machine.publicIpAddress, "ubuntu", sshKey.file.path),
                 connectivityPatience = 4
-            )
+            ),
+            publicIp = machine.publicIpAddress,
+            privateIp = machine.privateIpAddress,
+            port = port,
+            name = name
         )
     }
 

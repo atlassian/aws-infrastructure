@@ -15,6 +15,7 @@ import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.LoadBa
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.Infrastructure
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
+import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
 import com.atlassian.performance.tools.infrastructure.api.jira.install.HttpNode
 import com.atlassian.performance.tools.infrastructure.api.jira.install.TcpNode
 import com.atlassian.performance.tools.ssh.api.Ssh
@@ -34,6 +35,7 @@ class JiraStack private constructor(
     private val roleProfile: String,
     private val jiraComputer: Computer,
     private val jiraVolume: Volume,
+    private val jiraNodeConfigs: List<JiraNodeConfig>,
     private val databaseComputer: Computer,
     private val databaseVolume: Volume,
     private val provisioningTimout: Duration
@@ -43,7 +45,7 @@ class JiraStack private constructor(
 
     private fun provision(): ProvisionedStack {
         logger.info("Setting up Jira stack...")
-        val template = TemplateBuilder("2-nodes-dc.yaml").adaptTo(configs)
+        val template = TemplateBuilder("2-nodes-dc.yaml").adaptTo(jiraNodeConfigs)
         val stack = StackFormula(
             investment = investment,
             cloudformationTemplate = template,
@@ -254,12 +256,14 @@ class JiraStack private constructor(
         private var sshKey: Future<SshKey>,
         private var roleProfile: String
     ) {
+        private var jiraNodeConfigs: List<JiraNodeConfig> = listOf(1, 2).map { JiraNodeConfig.Builder().build() }
         private var jiraComputer: Computer = C4EightExtraLargeElastic()
         private var jiraVolume: Volume = Volume(100)
         private var databaseComputer: Computer = M4ExtraLargeElastic()
         private var databaseVolume: Volume = Volume(100)
         private var provisioningTimout: Duration = Duration.ofMinutes(30)
 
+        fun jiraNodeConfigs(jiraNodeConfigs: List<JiraNodeConfig>) = apply { this.jiraNodeConfigs = jiraNodeConfigs }
         fun jiraComputer(jiraComputer: Computer) = apply { this.jiraComputer = jiraComputer }
         fun jiraVolume(jiraVolume: Volume) = apply { this.jiraVolume = jiraVolume }
         fun databaseComputer(databaseComputer: Computer) = apply { this.databaseComputer = databaseComputer }
@@ -272,6 +276,7 @@ class JiraStack private constructor(
             investment = investment,
             sshKey = sshKey,
             roleProfile = roleProfile,
+            jiraNodeConfigs = jiraNodeConfigs,
             jiraComputer = jiraComputer,
             jiraVolume = jiraVolume,
             databaseComputer = databaseComputer,

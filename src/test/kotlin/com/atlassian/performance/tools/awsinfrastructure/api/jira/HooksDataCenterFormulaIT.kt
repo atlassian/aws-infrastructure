@@ -50,9 +50,7 @@ class HooksDataCenterFormulaIT {
     @Test
     fun shouldProvisionDc() {
         // given
-        val aws = IntegrationTestRuntime.aws
-        val nonce = UUID.randomUUID().toString()
-        val stack: JiraStack = provisionDependencies(aws, nonce)
+        val stack: JiraStack = provisionDependencies()
         val database = DockerMysqlServer.Builder(stack.forDatabase(), mysql)
             .source(
                 HttpDatasetPackage(
@@ -116,10 +114,9 @@ class HooksDataCenterFormulaIT {
             .isNotEmpty
     }
 
-    private fun provisionDependencies(
-        aws: Aws,
-        nonce: String
-    ): JiraStack {
+    private fun provisionDependencies(): JiraStack {
+        val aws = IntegrationTestRuntime.aws
+        val nonce = UUID.randomUUID().toString()
         val sshKey = SshKeyFormula(
             ec2 = aws.ec2,
             workingDirectory = workspace.directory,
