@@ -1,6 +1,8 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
 import com.amazonaws.services.cloudformation.model.Parameter
+import com.amazonaws.services.ec2.AmazonEC2
+import com.amazonaws.services.ec2.model.*
 import com.amazonaws.services.ec2.model.Tag
 import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
@@ -9,7 +11,6 @@ import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C4EightExt
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.M4ExtraLargeElastic
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
-import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.Ec2ServerRoom
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
 import com.atlassian.performance.tools.infrastructure.api.jira.install.HttpNode
 import com.atlassian.performance.tools.infrastructure.api.jira.install.TcpNode
@@ -19,30 +20,38 @@ import com.atlassian.performance.tools.infrastructure.api.network.SshServerRoom
 import com.atlassian.performance.tools.infrastructure.api.network.TcpServerRoom
 import com.atlassian.performance.tools.ssh.api.Ssh
 import com.atlassian.performance.tools.ssh.api.SshHost
+import com.atlassian.performance.tools.workspace.api.RootWorkspace
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import java.nio.file.Path
 import java.time.Duration
+import java.util.*
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Future
+import java.util.concurrent.ConcurrentLinkedQueue
 
-class JiraStack private constructor(
+class LegacyAwsInfrastructure private constructor(
     private val aws: Aws,
     private val network: Network,
     private val investment: Investment,
-    private val sshKey: Future<SshKey>,
-    private val roleProfile: String,
+    private val workspace: Path,
     private val jiraComputer: Computer,
     private val jiraVolume: Volume,
     private val jiraNodeConfigs: List<JiraNodeConfig>,
     private val databaseComputer: Computer,
     private val databaseVolume: Volume,
     private val provisioningTimout: Duration
-) : Networked {
+) : Networked, AutoCloseable {
     private val logger: Logger = LogManager.getLogger(this::class.java)
-    private val provisioning: Lazy<ProvisionedStack> = lazy { provision() }
-    private val deprovisioning: Lazy<CompletableFuture<*>> = lazy { provisioning.value.release() }
+    private val nonce = UUID.randomUUID().toString()
+    private val sshKey: SshKey by lazy { provisionKey() }
+    private val provisioning: ProvisionedStack by lazy { provisionStack() }
+    private val deprovisioning: CompletableFuture<*> by lazy { provisioning.release() }
 
-    private fun provision(): ProvisionedStack {
+    private fun provisionKey(): SshKey {
+        return SshKeyFormula(aws.ec2, workspace, nonce, investment.lifespan).provision()
+    }
+
+    private fun provisionStack(): ProvisionedStack {
         logger.info("Setting up Jira stack...")
         val template = TemplateBuilder("2-nodes-dc.yaml").adaptTo(jiraNodeConfigs)
         val stack = StackFormula(
@@ -51,10 +60,10 @@ class JiraStack private constructor(
             parameters = listOf(
                 Parameter()
                     .withParameterKey("KeyName")
-                    .withParameterValue(sshKey.get().remote.name),
+                    .withParameterValue(sshKey.remote.name),
                 Parameter()
                     .withParameterKey("InstanceProfile")
-                    .withParameterValue(roleProfile),
+                    .withParameterValue(aws.shortTermStorageAccess()),
                 Parameter()
                     .withParameterKey("Ami")
                     .withParameterValue(aws.defaultAmi),
@@ -84,47 +93,43 @@ class JiraStack private constructor(
         return stack
     }
 
-    private fun deprovision() = deprovisioning.value.get()
+    override fun close() {
+        deprovisioning.get()
+    }
 
     override fun subnet(): String = network.subnet.cidrBlock
 
-    private fun listMachines() = provisioning.value.listMachines()
+    private fun listMachines() = provisioning.listMachines()
 
     fun forDatabase(): TcpServerRoom {
-        return StackDatabase(databaseComputer, sshKey.get())
+        return StackDatabase()
     }
 
     fun forSharedHome(): SshServerRoom {
-        return StackSharedHome(jiraComputer, sshKey.get())
+        return StackSharedHome()
     }
 
     fun forJiraNodes(): HttpServerRoom {
-        return StackJiraNodes(jiraComputer, sshKey.get())
+        return StackJiraNodes()
     }
 
-    fun forLoadBalancer() : HttpServerRoom {
-        return Ec2ServerRoom(aws, investment)
+    fun forLoadBalancer(): HttpServerRoom {
+        return Ec2ServerRoom()
     }
 
-    private inner class StackSharedHome(
-        private val computer: Computer,
-        private val sshKey: SshKey
-    ) : SshServerRoom {
+    private inner class StackSharedHome : SshServerRoom {
 
         override fun serveSsh(name: String): Ssh {
             val machine = listMachines().single { it.tags.contains(Tag("jpt-shared-home", "true")) }
             val publicIp = machine.publicIpAddress
             val ssh = Ssh(SshHost(publicIp, "ubuntu", sshKey.file.path), connectivityPatience = 4)
             sshKey.file.facilitateSsh(publicIp)
-            ssh.newConnection().use { computer.setUp(it) }
+            ssh.newConnection().use { jiraComputer.setUp(it) }
             return ssh
         }
     }
 
-    private inner class StackDatabase(
-        private val computer: Computer,
-        private val sshKey: SshKey
-    ) : TcpServerRoom {
+    private inner class StackDatabase : TcpServerRoom {
 
         override fun serveTcp(name: String, tcpPorts: List<Int>, udpPorts: List<Int>): TcpNode {
             if (tcpPorts.singleOrNull() == 3306 && udpPorts.isEmpty()) {
@@ -139,7 +144,7 @@ class JiraStack private constructor(
             val publicIp = machine.publicIpAddress
             val ssh = Ssh(SshHost(publicIp, "ubuntu", sshKey.file.path), connectivityPatience = 5)
             sshKey.file.facilitateSsh(publicIp)
-            ssh.newConnection().use { computer.setUp(it) }
+            ssh.newConnection().use { databaseComputer.setUp(it) }
             return TcpNode(
                 publicIp,
                 machine.privateIpAddress,
@@ -150,10 +155,7 @@ class JiraStack private constructor(
         }
     }
 
-    private inner class StackJiraNodes(
-        private val computer: Computer,
-        private val sshKey: SshKey
-    ) : HttpServerRoom {
+    private inner class StackJiraNodes : HttpServerRoom {
 
         private val machines by lazy {
             listMachines().filter { it.tags.contains(Tag("jpt-jira", "true")) }
@@ -161,11 +163,12 @@ class JiraStack private constructor(
         private var nodesRequested = 0
 
         override fun serveHttp(name: String): HttpNode {
-            val machine = machines[nodesRequested++]
+            val machine =
+                machines[nodesRequested++] // TODO looks like a yikes, relies on sync across `List<JiraNodeConfig>` and `List<JiraNodePlan>`
             val publicIp = machine.publicIpAddress
             val ssh = Ssh(SshHost(publicIp, "ubuntu", sshKey.file.path), connectivityPatience = 5)
             sshKey.file.facilitateSsh(publicIp)
-            ssh.newConnection().use { computer.setUp(it) }
+            ssh.newConnection().use { jiraComputer.setUp(it) }
             val tcp = TcpNode(
                 publicIp,
                 machine.privateIpAddress,
@@ -177,12 +180,69 @@ class JiraStack private constructor(
         }
     }
 
+    private inner class Ec2ServerRoom : HttpServerRoom {
+
+        private val balancerPort = 80
+        private val resources = ConcurrentLinkedQueue<Resource>()
+
+        override fun serveHttp(name: String): HttpNode {
+            val httpAccess = httpAccess(investment, aws.ec2, aws.awaitingEc2, network.vpc)
+            val (ssh, resource) = aws.awaitingEc2.allocateInstance(
+                investment = investment,
+                key = sshKey,
+                vpcId = network.vpc.vpcId,
+                customizeLaunch = { launch ->
+                    launch
+                        .withSecurityGroupIds(httpAccess.groupId)
+                        .withSubnetId(network.subnet.subnetId)
+                        .withInstanceType(InstanceType.M5Large)
+                }
+            )
+            resources += resource
+            sshKey.file.facilitateSsh(ssh.host.ipAddress)
+            return HttpNode(
+                TcpNode(
+
+                ),
+                "/",
+                false
+            )
+        }
+
+        private fun httpAccess(
+            investment: Investment,
+            ec2: AmazonEC2,
+            awaitingEc2: AwaitingEc2,
+            vpc: Vpc
+        ): SecurityGroup {
+            val securityGroup = awaitingEc2.allocateSecurityGroup(
+                investment,
+                CreateSecurityGroupRequest()
+                    .withGroupName("${investment.reuseKey()}-HttpListener")
+                    .withDescription("Enables HTTP access")
+                    .withVpcId(vpc.vpcId)
+            )
+            ec2.authorizeSecurityGroupIngress(
+                AuthorizeSecurityGroupIngressRequest()
+                    .withGroupId(securityGroup.groupId)
+                    .withIpPermissions(
+                        IpPermission()
+                            .withIpProtocol("tcp")
+                            .withFromPort(balancerPort)
+                            .withToPort(balancerPort)
+                            .withIpv4Ranges(
+                                IpRange().withCidrIp("0.0.0.0/0")
+                            )
+                    )
+            )
+            return securityGroup
+        }
+    }
+
     class Builder(
         private var aws: Aws,
         private var network: Network,
-        private var investment: Investment,
-        private var sshKey: Future<SshKey>,
-        private var roleProfile: String
+        private var investment: Investment
     ) {
         private var jiraNodeConfigs: List<JiraNodeConfig> = listOf(1, 2).map { JiraNodeConfig.Builder().build() }
         private var jiraComputer: Computer = C4EightExtraLargeElastic()
@@ -190,26 +250,32 @@ class JiraStack private constructor(
         private var databaseComputer: Computer = M4ExtraLargeElastic()
         private var databaseVolume: Volume = Volume(100)
         private var provisioningTimout: Duration = Duration.ofMinutes(30)
+        private var workspace: Path = RootWorkspace().currentTask.isolateTest(investment.reuseKey()).directory
 
-        fun jiraNodeConfigs(jiraNodeConfigs: List<JiraNodeConfig>) = apply { this.jiraNodeConfigs = jiraNodeConfigs }
+        fun investment(investment: Investment) = apply { this.investment = investment }
+        fun jiraNodeConfigs(jiraNodeConfigs: List<JiraNodeConfig>) =
+            apply { this.jiraNodeConfigs = jiraNodeConfigs }
+
         fun jiraComputer(jiraComputer: Computer) = apply { this.jiraComputer = jiraComputer }
         fun jiraVolume(jiraVolume: Volume) = apply { this.jiraVolume = jiraVolume }
         fun databaseComputer(databaseComputer: Computer) = apply { this.databaseComputer = databaseComputer }
         fun databaseVolume(databaseVolume: Volume) = apply { this.databaseVolume = databaseVolume }
-        fun provisioningTimout(provisioningTimout: Duration) = apply { this.provisioningTimout = provisioningTimout }
+        fun provisioningTimout(provisioningTimout: Duration) =
+            apply { this.provisioningTimout = provisioningTimout }
 
-        fun build(): JiraStack = JiraStack(
+        fun workspace(workspace: Path) = apply { this.workspace = workspace }
+
+        fun build(): LegacyAwsInfrastructure = LegacyAwsInfrastructure(
             aws = aws,
             network = network,
             investment = investment,
-            sshKey = sshKey,
-            roleProfile = roleProfile,
             jiraNodeConfigs = jiraNodeConfigs,
             jiraComputer = jiraComputer,
             jiraVolume = jiraVolume,
             databaseComputer = databaseComputer,
             databaseVolume = databaseVolume,
-            provisioningTimout = provisioningTimout
+            provisioningTimout = provisioningTimout,
+            workspace = workspace
         )
     }
 }

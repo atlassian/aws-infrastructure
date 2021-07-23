@@ -50,7 +50,7 @@ class HooksDataCenterFormulaIT {
     @Test
     fun shouldProvisionDc() {
         // given
-        val stack: JiraStack = provisionDependencies()
+        val stack: LegacyAwsInfrastructure = provisionDependencies()
         val database = DockerMysqlServer.Builder(stack.forDatabase(), mysql)
             .source(
                 HttpDatasetPackage(
@@ -114,26 +114,17 @@ class HooksDataCenterFormulaIT {
             .isNotEmpty
     }
 
-    private fun provisionDependencies(): JiraStack {
+    private fun provisionDependencies(): LegacyAwsInfrastructure {
         val aws = IntegrationTestRuntime.aws
-        val nonce = UUID.randomUUID().toString()
-        val sshKey = SshKeyFormula(
-            ec2 = aws.ec2,
-            workingDirectory = workspace.directory,
-            lifespan = lifespan,
-            prefix = nonce
-        ).provision()
         val investment = Investment(
             useCase = "Test Server provisioning hook API",
             lifespan = lifespan
         )
         val network = NetworkFormula(investment, aws).provision()
-        return JiraStack.Builder(
+        return LegacyAwsInfrastructure.Builder(
             aws,
             network,
-            investment,
-            CompletableFuture.completedFuture(sshKey),
-            aws.shortTermStorageAccess()
+            investment
         )
             .databaseComputer(M5ExtraLargeEphemeral())
             .databaseVolume(Volume(100))
