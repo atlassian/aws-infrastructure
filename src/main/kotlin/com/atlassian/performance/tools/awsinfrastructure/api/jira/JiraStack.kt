@@ -3,28 +3,25 @@ package com.atlassian.performance.tools.awsinfrastructure.api.jira
 import com.amazonaws.services.cloudformation.model.Parameter
 import com.amazonaws.services.ec2.model.Tag
 import com.atlassian.performance.tools.aws.api.*
-import com.atlassian.performance.tools.awsinfrastructure.NetworkFormula
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
 import com.atlassian.performance.tools.awsinfrastructure.api.Network
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C4EightExtraLargeElastic
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.M4ExtraLargeElastic
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
-import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.ApacheEc2LoadBalancerFormula
-import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.LoadBalancerFormula
-import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
-import com.atlassian.performance.tools.infrastructure.api.Infrastructure
-import com.atlassian.performance.tools.infrastructure.api.app.Apps
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
 import com.atlassian.performance.tools.infrastructure.api.jira.install.HttpNode
 import com.atlassian.performance.tools.infrastructure.api.jira.install.TcpNode
+import com.atlassian.performance.tools.infrastructure.api.network.HttpServerRoom
+import com.atlassian.performance.tools.infrastructure.api.network.Networked
+import com.atlassian.performance.tools.infrastructure.api.network.SshServerRoom
+import com.atlassian.performance.tools.infrastructure.api.network.TcpServerRoom
 import com.atlassian.performance.tools.ssh.api.Ssh
 import com.atlassian.performance.tools.ssh.api.SshHost
-import com.google.common.util.concurrent.ThreadFactoryBuilder
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.time.Duration
-import java.util.concurrent.Executors
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 
 class JiraStack private constructor(
@@ -39,9 +36,10 @@ class JiraStack private constructor(
     private val databaseComputer: Computer,
     private val databaseVolume: Volume,
     private val provisioningTimout: Duration
-) : Infrastructure {
+) : Networked {
     private val logger: Logger = LogManager.getLogger(this::class.java)
-    private val stack: Lazy<ProvisionedStack> = lazy { provision() }
+    private val provisioning: Lazy<ProvisionedStack> = lazy { provision() }
+    private val deprovisioning: Lazy<CompletableFuture<*>> = lazy { provisioning.value.release() }
 
     private fun provision(): ProvisionedStack {
         logger.info("Setting up Jira stack...")
@@ -85,90 +83,45 @@ class JiraStack private constructor(
         return stack
     }
 
-    override val subnet: String
-        get() = network.subnet.cidrBlock
+    private fun deprovision() = deprovisioning.value.get()
 
-    override fun close() {
-        stack.value.release().get()
+    override fun subnet(): String = network.subnet.cidrBlock
+
+    private fun listMachines() = provisioning.value.listMachines()
+
+    fun forDatabase(): TcpServerRoom {
+        return StackDatabase(databaseComputer, sshKey.get())
     }
 
-    override fun serve(name: String, tcpPorts: List<Int>, udpPorts: List<Int>): TcpNode {
-        throw Exception("Stack doesn't know how to serve a generic HTTP node, use specialized `for*` methods instead")
+    fun forSharedHome(): SshServerRoom {
+        return StackSharedHome(jiraComputer, sshKey.get())
     }
 
-    override fun serveHttp(name: String): HttpNode {
-        throw Exception("Stack doesn't know how to serve a default HTTP node, use specialized `for*` methods instead")
+    fun forJiraNodes(): HttpServerRoom {
+        return StackJiraNodes(jiraComputer, sshKey.get())
     }
 
-    override fun serveSsh(name: String): Ssh {
-        throw Exception("Stack doesn't know how to serve a default SSH node, use specialized `for*` methods instead")
-    }
-
-    override fun serveTcp(name: String): TcpNode {
-        throw Exception("Stack doesn't know how to serve a default TCP node, use specialized `for*` methods instead")
-    }
-
-    fun forDatabase(): Infrastructure {
-        return StackDatabase(stack, databaseComputer, subnet, sshKey.get())
-    }
-
-    fun forSharedHome(): Infrastructure {
-        return StackSharedHome(stack, jiraComputer, subnet, sshKey.get())
-    }
-
-    fun forJiraNodes(): Infrastructure {
-        return StackJiraNodes(stack, jiraComputer, subnet, sshKey.get())
-    }
-
-    fun forLoadBalancer(): Infrastructure {
-        return StackJiraNodes(stack, jiraComputer, subnet, sshKey.get())
-    }
-
-    private class StackSharedHome(
-        private val stack: Lazy<ProvisionedStack>,
+    private inner class StackSharedHome(
         private val computer: Computer,
-        override val subnet: String,
         private val sshKey: SshKey
-    ) : Infrastructure {
-
-        override fun close() {
-            stack.value.release().get()
-        }
-
-        override fun serve(name: String, tcpPorts: List<Int>, udpPorts: List<Int>): TcpNode {
-            throw Exception("The stack doesn't expect a TCP port for shared home")
-        }
-
-        override fun serveHttp(name: String): HttpNode {
-            throw Exception("The stack doesn't provide a HTTP node for the shared home")
-        }
+    ) : SshServerRoom {
 
         override fun serveSsh(name: String): Ssh {
-            val machine = stack.value.listMachines().single { it.tags.contains(Tag("jpt-shared-home", "true")) }
+            val machine = listMachines().single { it.tags.contains(Tag("jpt-shared-home", "true")) }
             val publicIp = machine.publicIpAddress
             val ssh = Ssh(SshHost(publicIp, "ubuntu", sshKey.file.path), connectivityPatience = 4)
             sshKey.file.facilitateSsh(publicIp)
             ssh.newConnection().use { computer.setUp(it) }
             return ssh
         }
-
-        override fun serveTcp(name: String): TcpNode {
-            throw Exception("The stack doesn't expect a TCP port for shared home")
-        }
     }
 
-    private class StackDatabase(
-        private val stack: Lazy<ProvisionedStack>,
+    private inner class StackDatabase(
         private val computer: Computer,
-        override val subnet: String,
         private val sshKey: SshKey
-    ) : Infrastructure {
+    ) : TcpServerRoom {
 
-        override fun close() {
-            stack.value.release().get()
-        }
-
-        override fun serve(name: String, tcpPorts: List<Int>, udpPorts: List<Int>): TcpNode {
+        override fun serveTcp(name: String, tcpPorts: List<Int>, udpPorts: List<Int>): TcpNode {
             if (tcpPorts.singleOrNull() == 3306 && udpPorts.isEmpty()) {
                 return serveTcp(name)
             } else {
@@ -176,16 +129,8 @@ class JiraStack private constructor(
             }
         }
 
-        override fun serveHttp(name: String): HttpNode {
-            throw Exception("The stack doesn't provide a HTTP node for the database")
-        }
-
-        override fun serveSsh(name: String): Ssh {
-            return serveTcp(name).ssh
-        }
-
         override fun serveTcp(name: String): TcpNode {
-            val machine = stack.value.listMachines().single { it.tags.contains(Tag("jpt-database", "true")) }
+            val machine = listMachines().single { it.tags.contains(Tag("jpt-database", "true")) }
             val publicIp = machine.publicIpAddress
             val ssh = Ssh(SshHost(publicIp, "ubuntu", sshKey.file.path), connectivityPatience = 5)
             sshKey.file.facilitateSsh(publicIp)
@@ -200,29 +145,15 @@ class JiraStack private constructor(
         }
     }
 
-    private class StackJiraNodes(
-        private val stack: Lazy<ProvisionedStack>,
+    private inner class StackJiraNodes(
         private val computer: Computer,
-        override val subnet: String,
         private val sshKey: SshKey
-    ) : Infrastructure {
+    ) : HttpServerRoom {
 
         private val machines by lazy {
-            stack.value.listMachines().filter { it.tags.contains(Tag("jpt-jira", "true")) }
+            listMachines().filter { it.tags.contains(Tag("jpt-jira", "true")) }
         }
         private var nodesRequested = 0
-
-        override fun close() {
-            stack.value.release().get()
-        }
-
-        override fun serve(name: String, tcpPorts: List<Int>, udpPorts: List<Int>): TcpNode {
-            if (tcpPorts.singleOrNull() == 3306 && udpPorts.isEmpty()) {
-                return serveTcp(name)
-            } else {
-                throw Exception("The stack is not prepared for TCP $tcpPorts and UDP $udpPorts")
-            }
-        }
 
         override fun serveHttp(name: String): HttpNode {
             val machine = machines[nodesRequested++]
@@ -238,14 +169,6 @@ class JiraStack private constructor(
                 ssh
             )
             return HttpNode(tcp, "/", false)
-        }
-
-        override fun serveSsh(name: String): Ssh {
-            return serveTcp(name).ssh
-        }
-
-        override fun serveTcp(name: String): TcpNode {
-            return serveHttp(name).tcp
         }
     }
 
