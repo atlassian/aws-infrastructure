@@ -25,6 +25,7 @@ configurations.all {
                 "com.google.code.gson:gson" -> useVersion("2.8.2")
                 "org.jsoup:jsoup" -> useVersion("1.10.2")
                 "com.jcraft:jzlib" -> useVersion("1.1.3")
+                "commons-codec:commons-codec" -> useVersion("1.11")
             }
             when (requested.group) {
                 "org.jetbrains.kotlin" -> useVersion(kotlinVersion)
