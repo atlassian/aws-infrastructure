@@ -9,6 +9,7 @@ import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C4EightExt
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.M4ExtraLargeElastic
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
+import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.Ec2ServerRoom
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
 import com.atlassian.performance.tools.infrastructure.api.jira.install.HttpNode
 import com.atlassian.performance.tools.infrastructure.api.jira.install.TcpNode
@@ -99,6 +100,10 @@ class JiraStack private constructor(
 
     fun forJiraNodes(): HttpServerRoom {
         return StackJiraNodes(jiraComputer, sshKey.get())
+    }
+
+    fun forLoadBalancer() : HttpServerRoom {
+        return Ec2ServerRoom(aws, investment)
     }
 
     private inner class StackSharedHome(

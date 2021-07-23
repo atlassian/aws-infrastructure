@@ -64,7 +64,7 @@ class HooksDataCenterFormulaIT {
         val dcPlan = JiraDataCenterPlan.Builder(stack.forJiraNodes())
             .nodePlans(
                 (1..2).map {
-                    JiraNodePlan.Builder(stack)
+                    JiraNodePlan.Builder(stack.forJiraNodes())
                         .installation(installation)
                         .start(JiraLaunchScript())
                         .hooks(PreInstallHooks.default().also { it.postStart.insert(upgrade) })
@@ -74,7 +74,7 @@ class HooksDataCenterFormulaIT {
             .instanceHooks(
                 PreInstanceHooks.default()
                     .also { it.insert(database) }
-                    .also { it.insert(NfsSharedHome(jiraHome, stack.forSharedHome())) }
+                    .also { it.insert(NfsSharedHome(jiraHome, stack.forSharedHome(), stack)) }
             )
             .balancerPlan(ApacheProxyPlan(stack.forLoadBalancer()))
             .build()
