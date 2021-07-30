@@ -1,22 +1,26 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
 import com.amazonaws.services.cloudformation.model.Parameter
-import com.amazonaws.services.ec2.AmazonEC2
 import com.amazonaws.services.ec2.model.*
 import com.amazonaws.services.ec2.model.Tag
 import com.atlassian.performance.tools.aws.api.*
+import com.atlassian.performance.tools.awsinfrastructure.NetworkFormula
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
 import com.atlassian.performance.tools.awsinfrastructure.api.Network
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C4EightExtraLargeElastic
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.M4ExtraLargeElastic
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
+import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.LoadBalancerFormula
+import com.atlassian.performance.tools.awsinfrastructure.aws.TokenScrollingEc2
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
 import com.atlassian.performance.tools.infrastructure.api.jira.install.HttpNode
 import com.atlassian.performance.tools.infrastructure.api.jira.install.TcpNode
+import com.atlassian.performance.tools.infrastructure.api.jira.start.hook.PreStartHooks
+import com.atlassian.performance.tools.infrastructure.api.loadbalancer.LoadBalancer
+import com.atlassian.performance.tools.infrastructure.api.loadbalancer.LoadBalancerPlan
 import com.atlassian.performance.tools.infrastructure.api.network.HttpServerRoom
 import com.atlassian.performance.tools.infrastructure.api.network.Networked
-import com.atlassian.performance.tools.infrastructure.api.network.SshServerRoom
 import com.atlassian.performance.tools.infrastructure.api.network.TcpServerRoom
 import com.atlassian.performance.tools.ssh.api.Ssh
 import com.atlassian.performance.tools.ssh.api.SshHost
@@ -27,12 +31,12 @@ import java.nio.file.Path
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.function.Supplier
 
 class LegacyAwsInfrastructure private constructor(
     private val aws: Aws,
-    private val network: Network,
     private val investment: Investment,
+    private val networking: Supplier<Network>,
     private val workspace: Path,
     private val jiraComputer: Computer,
     private val jiraVolume: Volume,
@@ -44,6 +48,7 @@ class LegacyAwsInfrastructure private constructor(
     private val logger: Logger = LogManager.getLogger(this::class.java)
     private val nonce = UUID.randomUUID().toString()
     private val sshKey: SshKey by lazy { provisionKey() }
+    private val network: Network by lazy { networking.get() }
     private val provisioning: ProvisionedStack by lazy { provisionStack() }
     private val deprovisioning: CompletableFuture<*> by lazy { provisioning.release() }
 
@@ -99,33 +104,50 @@ class LegacyAwsInfrastructure private constructor(
 
     override fun subnet(): String = network.subnet.cidrBlock
 
+    val jiraNodesServerRoom : HttpServerRoom = StackJiraNodes()
+    val databaseServerRoom : TcpServerRoom = StackDatabase()
+    val sharedHomeServerRoom : TcpServerRoom = StackSharedHome()
+
     private fun listMachines() = provisioning.listMachines()
 
-    fun forDatabase(): TcpServerRoom {
-        return StackDatabase()
+    fun balance(formula: LoadBalancerFormula): LoadBalancerPlan {
+        return object : LoadBalancerPlan {
+            override fun materialize(nodes: List<HttpNode>, hooks: List<PreStartHooks>): LoadBalancer {
+                val filter = Filter(
+                    "network-interface.addresses.private-ip-address",
+                    nodes.map { it.tcp.privateIp }
+                )
+                val instances = TokenScrollingEc2(aws.ec2).findInstances(filter)
+                return formula
+                    .provision(investment, instances, network.vpc, network.subnet, sshKey, aws)
+                    .loadBalancer
+            }
+        }
     }
 
-    fun forSharedHome(): SshServerRoom {
-        return StackSharedHome()
-    }
+    private inner class StackSharedHome : TcpServerRoom {
 
-    fun forJiraNodes(): HttpServerRoom {
-        return StackJiraNodes()
-    }
-
-    fun forLoadBalancer(): HttpServerRoom {
-        return Ec2ServerRoom()
-    }
-
-    private inner class StackSharedHome : SshServerRoom {
-
-        override fun serveSsh(name: String): Ssh {
+        override fun serveTcp(name: String): TcpNode {
             val machine = listMachines().single { it.tags.contains(Tag("jpt-shared-home", "true")) }
             val publicIp = machine.publicIpAddress
             val ssh = Ssh(SshHost(publicIp, "ubuntu", sshKey.file.path), connectivityPatience = 4)
             sshKey.file.facilitateSsh(publicIp)
             ssh.newConnection().use { jiraComputer.setUp(it) }
-            return ssh
+            return TcpNode(
+                publicIp,
+                machine.privateIpAddress,
+                3306,
+                name,
+                ssh
+            )
+        }
+
+        override fun serveTcp(name: String, tcpPorts: List<Int>, udpPorts: List<Int>): TcpNode {
+            val ports = "TCP $tcpPorts and UDP $udpPorts"
+            throw Exception(
+                "It's unclear whether $ports are expected to be open to the public or privately." +
+                    " All ports are open within the VPC."
+            )
         }
     }
 
@@ -172,7 +194,7 @@ class LegacyAwsInfrastructure private constructor(
             val tcp = TcpNode(
                 publicIp,
                 machine.privateIpAddress,
-                3306,
+                8080,
                 name,
                 ssh
             )
@@ -180,70 +202,11 @@ class LegacyAwsInfrastructure private constructor(
         }
     }
 
-    private inner class Ec2ServerRoom : HttpServerRoom {
-
-        private val balancerPort = 80
-        private val resources = ConcurrentLinkedQueue<Resource>()
-
-        override fun serveHttp(name: String): HttpNode {
-            val httpAccess = httpAccess(investment, aws.ec2, aws.awaitingEc2, network.vpc)
-            val (ssh, resource) = aws.awaitingEc2.allocateInstance(
-                investment = investment,
-                key = sshKey,
-                vpcId = network.vpc.vpcId,
-                customizeLaunch = { launch ->
-                    launch
-                        .withSecurityGroupIds(httpAccess.groupId)
-                        .withSubnetId(network.subnet.subnetId)
-                        .withInstanceType(InstanceType.M5Large)
-                }
-            )
-            resources += resource
-            sshKey.file.facilitateSsh(ssh.host.ipAddress)
-            return HttpNode(
-                TcpNode(
-
-                ),
-                "/",
-                false
-            )
-        }
-
-        private fun httpAccess(
-            investment: Investment,
-            ec2: AmazonEC2,
-            awaitingEc2: AwaitingEc2,
-            vpc: Vpc
-        ): SecurityGroup {
-            val securityGroup = awaitingEc2.allocateSecurityGroup(
-                investment,
-                CreateSecurityGroupRequest()
-                    .withGroupName("${investment.reuseKey()}-HttpListener")
-                    .withDescription("Enables HTTP access")
-                    .withVpcId(vpc.vpcId)
-            )
-            ec2.authorizeSecurityGroupIngress(
-                AuthorizeSecurityGroupIngressRequest()
-                    .withGroupId(securityGroup.groupId)
-                    .withIpPermissions(
-                        IpPermission()
-                            .withIpProtocol("tcp")
-                            .withFromPort(balancerPort)
-                            .withToPort(balancerPort)
-                            .withIpv4Ranges(
-                                IpRange().withCidrIp("0.0.0.0/0")
-                            )
-                    )
-            )
-            return securityGroup
-        }
-    }
-
     class Builder(
         private var aws: Aws,
-        private var network: Network,
         private var investment: Investment
     ) {
+        private var networking: Supplier<Network> = Supplier { NetworkFormula(investment, aws).provision() }
         private var jiraNodeConfigs: List<JiraNodeConfig> = listOf(1, 2).map { JiraNodeConfig.Builder().build() }
         private var jiraComputer: Computer = C4EightExtraLargeElastic()
         private var jiraVolume: Volume = Volume(100)
@@ -252,6 +215,8 @@ class LegacyAwsInfrastructure private constructor(
         private var provisioningTimout: Duration = Duration.ofMinutes(30)
         private var workspace: Path = RootWorkspace().currentTask.isolateTest(investment.reuseKey()).directory
 
+        fun aws(aws: Aws) = apply { this.aws = aws }
+        fun networking(networking: Supplier<Network>) = apply { this.networking = networking }
         fun investment(investment: Investment) = apply { this.investment = investment }
         fun jiraNodeConfigs(jiraNodeConfigs: List<JiraNodeConfig>) =
             apply { this.jiraNodeConfigs = jiraNodeConfigs }
@@ -267,7 +232,7 @@ class LegacyAwsInfrastructure private constructor(
 
         fun build(): LegacyAwsInfrastructure = LegacyAwsInfrastructure(
             aws = aws,
-            network = network,
+            networking = networking,
             investment = investment,
             jiraNodeConfigs = jiraNodeConfigs,
             jiraComputer = jiraComputer,

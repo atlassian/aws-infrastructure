@@ -1,11 +1,10 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
 import com.atlassian.performance.tools.aws.api.Investment
-import com.atlassian.performance.tools.aws.api.SshKeyFormula
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime
-import com.atlassian.performance.tools.awsinfrastructure.NetworkFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.M5ExtraLargeEphemeral
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
+import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.ApacheEc2LoadBalancerFormula
 import com.atlassian.performance.tools.infrastructure.api.database.DockerMysqlServer
 import com.atlassian.performance.tools.infrastructure.api.dataset.HttpDatasetPackage
 import com.atlassian.performance.tools.infrastructure.api.distribution.PublicJiraSoftwareDistribution
@@ -20,18 +19,14 @@ import com.atlassian.performance.tools.infrastructure.api.jira.sharedhome.NfsSha
 import com.atlassian.performance.tools.infrastructure.api.jira.start.JiraLaunchScript
 import com.atlassian.performance.tools.infrastructure.api.jira.start.hook.RestUpgrade
 import com.atlassian.performance.tools.infrastructure.api.jvm.AdoptOpenJDK
-import com.atlassian.performance.tools.infrastructure.api.loadbalancer.ApacheProxyPlan
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import java.net.URI
 import java.nio.file.Files
 import java.time.Duration
-import java.util.*
-import java.util.concurrent.CompletableFuture
 
 class HooksDataCenterFormulaIT {
 
-    private val workspace = IntegrationTestRuntime.taskWorkspace.isolateTest(javaClass.simpleName)
     private val datasetUri = URI("https://s3-eu-west-1.amazonaws.com/")
         .resolve("jpt-custom-datasets-storage-a008820-datasetbucket-1sjxdtrv5hdhj/")
         .resolve("dataset-f8dba866-9d1b-492e-b76c-f4a78ac3958c/")
@@ -45,13 +40,18 @@ class HooksDataCenterFormulaIT {
             downloadTimeout = Duration.ofMinutes(6)
         )
     )
-    private val lifespan = Duration.ofMinutes(30)
+    private val infra: LegacyAwsInfrastructure = LegacyAwsInfrastructure.Builder(
+        IntegrationTestRuntime.aws,
+        Investment("Test Server provisioning hook API", Duration.ofMinutes(30))
+    )
+        .databaseComputer(M5ExtraLargeEphemeral())
+        .databaseVolume(Volume(100))
+        .build()
 
     @Test
     fun shouldProvisionDc() {
         // given
-        val stack: LegacyAwsInfrastructure = provisionDependencies()
-        val database = DockerMysqlServer.Builder(stack.forDatabase(), mysql)
+        val database = DockerMysqlServer.Builder(infra.databaseServerRoom, mysql)
             .source(
                 HttpDatasetPackage(
                     uri = datasetUri.resolve("database.tar.bz2"),
@@ -61,22 +61,19 @@ class HooksDataCenterFormulaIT {
             .build()
         val upgrade = RestUpgrade(JiraLaunchTimeouts.Builder().build(), "admin", "admin")
         val installation = ParallelInstallation(jiraHome, PublicJiraSoftwareDistribution("8.13.0"), AdoptOpenJDK())
-        val dcPlan = JiraDataCenterPlan.Builder(stack.forJiraNodes())
-            .nodePlans(
-                (1..2).map {
-                    JiraNodePlan.Builder(stack.forJiraNodes())
-                        .installation(installation)
-                        .start(JiraLaunchScript())
-                        .hooks(PreInstallHooks.default().also { it.postStart.insert(upgrade) })
-                        .build()
-                }
-            )
+        val nodePlans = (1..2).map {
+            JiraNodePlan.Builder(infra.jiraNodesServerRoom)
+                .installation(installation)
+                .start(JiraLaunchScript())
+                .hooks(PreInstallHooks.default().also { it.postStart.insert(upgrade) })
+                .build()
+        }
+        val dcPlan = JiraDataCenterPlan.Builder(nodePlans, infra.balance(ApacheEc2LoadBalancerFormula()))
             .instanceHooks(
                 PreInstanceHooks.default()
                     .also { it.insert(database) }
-                    .also { it.insert(NfsSharedHome(jiraHome, stack.forSharedHome(), stack)) }
+                    .also { it.insert(NfsSharedHome(jiraHome, infra.sharedHomeServerRoom, infra)) }
             )
-            .balancerPlan(ApacheProxyPlan(stack.forLoadBalancer()))
             .build()
 
         // when
@@ -112,22 +109,5 @@ class HooksDataCenterFormulaIT {
         assertThat(fileTree.filter { it.fileName.toString().startsWith("atlassian-jira-gc") })
             .`as`("GC logs from $fileTree")
             .isNotEmpty
-    }
-
-    private fun provisionDependencies(): LegacyAwsInfrastructure {
-        val aws = IntegrationTestRuntime.aws
-        val investment = Investment(
-            useCase = "Test Server provisioning hook API",
-            lifespan = lifespan
-        )
-        val network = NetworkFormula(investment, aws).provision()
-        return LegacyAwsInfrastructure.Builder(
-            aws,
-            network,
-            investment
-        )
-            .databaseComputer(M5ExtraLargeEphemeral())
-            .databaseVolume(Volume(100))
-            .build()
     }
 }
