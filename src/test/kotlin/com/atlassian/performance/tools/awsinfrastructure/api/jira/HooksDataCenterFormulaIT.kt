@@ -27,6 +27,7 @@ import java.time.Duration
 
 class HooksDataCenterFormulaIT {
 
+    private val workspace = IntegrationTestRuntime.taskWorkspace.isolateTest(javaClass.simpleName).directory
     private val datasetUri = URI("https://s3-eu-west-1.amazonaws.com/")
         .resolve("jpt-custom-datasets-storage-a008820-datasetbucket-1sjxdtrv5hdhj/")
         .resolve("dataset-f8dba866-9d1b-492e-b76c-f4a78ac3958c/")
@@ -46,6 +47,7 @@ class HooksDataCenterFormulaIT {
     )
         .databaseComputer(M5ExtraLargeEphemeral())
         .databaseVolume(Volume(100))
+        .workspace(workspace)
         .build()
 
     @Test
@@ -92,16 +94,16 @@ class HooksDataCenterFormulaIT {
                 ssh.execute("wget ${dataCenter.address}")
             }
         }
-        val reports = dcPlan.report().downloadTo(Files.createTempDirectory("jira-dc-plan-"))
+        val reports = dcPlan.report().downloadTo(workspace)
         assertThat(reports).isDirectory()
         val fileTree = reports
             .walkTopDown()
             .map { reports.toPath().relativize(it.toPath()) }
             .toList()
         assertThat(fileTree.map { it.toString() }).contains(
-            "jira-node-1/root/atlassian-jira-software-7.13.0-standalone/logs/catalina.out",
-            "jira-node-1/root/~/jpt-jstat.log",
-            "jira-node-2/root/atlassian-jira-software-7.13.0-standalone/logs/catalina.out"
+            "jira-node-1/atlassian-jira-software-8.13.0-standalone/logs/catalina.out",
+            "jira-node-1/~/jpt-jstat.log",
+            "jira-node-2/atlassian-jira-software-8.13.0-standalone/logs/catalina.out"
         )
         assertThat(fileTree.filter { it.fileName.toString() == "atlassian-jira.log" })
             .`as`("Jira log from $fileTree")
