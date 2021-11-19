@@ -6,7 +6,10 @@ internal class DiagnosableNodeFormula(
 
     override fun provision(): StoppedNode {
         try {
-            return delegate.provision()
+            return DiagnosableStoppedNode(
+                node = delegate.provision(),
+                nodeIdentifier = delegate.name
+            )
         } catch (e: Exception) {
             throw Exception("Failed to provision ${delegate.name}", e)
         }
