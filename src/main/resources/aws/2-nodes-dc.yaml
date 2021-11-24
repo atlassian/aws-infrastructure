@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Serves a Jira Data Center cluster without a load balancer
+Description: Serves a 2 node Jira Data Center cluster without a load balancer
 Parameters:
   KeyName:
     Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
