@@ -3,7 +3,6 @@ package com.atlassian.performance.tools.awsinfrastructure.api.jira
 import com.amazonaws.services.cloudformation.model.Parameter
 import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.ApplicationStorageWrapper
-import com.atlassian.performance.tools.awsinfrastructure.InstanceAddressSelector
 import com.atlassian.performance.tools.awsinfrastructure.InstanceFilters
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
 import com.atlassian.performance.tools.awsinfrastructure.api.RemoteLocation
@@ -48,6 +47,7 @@ class StandaloneFormula private constructor(
     private val databaseComputer: Computer,
     private val databaseVolume: Volume
 ) : JiraFormula {
+    private val logger: Logger = LogManager.getLogger(this::class.java)
 
     @Suppress("DEPRECATION")
     @Deprecated(message = "Use StandaloneFormula.Builder instead.")
@@ -91,8 +91,6 @@ class StandaloneFormula private constructor(
         databaseVolume = Volume(100)
     )
 
-    private val logger: Logger = LogManager.getLogger(this::class.java)
-
     override fun provision(
         investment: Investment,
         pluginsTransport: Storage,
@@ -105,7 +103,8 @@ class StandaloneFormula private constructor(
 
         val executor = Executors.newFixedThreadPool(
             4,
-            ThreadFactoryBuilder().setNameFormat("standalone-provisioning-thread-%d")
+            ThreadFactoryBuilder()
+                .setNameFormat("standalone-provisioning-thread-%d")
                 .build()
         )
         val network = overriddenNetwork ?: NetworkFormula(investment, aws).provision()
@@ -157,59 +156,64 @@ class StandaloneFormula private constructor(
         val keyPath = key.get().file.path
 
         val machines = jiraStack.listMachines()
-        val databaseIp = InstanceAddressSelector.getReachableIpAddress(InstanceFilters().dbInstance(machines))
-        val databaseHost = SshHost(databaseIp, "ubuntu", keyPath)
-        val databaseSsh = Ssh(databaseHost, connectivityPatience = 4)
-        val jiraIp = InstanceAddressSelector.getReachableIpAddress(InstanceFilters().jiraInstances(machines).single())
-        val jiraAddress = URI("http://$jiraIp:8080/")
 
-        val setupDatabase = executor.submitWithLogContext("database") {
-            databaseSsh.newConnection().use {
-                databaseComputer.setUp(it)
-                logger.info("Setting up database...")
-                key.get().file.facilitateSsh(databaseIp)
-                val location = database.setup(it)
-                logger.info("Database is set up")
-                logger.info("Starting database...")
-                database.start(jiraAddress, it)
-                logger.info("Database is started")
-                RemoteLocation(databaseHost, location)
-            }
-        }
+        val jiraMachine = InstanceFilters().jiraInstances(machines).single()
+        val jiraPublicIp = jiraMachine.publicIpAddress
+        val jiraPublicHttpAddress = URI("http://$jiraPublicIp:8080/")
+        val jiraSshIp = jiraMachine.publicIpAddress
+        val jiraSsh = Ssh(SshHost(jiraSshIp, "ubuntu", keyPath), connectivityPatience = 5)
 
-        val ssh = Ssh(SshHost(jiraIp, "ubuntu", keyPath), connectivityPatience = 5)
+        val databaseMachine = InstanceFilters().dbInstance(machines)
+        val databasePublicIp = databaseMachine.publicIpAddress
+        val databaseSshIp = databaseMachine.publicIpAddress
+        val databaseSsh = Ssh(SshHost(databaseSshIp, "ubuntu", keyPath), connectivityPatience = 4)
 
         CloseableThreadContext.push("Jira node").use {
-            key.get().file.facilitateSsh(jiraIp)
+            key.get().file.facilitateSsh(jiraSshIp)
         }
         val nodeFormula = StandaloneNodeFormula(
             config = config,
             jiraHomeSource = jiraHomeSource,
             pluginsTransport = pluginsTransport,
             resultsTransport = resultsTransport,
-            databaseIp = databaseIp,
+            databaseIp = databasePublicIp,
             productDistribution = productDistribution,
-            ssh = ssh,
+            ssh = jiraSsh,
             computer = computer
         )
 
-        uploadPlugins.get()
+        val setupDatabase = executor.submitWithLogContext("database") {
+            databaseSsh.newConnection().use {
+                databaseComputer.setUp(it)
+                logger.info("Setting up database...")
+                key.get().file.facilitateSsh(databaseSshIp)
+                val location = database.setup(it)
+                logger.info("Database is set up")
+                logger.info("Starting database...")
+                database.start(jiraPublicHttpAddress, it)
+                logger.info("Database is started")
+                RemoteLocation(databaseSsh.host, location)
+            }
+        }
 
+        // node provisioning relies on plugins being uploaded
+        uploadPlugins.get()
         val provisionedNode = nodeFormula.provision()
 
         val databaseDataLocation = setupDatabase.get()
-        executor.shutdownNow()
         val node = time("start") { provisionedNode.start(emptyList()) }
+
+        executor.shutdownNow()
 
         val jira = Jira(
             nodes = listOf(node),
             jiraHome = RemoteLocation(
-                ssh.host,
+                jiraSsh.host,
                 provisionedNode.jiraHome
             ),
             database = databaseDataLocation,
-            address = jiraAddress,
-            jmxClients = listOf(config.remoteJmx.getClient(jiraIp))
+            address = jiraPublicHttpAddress,
+            jmxClients = listOf(config.remoteJmx.getClient(jiraPublicIp))
         )
         logger.info("$jira is set up, will expire ${jiraStack.expiry}")
         return@time ProvisionedJira.Builder(jira)
