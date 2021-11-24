@@ -106,10 +106,10 @@ class MulticastVirtualUsersFormula private constructor(
 
         executor.shutdownNow()
 
-        return ProvisionedVirtualUsers(
-            virtualUsers = MulticastVirtualUsers(provisionedVirtualUsers.map { it.virtualUsers }),
-            resource = CompositeResource(provisionedVirtualUsers.map { it.resource })
-        )
+        return ProvisionedVirtualUsers
+            .Builder(MulticastVirtualUsers(provisionedVirtualUsers.map { it.virtualUsers }))
+            .resource(CompositeResource(provisionedVirtualUsers.map { it.resource }))
+            .build()
     }
 
     class Builder(

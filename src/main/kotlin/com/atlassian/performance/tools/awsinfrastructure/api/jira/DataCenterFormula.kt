@@ -279,13 +279,14 @@ class DataCenterFormula private constructor(
             jmxClients = jiraNodes.mapIndexed { i, node -> configs[i].remoteJmx.getClient(InstanceAddressSelector.getReachableIpAddress(node)) }
         )
         logger.info("$jira is set up, will expire ${jiraStack.expiry}")
-        return@time ProvisionedJira(
-            jira = jira,
-            resource = DependentResources(
-                user = provisionedLoadBalancer.resource,
-                dependency = jiraStack
+        return@time ProvisionedJira.Builder(jira)
+            .resource(
+                DependentResources(
+                    user = provisionedLoadBalancer.resource,
+                    dependency = jiraStack
+                )
             )
-        )
+            .build()
     }
 
     class Builder constructor(

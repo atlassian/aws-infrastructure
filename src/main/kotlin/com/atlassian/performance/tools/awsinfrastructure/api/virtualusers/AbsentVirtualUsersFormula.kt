@@ -20,10 +20,7 @@ class AbsentVirtualUsersFormula : VirtualUsersFormula<AbsentVirtualUsers> {
         aws: Aws
     ): ProvisionedVirtualUsers<AbsentVirtualUsers> {
         logger.debug("Virtual users were not provisioned")
-        return ProvisionedVirtualUsers(
-            virtualUsers = AbsentVirtualUsers(),
-            resource = UnallocatedResource()
-        )
+        return ProvisionedVirtualUsers.Builder(AbsentVirtualUsers()).build()
     }
 }
 

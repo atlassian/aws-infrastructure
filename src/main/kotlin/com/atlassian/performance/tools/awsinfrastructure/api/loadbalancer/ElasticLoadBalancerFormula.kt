@@ -42,12 +42,14 @@ class ElasticLoadBalancerFormula : LoadBalancerFormula {
             aws = aws
         ).provision()
         logger.info("Elastic load balancer is set up")
-        return ProvisionedLoadBalancer(
-            loadBalancer = ElasticLoadBalancer(
-                aws.loadBalancer,
-                stack.findLoadBalancer()
-            ),
-            resource = stack
-        )
+        return ProvisionedLoadBalancer
+            .Builder(
+                ElasticLoadBalancer(
+                    aws.loadBalancer,
+                    stack.findLoadBalancer()
+                )
+            )
+            .resource(stack)
+            .build()
     }
 }

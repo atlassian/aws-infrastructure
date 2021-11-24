@@ -18,21 +18,22 @@ class UriJiraFormula(
         key: Future<SshKey>,
         roleProfile: String,
         aws: Aws
-    ): ProvisionedJira = ProvisionedJira(
-        jira = Jira(
-            nodes = emptyList(),
-            jiraHome = RemoteLocation(
-                host = SshHost(
-                    ipAddress = "unknown",
-                    userName = "unknown",
-                    authentication = PasswordAuthentication("unknown"),
-                    port = -1
+    ): ProvisionedJira = ProvisionedJira
+        .Builder(
+            Jira(
+                nodes = emptyList(),
+                jiraHome = RemoteLocation(
+                    host = SshHost(
+                        ipAddress = "unknown",
+                        userName = "unknown",
+                        authentication = PasswordAuthentication("unknown"),
+                        port = -1
+                    ),
+                    location = "unknown"
                 ),
-                location = "unknown"
-            ),
-            database = null,
-            address = jiraAddress
-        ),
-        resource = UnallocatedResource()
-    )
+                database = null,
+                address = jiraAddress
+            )
+        )
+        .build()
 }
