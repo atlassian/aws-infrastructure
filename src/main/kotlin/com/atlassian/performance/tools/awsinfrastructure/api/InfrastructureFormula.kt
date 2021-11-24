@@ -40,6 +40,7 @@ class InfrastructureFormula<out T : VirtualUsers> private constructor(
 ) {
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
+    @Deprecated("Use InfrastructureFormula.Builder instead.")
     constructor(
         investment: Investment,
         jiraFormula: JiraFormula,
