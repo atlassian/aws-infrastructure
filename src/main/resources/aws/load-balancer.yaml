@@ -14,7 +14,7 @@ Resources:
       Subnets:
         - Ref: Subnet
       SecurityGroups:
-        - Ref: HttpSecurityGroup
+        - Ref: LoadBalancerSecurityGroup
       Instances: !Ref Instances
       HealthCheck:
         Target: HTTP:8080/
@@ -30,7 +30,7 @@ Resources:
           InstancePort: '8080'
           Protocol: HTTP
           PolicyNames:
-          - JiraCookieStickinessPolicy
+            - JiraCookieStickinessPolicy
       Policies:
         -
           PolicyName: JiraCookieStickinessPolicy
@@ -39,15 +39,9 @@ Resources:
             -
               Name: "CookieName"
               Value: "JSESSIONID"
-  HttpSecurityGroup:
+  LoadBalancerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId:
         Ref: Vpc
-      GroupDescription: Enables HTTP
-      SecurityGroupIngress:
-        -
-          IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: 0.0.0.0/0
+      GroupDescription: For Jira DC load balancer

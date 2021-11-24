@@ -30,7 +30,7 @@ Resources:
         Ref: Subnet
       SecurityGroupIds:
         - Ref: SshSecurityGroup
-        - Ref: MySqlSecurityGroup
+        - Ref: DatabaseSecurityGroup
       KeyName:
         Ref: KeyName
       ImageId: !Ref Ami
@@ -54,7 +54,7 @@ Resources:
         Ref: Subnet
       SecurityGroupIds:
         - Ref: SshSecurityGroup
-        - Ref: TomcatSecurityGroup
+        - Ref: JiraNodeSecurityGroup
       KeyName:
         Ref: KeyName
       ImageId: !Ref Ami
@@ -75,34 +75,31 @@ Resources:
     Properties:
       VpcId:
         Ref: Vpc
-      GroupDescription: Enables SSH access
+      GroupDescription: For SSH enabled instances
       SecurityGroupIngress:
         -
           IpProtocol: tcp
           FromPort: 22
           ToPort: 22
           CidrIp: 0.0.0.0/0
-  TomcatSecurityGroup:
+  JiraNodeSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId:
         Ref: Vpc
-      GroupDescription: Enables Tomcat HTTP access
-      SecurityGroupIngress:
-        -
-          IpProtocol: tcp
-          FromPort: 8080
-          ToPort: 8080
-          CidrIp: 0.0.0.0/0
-  MySqlSecurityGroup:
+      GroupDescription: For Jira nodes
+  DatabaseSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId:
         Ref: Vpc
-      GroupDescription: Enables MySql access
-      SecurityGroupIngress:
-        -
-          IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
-          CidrIp: 0.0.0.0/0
+      GroupDescription: For Jira database
+  MySqlPortAccess:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref DatabaseSecurityGroup
+      IpProtocol: tcp
+      FromPort: 3306
+      ToPort: 3306
+      SourceSecurityGroupId: !Ref JiraNodeSecurityGroup
+  # External access to Web App HTTP, JVM debug, JMX and Splunk forwarder ports added dynamically via `com.atlassian.performance.tools.awsinfrastructure.network.access.AccessProvider`

@@ -27,9 +27,7 @@ Resources:
     Properties:
       SecurityGroupIds:
         - Ref: SshSecurityGroup
-        - Ref: RmiSecurityGroup
-        - Ref: TomcatSecurityGroup
-        - Ref: SubnetSecurityGroup
+        - Ref: JiraNodeSecurityGroup
       InstanceType: !Ref JiraInstanceType
       SubnetId:
         Ref: Subnet
@@ -53,9 +51,7 @@ Resources:
     Properties:
       SecurityGroupIds:
         - Ref: SshSecurityGroup
-        - Ref: RmiSecurityGroup
-        - Ref: TomcatSecurityGroup
-        - Ref: SubnetSecurityGroup
+        - Ref: JiraNodeSecurityGroup
       InstanceType: !Ref JiraInstanceType
       SubnetId:
         Ref: Subnet
@@ -78,8 +74,8 @@ Resources:
     Type: AWS::EC2::Instance
     Properties:
       SecurityGroupIds:
-      - Ref: SshSecurityGroup
-      - Ref: SubnetSecurityGroup
+        - Ref: SshSecurityGroup
+        - Ref: SharedHomeSecurityGroup
       InstanceType: !Ref JiraInstanceType
       SubnetId:
         Ref: Subnet
@@ -106,7 +102,7 @@ Resources:
         Ref: Subnet
       SecurityGroupIds:
         - Ref: SshSecurityGroup
-        - Ref: MySqlSecurityGroup
+        - Ref: DatabaseSecurityGroup
       KeyName:
         Ref: KeyName
       ImageId: !Ref Ami
@@ -127,75 +123,57 @@ Resources:
     Properties:
       VpcId:
         Ref: Vpc
-      GroupDescription: Enables SSH access
+      GroupDescription: For SSH enabled instances
       SecurityGroupIngress:
         -
           IpProtocol: tcp
           FromPort: 22
           ToPort: 22
           CidrIp: 0.0.0.0/0
-  RmiSecurityGroup:
+  JiraNodeSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId:
         Ref: Vpc
-      GroupDescription: Enables RMI access
-      SecurityGroupIngress:
-        -
-          IpProtocol: tcp
-          FromPort: 40001
-          ToPort: 40001
-          CidrIp: 0.0.0.0/0
-        -
-          IpProtocol: tcp
-          FromPort: 40011
-          ToPort: 40011
-          CidrIp: 0.0.0.0/0
-  TomcatSecurityGroup:
+      GroupDescription: For Jira DC nodes
+  SharedHomeSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId:
         Ref: Vpc
-      GroupDescription: Enables Tomcat HTTP access
-      SecurityGroupIngress:
-        -
-          IpProtocol: tcp
-          FromPort: 8080
-          ToPort: 8080
-          CidrIp: 0.0.0.0/0
-  MountTargetSecurityGroup:
+      GroupDescription: For Jira DC shared home
+  DatabaseSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId:
         Ref: Vpc
-      GroupDescription: Security group for mount target
-      SecurityGroupIngress:
-        -
-          IpProtocol: tcp
-          FromPort: 2049
-          ToPort: 2049
-          CidrIp: 0.0.0.0/0
-  MySqlSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
+      GroupDescription: For Jira DC database
+  CacheReplicationRmiPortAccess:
+    Type: AWS::EC2::SecurityGroupIngress
     Properties:
-      VpcId:
-        Ref: Vpc
-      GroupDescription: Enables MySql access
-      SecurityGroupIngress:
-        -
-          IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
-          CidrIp: 0.0.0.0/0
-  SubnetSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
+      GroupId: !Ref JiraNodeSecurityGroup
+      IpProtocol: tcp
+      # For cache replication we only need ports 40001 and 40011,
+      # however before Jira 7.4.0 the 2nd RMI port was always random and unconfigurable.
+      # We decided to not break compatibility with Jira 7.2 yet and keep every port between Jira nodes open.
+      # If the communication between nodes needs to be restricted, feel free to break the compatibility.
+      FromPort: 0
+      ToPort: 65535
+      SourceSecurityGroupId: !Ref JiraNodeSecurityGroup
+  SharedHomeMountAccess:
+    Type: AWS::EC2::SecurityGroupIngress
     Properties:
-      VpcId:
-        Ref: Vpc
-      GroupDescription: Enable communication between nodes
-      SecurityGroupIngress:
-        -
-          IpProtocol: tcp
-          FromPort: 0
-          ToPort: 65535
-          CidrIp: 10.0.0.0/24
+      GroupId: !Ref SharedHomeSecurityGroup
+      IpProtocol: tcp
+      FromPort: 2049
+      ToPort: 2049
+      SourceSecurityGroupId: !Ref JiraNodeSecurityGroup
+  MySqlPortAccess:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref DatabaseSecurityGroup
+      IpProtocol: tcp
+      FromPort: 3306
+      ToPort: 3306
+      SourceSecurityGroupId: !Ref JiraNodeSecurityGroup
+  # External access to Web App HTTP, JVM debug, JMX and Splunk forwarder ports added dynamically via `com.atlassian.performance.tools.awsinfrastructure.network.access.AccessProvider`

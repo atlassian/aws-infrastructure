@@ -8,6 +8,8 @@ import com.atlassian.performance.tools.aws.api.Aws
 import com.atlassian.performance.tools.aws.api.Investment
 import com.atlassian.performance.tools.aws.api.SshKey
 import com.atlassian.performance.tools.aws.api.StackFormula
+import com.atlassian.performance.tools.awsinfrastructure.api.network.access.ForSecurityGroupAccessRequester
+import com.atlassian.performance.tools.awsinfrastructure.api.network.access.SecurityGroupIngressAccessProvider
 import com.atlassian.performance.tools.awsinfrastructure.loadbalancer.ElasticLoadBalancer
 import com.atlassian.performance.tools.io.api.readResourceText
 import org.apache.logging.log4j.LogManager
@@ -41,6 +43,8 @@ class ElasticLoadBalancerFormula : LoadBalancerFormula {
             ),
             aws = aws
         ).provision()
+        val securityGroup = stack.findSecurityGroup("LoadBalancerSecurityGroup")
+
         logger.info("Elastic load balancer is set up")
         return ProvisionedLoadBalancer
             .Builder(
@@ -50,6 +54,11 @@ class ElasticLoadBalancerFormula : LoadBalancerFormula {
                 )
             )
             .resource(stack)
+            .accessProvider(
+                SecurityGroupIngressAccessProvider
+                    .Builder(ec2 = aws.ec2, securityGroup = securityGroup, portRange = 80..80).build()
+            )
+            .accessRequester(ForSecurityGroupAccessRequester { securityGroup })
             .build()
     }
 }

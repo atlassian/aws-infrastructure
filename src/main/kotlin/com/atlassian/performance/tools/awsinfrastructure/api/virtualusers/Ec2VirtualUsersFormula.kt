@@ -5,6 +5,7 @@ import com.amazonaws.services.ec2.model.InstanceType
 import com.amazonaws.services.ec2.model.ShutdownBehavior
 import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.api.network.Network
+import com.atlassian.performance.tools.awsinfrastructure.api.network.access.ForIpAccessRequester
 import com.atlassian.performance.tools.awsinfrastructure.virtualusers.UbuntuVirtualUsersRuntime
 import com.atlassian.performance.tools.infrastructure.api.browser.Browser
 import com.atlassian.performance.tools.infrastructure.api.browser.Chrome
@@ -61,7 +62,7 @@ class Ec2VirtualUsersFormula private constructor(
     ): ProvisionedVirtualUsers<SshVirtualUsers> {
         logger.debug("Setting up $name...")
         val sshKey = key.get()
-        val (ssh, resource) = allocateInstance(aws.awaitingEc2, roleProfile, sshKey, investment)
+        val (ssh, resource, instance) = allocateInstance(aws.awaitingEc2, roleProfile, sshKey, investment)
         val jarPath = UbuntuVirtualUsersRuntime().prepareForExecution(ssh, shadowJar, shadowJarTransport, browser)
         logger.debug("$name is ready to apply load")
         return ProvisionedVirtualUsers
@@ -75,6 +76,7 @@ class Ec2VirtualUsersFormula private constructor(
                 )
             )
             .resource(resource)
+            .accessRequester(ForIpAccessRequester { instance.publicIpAddress })
             .build()
     }
 
