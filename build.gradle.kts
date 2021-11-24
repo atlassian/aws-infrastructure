@@ -23,7 +23,7 @@ configurations.all {
         eachDependency {
             when (requested.module.toString()) {
                 "com.google.guava:guava" -> useVersion("23.6-jre")
-                "org.apache.httpcomponents:httpclient" -> useVersion("4.5.5")
+                "org.apache.httpcomponents:httpclient" -> useVersion("4.5.13")
                 "com.fasterxml.jackson.core:jackson-core" -> useVersion("2.9.4")
                 "org.slf4j:slf4j-api" -> useVersion("1.8.0-alpha2")
                 "org.apache.httpcomponents:httpcore" -> useVersion("4.4.9")
@@ -46,7 +46,7 @@ dependencies {
     api("com.atlassian.performance.tools:jira-actions:[2.0.0,4.0.0)")
     api("com.atlassian.performance.tools:ssh:[2.0.0,3.0.0)")
     api("com.atlassian.performance.tools:virtual-users:[3.3.0,4.0.0)")
-    api("com.amazonaws:aws-java-sdk-ec2:1.11.424")
+    api("com.amazonaws:aws-java-sdk-ec2:1.11.817")
 
     implementation("com.atlassian.performance.tools:jvm-tasks:[1.0.0,2.0.0)")
     implementation("com.atlassian.performance.tools:workspace:[2.0.0,3.0.0)")
