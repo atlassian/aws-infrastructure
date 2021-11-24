@@ -111,6 +111,8 @@ class InfrastructureFormula<out T : VirtualUsers> private constructor(
         val provisionedVirtualUsers = provisionVirtualUsers.get()
         val sshKey = keyProvisioning.get()
 
+        provisionedVirtualUsers.accessRequester.requestAccess(provisionedJira.accessProvider)
+
         executor.shutdownNow()
 
         logger.info("All infrastructure is now available.")
@@ -133,6 +135,7 @@ class InfrastructureFormula<out T : VirtualUsers> private constructor(
                     )
                 )
             )
+            .accessProvider(provisionedJira.accessProvider)
             .build()
     }
 

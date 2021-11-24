@@ -23,6 +23,26 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.23.1...master
 
+### Fixed
+- Restrict access to provisioned AWS instances to only the necessary connections. Resolve [JPERF-730].
+
+### Added
+- Add the ability to dynamically share permissions between resources provisioned by various Formulas. Unblock [JPERF-730].
+- Add builders for `ProvisionedJira`, `ProvisionedLoadBalancer`, `ProvisionedVirtualUsers` and `ProvisionedInfrastructure`.
+- Add builder for `ApacheProxyLoadBalancer` and allow to overwrite it''s IP address.
+- Add `Defaults` child object to `ProvisionedJira`, `ProvisionedLoadBalancer`, `ProvisionedVirtualUsers`, `ProvisionedInfrastructure`, `StandaloneFormula` and `DataCenterFormula`.
+- Add Jira node identifier to exceptions thrown as part of startup failures of DataCenterFormula.
+
+### Deprecated
+- Deprecate `InfrastructureFormula` constructor in favor of `InfrastructureFormula.Builder`.
+- Deprecate `ProvisionedJira` constructor in favor of `ProvisionedJira.Builder`.
+- Deprecate `ProvisionedLoadBalancer` constructor in favor of `ProvisionedLoadBalancer.Builder`.
+- Deprecate `ProvisionedVirtualUsers` constructor in favor of `ProvisionedVirtualUsers.Builder`.
+- Deprecate `ProvisionedInfrastructure` constructor in favor of `ProvisionedInfrastructure.Builder`.
+- Deprecate `ApacheProxyLoadBalancer` constructor in favor of `ApacheProxyLoadBalancer.Builder`.
+
+[JPERF-730]: https://ecosystem.atlassian.net/browse/JPERF-730
+
 ## [2.23.1] - 2021-04-19
 [2.23.1]: https://github.com/atlassian/aws-infrastructure/compare/release-2.23.0...release-2.23.1
 

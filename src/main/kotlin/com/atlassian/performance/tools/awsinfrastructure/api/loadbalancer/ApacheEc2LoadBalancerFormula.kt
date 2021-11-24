@@ -1,8 +1,9 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer
 
-import com.amazonaws.services.ec2.AmazonEC2
 import com.amazonaws.services.ec2.model.*
 import com.atlassian.performance.tools.aws.api.*
+import com.atlassian.performance.tools.awsinfrastructure.api.network.access.ForIpAccessRequester
+import com.atlassian.performance.tools.awsinfrastructure.api.network.access.SecurityGroupIngressAccessProvider
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.net.URI
@@ -22,7 +23,13 @@ class ApacheEc2LoadBalancerFormula : LoadBalancerFormula {
     ): ProvisionedLoadBalancer {
         logger.info("Setting up Apache load balancer...")
         val ec2 = aws.ec2
-        val httpAccess = httpAccess(investment, ec2, aws.awaitingEc2, vpc)
+        val securityGroup = aws.awaitingEc2.allocateSecurityGroup(
+            investment,
+            CreateSecurityGroupRequest()
+                .withGroupName("${investment.reuseKey()}-HttpListener")
+                .withDescription("Load balancer security group")
+                .withVpcId(vpc.vpcId)
+        )
         val (ssh, resource, instance) = aws.awaitingEc2.allocateInstance(
             investment = investment,
             key = key,
@@ -30,7 +37,7 @@ class ApacheEc2LoadBalancerFormula : LoadBalancerFormula {
             customizeLaunch = { launch ->
                 launch
                     .withInstanceInitiatedShutdownBehavior(ShutdownBehavior.Terminate)
-                    .withSecurityGroupIds(httpAccess.groupId)
+                    .withSecurityGroupIds(securityGroup.groupId)
                     .withSubnetId(subnet.subnetId)
                     .withInstanceType(InstanceType.M5Large)
             }
@@ -46,38 +53,14 @@ class ApacheEc2LoadBalancerFormula : LoadBalancerFormula {
             .resource(
                 DependentResources(
                     user = resource,
-                    dependency = Ec2SecurityGroup(httpAccess, ec2)
+                    dependency = Ec2SecurityGroup(securityGroup, ec2)
                 )
             )
+            .accessProvider(
+                SecurityGroupIngressAccessProvider
+                    .Builder(ec2 = aws.ec2, securityGroup = securityGroup, portRange = balancerPort..balancerPort).build()
+            )
+            .accessRequester(ForIpAccessRequester { instance.publicIpAddress })
             .build()
-    }
-
-    private fun httpAccess(
-        investment: Investment,
-        ec2: AmazonEC2,
-        awaitingEc2: AwaitingEc2,
-        vpc: Vpc
-    ): SecurityGroup {
-        val securityGroup = awaitingEc2.allocateSecurityGroup(
-            investment,
-            CreateSecurityGroupRequest()
-                .withGroupName("${investment.reuseKey()}-HttpListener")
-                .withDescription("Enables HTTP access")
-                .withVpcId(vpc.vpcId)
-        )
-        ec2.authorizeSecurityGroupIngress(
-            AuthorizeSecurityGroupIngressRequest()
-                .withGroupId(securityGroup.groupId)
-                .withIpPermissions(
-                    IpPermission()
-                        .withIpProtocol("tcp")
-                        .withFromPort(balancerPort)
-                        .withToPort(balancerPort)
-                        .withIpv4Ranges(
-                            IpRange().withCidrIp("0.0.0.0/0")
-                        )
-                )
-        )
-        return securityGroup
     }
 }

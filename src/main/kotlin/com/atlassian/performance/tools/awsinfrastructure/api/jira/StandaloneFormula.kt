@@ -12,6 +12,7 @@ import com.atlassian.performance.tools.awsinfrastructure.api.hardware.M4ExtraLar
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
 import com.atlassian.performance.tools.awsinfrastructure.api.network.Network
 import com.atlassian.performance.tools.awsinfrastructure.api.network.NetworkFormula
+import com.atlassian.performance.tools.awsinfrastructure.api.network.access.*
 import com.atlassian.performance.tools.awsinfrastructure.jira.StandaloneNodeFormula
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
@@ -45,9 +46,14 @@ class StandaloneFormula private constructor(
     private val stackCreationTimeout: Duration,
     private val overriddenNetwork: Network? = null,
     private val databaseComputer: Computer,
-    private val databaseVolume: Volume
+    private val databaseVolume: Volume,
+    private val accessRequester: AccessRequester
 ) : JiraFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
+
+    object Defaults {
+        val accessRequester: AccessRequester = ForIpAccessRequester(LocalPublicIpv4Provider())
+    }
 
     @Suppress("DEPRECATION")
     @Deprecated(message = "Use StandaloneFormula.Builder instead.")
@@ -68,7 +74,8 @@ class StandaloneFormula private constructor(
         jiraVolume = Volume(200),
         stackCreationTimeout = Duration.ofMinutes(30),
         databaseComputer = M4ExtraLargeElastic(),
-        databaseVolume = Volume(100)
+        databaseVolume = Volume(100),
+        accessRequester = Defaults.accessRequester
     )
 
     @Suppress("DEPRECATION")
@@ -88,7 +95,8 @@ class StandaloneFormula private constructor(
         jiraVolume = Volume(200),
         stackCreationTimeout = Duration.ofMinutes(30),
         databaseComputer = M4ExtraLargeElastic(),
-        databaseVolume = Volume(100)
+        databaseVolume = Volume(100),
+        accessRequester = Defaults.accessRequester
     )
 
     override fun provision(
@@ -164,7 +172,7 @@ class StandaloneFormula private constructor(
         val jiraSsh = Ssh(SshHost(jiraSshIp, "ubuntu", keyPath), connectivityPatience = 5)
 
         val databaseMachine = InstanceFilters().dbInstance(machines)
-        val databasePublicIp = databaseMachine.publicIpAddress
+        val databasePrivateIp = databaseMachine.privateIpAddress
         val databaseSshIp = databaseMachine.publicIpAddress
         val databaseSsh = Ssh(SshHost(databaseSshIp, "ubuntu", keyPath), connectivityPatience = 4)
 
@@ -176,11 +184,45 @@ class StandaloneFormula private constructor(
             jiraHomeSource = jiraHomeSource,
             pluginsTransport = pluginsTransport,
             resultsTransport = resultsTransport,
-            databaseIp = databasePublicIp,
+            databaseIp = databasePrivateIp,
             productDistribution = productDistribution,
             ssh = jiraSsh,
             computer = computer
         )
+
+        val jiraNodeSecurityGroup = jiraStack.findSecurityGroup("JiraNodeSecurityGroup")
+        val jiraNodeHttpAccessProvider = SecurityGroupIngressAccessProvider
+            .Builder(ec2 = aws.ec2, securityGroup = jiraNodeSecurityGroup, portRange = 8080..8080).build()
+        val jiraNodeJvmDebugAccessProvider = MultiAccessProvider(
+            config.debug.getRequiredPorts().toSet().map {
+                SecurityGroupIngressAccessProvider
+                    .Builder(ec2 = aws.ec2, securityGroup = jiraNodeSecurityGroup, portRange = it..it).build()
+            }
+        )
+        val jiraNodeJmxAccessProvider = MultiAccessProvider(
+            config.remoteJmx.getRequiredPorts().toSet().map {
+                SecurityGroupIngressAccessProvider
+                    .Builder(ec2 = aws.ec2, securityGroup = jiraNodeSecurityGroup, portRange = it..it).build()
+            }
+        )
+        val jiraNodeSplunkForwarderAccessProvider = MultiAccessProvider(
+            config.splunkForwarder.getRequiredPorts().toSet().map {
+                SecurityGroupIngressAccessProvider
+                    .Builder(ec2 = aws.ec2, securityGroup = jiraNodeSecurityGroup, portRange = it..it).build()
+            }
+        )
+        val jiraAccessProvider = MultiAccessProvider(
+            listOf(
+                jiraNodeHttpAccessProvider,
+                jiraNodeJvmDebugAccessProvider,
+                jiraNodeJmxAccessProvider,
+                jiraNodeSplunkForwarderAccessProvider
+            )
+        )
+
+        val externalAccess = executor.submitWithLogContext("external access") {
+            accessRequester.requestAccess(jiraAccessProvider)
+        }
 
         val setupDatabase = executor.submitWithLogContext("database") {
             databaseSsh.newConnection().use {
@@ -203,6 +245,10 @@ class StandaloneFormula private constructor(
         val databaseDataLocation = setupDatabase.get()
         val node = time("start") { provisionedNode.start(emptyList()) }
 
+        if (!externalAccess.get()) {
+            logger.warn("It's possible that defined external access to Jira resources (e.g. http, debug, splunk) wasn't granted.")
+        }
+
         executor.shutdownNow()
 
         val jira = Jira(
@@ -218,6 +264,7 @@ class StandaloneFormula private constructor(
         logger.info("$jira is set up, will expire ${jiraStack.expiry}")
         return@time ProvisionedJira.Builder(jira)
             .resource(jiraStack)
+            .accessProvider(jiraAccessProvider)
             .build()
     }
 
@@ -246,6 +293,7 @@ class StandaloneFormula private constructor(
         private var network: Network? = null
         private var databaseComputer: Computer = M4ExtraLargeElastic()
         private var databaseVolume: Volume = Volume(100)
+        private var accessRequester: AccessRequester = Defaults.accessRequester
 
         internal constructor(
             formula: StandaloneFormula
@@ -276,6 +324,8 @@ class StandaloneFormula private constructor(
 
         internal fun network(network: Network) = apply { this.network = network }
 
+        fun accessRequester(accessRequester: AccessRequester) = apply { this.accessRequester = accessRequester }
+
         fun build(): StandaloneFormula = StandaloneFormula(
             apps = apps,
             productDistribution = productDistribution,
@@ -287,7 +337,8 @@ class StandaloneFormula private constructor(
             stackCreationTimeout = stackCreationTimeout,
             overriddenNetwork = network,
             databaseComputer = databaseComputer,
-            databaseVolume = databaseVolume
+            databaseVolume = databaseVolume,
+            accessRequester = accessRequester
         )
     }
 }

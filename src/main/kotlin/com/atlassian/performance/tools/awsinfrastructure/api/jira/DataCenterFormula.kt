@@ -15,6 +15,7 @@ import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.Apache
 import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.LoadBalancerFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.network.Network
 import com.atlassian.performance.tools.awsinfrastructure.api.network.NetworkFormula
+import com.atlassian.performance.tools.awsinfrastructure.api.network.access.*
 import com.atlassian.performance.tools.awsinfrastructure.jira.DataCenterNodeFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.DiagnosableNodeFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.StandaloneNodeFormula
@@ -53,9 +54,14 @@ class DataCenterFormula private constructor(
     private val stackCreationTimeout: Duration,
     private val overriddenNetwork: Network? = null,
     private val databaseComputer: Computer,
-    private val databaseVolume: Volume
+    private val databaseVolume: Volume,
+    private val accessRequester: AccessRequester
 ) : JiraFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
+
+    object Defaults {
+        val accessRequester: AccessRequester = ForIpAccessRequester(LocalPublicIpv4Provider())
+    }
 
     @Suppress("DEPRECATION")
     @Deprecated(message = "Use DataCenterFormula.Builder instead.")
@@ -78,7 +84,8 @@ class DataCenterFormula private constructor(
         jiraVolume = Volume(100),
         stackCreationTimeout = Duration.ofMinutes(30),
         databaseComputer = M4ExtraLargeElastic(),
-        databaseVolume = Volume(100)
+        databaseVolume = Volume(100),
+        accessRequester = Defaults.accessRequester
     )
 
     @Suppress("DEPRECATION")
@@ -99,7 +106,8 @@ class DataCenterFormula private constructor(
         jiraVolume = Volume(100),
         stackCreationTimeout = Duration.ofMinutes(30),
         databaseComputer = M4ExtraLargeElastic(),
-        databaseVolume = Volume(100)
+        databaseVolume = Volume(100),
+        accessRequester = Defaults.accessRequester
     )
 
     override fun provision(
@@ -169,7 +177,7 @@ class DataCenterFormula private constructor(
         val jiraNodes = InstanceFilters().jiraInstances(machines)
 
         val databaseMachine = InstanceFilters().dbInstance(machines)
-        val databasePublicIp = databaseMachine.publicIpAddress
+        val databasePrivateIp = databaseMachine.privateIpAddress
         val databaseSshIp = databaseMachine.publicIpAddress
         val databaseSsh = Ssh(SshHost(databaseSshIp, "ubuntu", keyPath), connectivityPatience = 5)
 
@@ -220,7 +228,7 @@ class DataCenterFormula private constructor(
                     delegate = DataCenterNodeFormula(
                         base = StandaloneNodeFormula(
                             resultsTransport = resultsTransport,
-                            databaseIp = databasePublicIp,
+                            databaseIp = databasePrivateIp,
                             jiraHomeSource = jiraHomeSource,
                             pluginsTransport = pluginsTransport,
                             productDistribution = productDistribution,
@@ -238,6 +246,57 @@ class DataCenterFormula private constructor(
 
         val provisionedLoadBalancer = futureLoadBalancer.get()
         val loadBalancer = provisionedLoadBalancer.loadBalancer
+
+        val jiraNodeSecurityGroup = jiraStack.findSecurityGroup("JiraNodeSecurityGroup")
+        val jiraNodeHttpAccessProvider = SecurityGroupIngressAccessProvider
+            .Builder(ec2 = aws.ec2, securityGroup = jiraNodeSecurityGroup, portRange = 8080..8080).build()
+        val jiraNodeJvmDebugAccessProvider = MultiAccessProvider(
+            configs.flatMap { it.debug.getRequiredPorts() }.toSet().map {
+                SecurityGroupIngressAccessProvider
+                    .Builder(ec2 = aws.ec2, securityGroup = jiraNodeSecurityGroup, portRange = it..it).build()
+            }
+        )
+        val jiraNodeJmxAccessProvider = MultiAccessProvider(
+            configs.flatMap { it.remoteJmx.getRequiredPorts() }.toSet().map {
+                SecurityGroupIngressAccessProvider
+                    .Builder(ec2 = aws.ec2, securityGroup = jiraNodeSecurityGroup, portRange = it..it).build()
+            }
+        )
+        val jiraNodeSplunkForwarderAccessProvider = MultiAccessProvider(
+            configs.flatMap { it.splunkForwarder.getRequiredPorts() }.toSet().map {
+                SecurityGroupIngressAccessProvider
+                    .Builder(ec2 = aws.ec2, securityGroup = jiraNodeSecurityGroup, portRange = it..it).build()
+            }
+        )
+        val jiraNodeRmiAccessProvider = MultiAccessProvider(
+            setOf(40001, 40011).map {
+                SecurityGroupIngressAccessProvider
+                    .Builder(ec2 = aws.ec2, securityGroup = jiraNodeSecurityGroup, portRange = it..it).build()
+            }
+        )
+        val jiraAccessProvider = MultiAccessProvider(
+            listOf(
+                provisionedLoadBalancer.accessProvider,
+                jiraNodeHttpAccessProvider,
+                jiraNodeJvmDebugAccessProvider,
+                jiraNodeJmxAccessProvider,
+                jiraNodeSplunkForwarderAccessProvider
+            )
+        )
+
+        // When JMX is enabled without granting ehcache RMI port access to *PUBLIC* IP addresses of Jira nodes,
+        // it takes longer for Jira DC to start. It's unknown why exactly is that.
+        val rmiNodePublicAccess = executor.submitWithLogContext("rmi node public access") {
+            MultiAccessRequester(jiraNodes.map { ForIpAccessRequester { it.publicIpAddress } })
+                .requestAccess(jiraNodeRmiAccessProvider)
+        }
+        val loadBalancerAccess = executor.submitWithLogContext("load balancer access") {
+            provisionedLoadBalancer.accessRequester.requestAccess(jiraNodeHttpAccessProvider)
+        }
+        val externalAccess = executor.submitWithLogContext("external access") {
+            accessRequester.requestAccess(jiraAccessProvider)
+        }
+
         val setupDatabase = executor.submitWithLogContext("database") {
             databaseSsh.newConnection().use {
                 databaseComputer.setUp(it)
@@ -265,6 +324,16 @@ class DataCenterFormula private constructor(
             .map { it.get() }
             .map { node -> time("start $node") { node.start(updateJiraConfiguration) } }
 
+        if (!rmiNodePublicAccess.get()) {
+            logger.warn("Jira nodes may not have access to other nodes RMI ports. This can cause slow Jira startup.")
+        }
+        if (!loadBalancerAccess.get()) {
+            logger.warn("Load balancer may not have access to Jira nodes")
+        }
+        if (!externalAccess.get()) {
+            logger.warn("It's possible that defined external access to Jira resources (e.g. http, debug, splunk) wasn't granted.")
+        }
+
         executor.shutdownNow()
 
         time("wait for loadbalancer") {
@@ -289,6 +358,7 @@ class DataCenterFormula private constructor(
                     dependency = jiraStack
                 )
             )
+            .accessProvider(jiraAccessProvider)
             .build()
     }
 
@@ -319,6 +389,7 @@ class DataCenterFormula private constructor(
         private var network: Network? = null
         private var databaseComputer: Computer = M4ExtraLargeElastic()
         private var databaseVolume: Volume = Volume(100)
+        private var accessRequester: AccessRequester = Defaults.accessRequester
 
         internal constructor(
             formula: DataCenterFormula
@@ -358,6 +429,8 @@ class DataCenterFormula private constructor(
 
         internal fun network(network: Network) = apply { this.network = network }
 
+        fun accessRequester(accessRequester: AccessRequester) = apply { this.accessRequester = accessRequester }
+
         fun build(): DataCenterFormula = DataCenterFormula(
             configs = configs,
             loadBalancerFormula = loadBalancerFormula,
@@ -370,7 +443,8 @@ class DataCenterFormula private constructor(
             stackCreationTimeout = stackCreationTimeout,
             overriddenNetwork = network,
             databaseComputer = databaseComputer,
-            databaseVolume = databaseVolume
+            databaseVolume = databaseVolume,
+            accessRequester = accessRequester
         )
     }
 }
