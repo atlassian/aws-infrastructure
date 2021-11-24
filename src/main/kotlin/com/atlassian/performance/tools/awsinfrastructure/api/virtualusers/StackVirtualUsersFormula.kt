@@ -144,16 +144,18 @@ class StackVirtualUsersFormula private constructor(
             splunkForwarder.run(it, name, logsPath = "/home/ubuntu/splunkforward/")
         }
         logger.debug("$name is ready to apply load")
-        return ProvisionedVirtualUsers(
-            virtualUsers = SshVirtualUsers(
-                nodeOrder = nodeOrder,
-                name = name,
-                resultsTransport = resultsTransport,
-                jarName = jarPath,
-                ssh = virtualUsersSsh
-            ),
-            resource = virtualUsersStack
-        )
+        return ProvisionedVirtualUsers
+            .Builder(
+                SshVirtualUsers(
+                    nodeOrder = nodeOrder,
+                    name = name,
+                    resultsTransport = resultsTransport,
+                    jarName = jarPath,
+                    ssh = virtualUsersSsh
+                )
+            )
+            .resource(virtualUsersStack)
+            .build()
     }
 
     class Builder(

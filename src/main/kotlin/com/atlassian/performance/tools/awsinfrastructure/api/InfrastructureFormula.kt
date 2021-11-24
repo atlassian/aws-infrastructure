@@ -1,6 +1,9 @@
 package com.atlassian.performance.tools.awsinfrastructure.api
 
-import com.atlassian.performance.tools.aws.api.*
+import com.atlassian.performance.tools.aws.api.Aws
+import com.atlassian.performance.tools.aws.api.CompositeResource
+import com.atlassian.performance.tools.aws.api.Investment
+import com.atlassian.performance.tools.aws.api.SshKeyFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.DataCenterFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.JiraFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.JiraSoftwareDevDistribution
@@ -112,21 +115,25 @@ class InfrastructureFormula<out T : VirtualUsers> private constructor(
 
         logger.info("All infrastructure is now available.")
 
-        return ProvisionedInfrastructure(
-            infrastructure = Infrastructure(
-                virtualUsers = provisionedVirtualUsers.virtualUsers,
-                jira = provisionedJira.jira,
-                resultsTransport = resultsStorage,
-                sshKey = sshKey
-            ),
-            resource = CompositeResource(
-                listOf(
-                    provisionedJira.resource,
-                    provisionedVirtualUsers.resource,
-                    sshKey.remote
+        return ProvisionedInfrastructure
+            .Builder(
+                Infrastructure(
+                    virtualUsers = provisionedVirtualUsers.virtualUsers,
+                    jira = provisionedJira.jira,
+                    resultsTransport = resultsStorage,
+                    sshKey = sshKey
                 )
             )
-        )
+            .resource(
+                CompositeResource(
+                    listOf(
+                        provisionedJira.resource,
+                        provisionedVirtualUsers.resource,
+                        sshKey.remote
+                    )
+                )
+            )
+            .build()
     }
 
     private fun overrideJiraNetwork(
@@ -178,11 +185,3 @@ class InfrastructureFormula<out T : VirtualUsers> private constructor(
     }
 }
 
-class ProvisionedInfrastructure<out T : VirtualUsers>(
-    val infrastructure: Infrastructure<T>,
-    val resource: Resource
-) {
-    override fun toString(): String {
-        return "ProvisionedInfrastructure(infrastructure=$infrastructure, resource=$resource)"
-    }
-}

@@ -1,6 +1,9 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
-import com.atlassian.performance.tools.aws.api.*
+import com.atlassian.performance.tools.aws.api.Aws
+import com.atlassian.performance.tools.aws.api.Investment
+import com.atlassian.performance.tools.aws.api.SshKey
+import com.atlassian.performance.tools.aws.api.Storage
 import java.util.concurrent.Future
 
 interface JiraFormula {
@@ -12,13 +15,4 @@ interface JiraFormula {
         roleProfile: String,
         aws: Aws
     ): ProvisionedJira
-}
-
-class ProvisionedJira(
-    val jira: Jira,
-    val resource: Resource
-) {
-    override fun toString(): String {
-        return "ProvisionedJira(jira=$jira, resource=$resource)"
-    }
 }

@@ -64,16 +64,18 @@ class Ec2VirtualUsersFormula private constructor(
         val (ssh, resource) = allocateInstance(aws.awaitingEc2, roleProfile, sshKey, investment)
         val jarPath = UbuntuVirtualUsersRuntime().prepareForExecution(ssh, shadowJar, shadowJarTransport, browser)
         logger.debug("$name is ready to apply load")
-        return ProvisionedVirtualUsers(
-            virtualUsers = SshVirtualUsers(
-                nodeOrder = nodeOrder,
-                name = name,
-                resultsTransport = resultsTransport,
-                jarName = jarPath,
-                ssh = ssh
-            ),
-            resource = resource
-        )
+        return ProvisionedVirtualUsers
+            .Builder(
+                SshVirtualUsers(
+                    nodeOrder = nodeOrder,
+                    name = name,
+                    resultsTransport = resultsTransport,
+                    jarName = jarPath,
+                    ssh = ssh
+                )
+            )
+            .resource(resource)
+            .build()
     }
 
     private fun allocateInstance(

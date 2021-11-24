@@ -212,7 +212,9 @@ class StandaloneFormula private constructor(
             jmxClients = listOf(config.remoteJmx.getClient(jiraIp))
         )
         logger.info("$jira is set up, will expire ${jiraStack.expiry}")
-        return@time ProvisionedJira(jira = jira, resource = jiraStack)
+        return@time ProvisionedJira.Builder(jira)
+            .resource(jiraStack)
+            .build()
     }
 
     class Builder constructor(

@@ -54,14 +54,14 @@ class ApacheEc2LoadBalancerFormula : LoadBalancerFormula {
         )
         loadBalancer.provision()
         logger.info("Apache load balancer is set up")
-        return ProvisionedLoadBalancer(
-            loadBalancer = loadBalancer,
-            resource = DependentResources(
-                user = resource,
-                dependency = Ec2SecurityGroup(httpAccess, ec2)
+        return ProvisionedLoadBalancer.Builder(loadBalancer)
+            .resource(
+                DependentResources(
+                    user = resource,
+                    dependency = Ec2SecurityGroup(httpAccess, ec2)
+                )
             )
-
-        )
+            .build()
     }
 
     private fun httpAccess(
