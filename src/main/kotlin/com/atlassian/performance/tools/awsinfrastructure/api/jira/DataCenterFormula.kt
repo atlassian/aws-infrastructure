@@ -3,7 +3,6 @@ package com.atlassian.performance.tools.awsinfrastructure.api.jira
 import com.amazonaws.services.cloudformation.model.Parameter
 import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.ApplicationStorageWrapper
-import com.atlassian.performance.tools.awsinfrastructure.InstanceAddressSelector
 import com.atlassian.performance.tools.awsinfrastructure.InstanceFilters
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
 import com.atlassian.performance.tools.awsinfrastructure.api.RemoteLocation
@@ -166,15 +165,19 @@ class DataCenterFormula private constructor(
         val keyPath = key.get().file.path
 
         val machines = jiraStack.listMachines()
+
         val jiraNodes = InstanceFilters().jiraInstances(machines)
-        val databaseIp = InstanceAddressSelector.getReachableIpAddress(InstanceFilters().dbInstance(machines))
+
+        val databaseMachine = InstanceFilters().dbInstance(machines)
+        val databasePublicIp = databaseMachine.publicIpAddress
+        val databaseSshIp = databaseMachine.publicIpAddress
+        val databaseSsh = Ssh(SshHost(databaseSshIp, "ubuntu", keyPath), connectivityPatience = 5)
+
         val sharedHomeMachine = InstanceFilters().sharedHome(machines)
-        val sharedHomeIp = InstanceAddressSelector.getReachableIpAddress(sharedHomeMachine)
         val sharedHomePrivateIp = sharedHomeMachine.privateIpAddress
-        val sharedHomeSsh = Ssh(
-            host = SshHost(sharedHomeIp, "ubuntu", keyPath),
-            connectivityPatience = 4
-        )
+        val sharedHomeSshIp = sharedHomeMachine.publicIpAddress
+        val sharedHomeSsh = Ssh(SshHost(sharedHomeSshIp, "ubuntu", keyPath), connectivityPatience = 4)
+
         val futureLoadBalancer = executor.submitWithLogContext("provision load balancer") {
             loadBalancerFormula.provision(
                 investment = investment,
@@ -186,10 +189,11 @@ class DataCenterFormula private constructor(
             )
         }
 
+        // shared home provisioning relies on plugins being uploaded
         uploadPlugins.get()
         val sharedHome = executor.submitWithLogContext("provision shared home") {
             logger.info("Setting up shared home...")
-            key.get().file.facilitateSsh(sharedHomeIp)
+            key.get().file.facilitateSsh(sharedHomeSshIp)
             val sharedHome = SharedHomeFormula(
                 jiraHomeSource = jiraHomeSource,
                 pluginsTransport = pluginsTransport,
@@ -205,17 +209,18 @@ class DataCenterFormula private constructor(
             .asSequence()
             .onEach { instance ->
                 CloseableThreadContext.push("a jira node").use {
-                    key.get().file.facilitateSsh(InstanceAddressSelector.getReachableIpAddress(instance))
+                    val sshIpAddress = instance.publicIpAddress
+                    key.get().file.facilitateSsh(sshIpAddress)
                 }
             }
             .mapIndexed { i: Int, instance ->
-                val ipAddress = InstanceAddressSelector.getReachableIpAddress(instance)
-                val ssh = Ssh(SshHost(ipAddress, "ubuntu", keyPath), connectivityPatience = 5)
+                val sshIpAddress = instance.publicIpAddress
+                val ssh = Ssh(SshHost(sshIpAddress, "ubuntu", keyPath), connectivityPatience = 5)
                 DiagnosableNodeFormula(
                     delegate = DataCenterNodeFormula(
                         base = StandaloneNodeFormula(
                             resultsTransport = resultsTransport,
-                            databaseIp = databaseIp,
+                            databaseIp = databasePublicIp,
                             jiraHomeSource = jiraHomeSource,
                             pluginsTransport = pluginsTransport,
                             productDistribution = productDistribution,
@@ -231,21 +236,19 @@ class DataCenterFormula private constructor(
             }
             .toList()
 
-        val databaseHost = SshHost(databaseIp, "ubuntu", keyPath)
-        val databaseSsh = Ssh(databaseHost, connectivityPatience = 5)
         val provisionedLoadBalancer = futureLoadBalancer.get()
         val loadBalancer = provisionedLoadBalancer.loadBalancer
         val setupDatabase = executor.submitWithLogContext("database") {
             databaseSsh.newConnection().use {
                 databaseComputer.setUp(it)
                 logger.info("Setting up database...")
-                key.get().file.facilitateSsh(databaseIp)
+                key.get().file.facilitateSsh(databaseSshIp)
                 val location = database.setup(it)
                 logger.info("Database is set up")
                 logger.info("Starting database...")
                 database.start(loadBalancer.uri, it)
                 logger.info("Database is started")
-                RemoteLocation(databaseHost, location)
+                RemoteLocation(databaseSsh.host, location)
             }
         }
 
@@ -276,7 +279,7 @@ class DataCenterFormula private constructor(
             ),
             database = databaseDataLocation,
             address = loadBalancer.uri,
-            jmxClients = jiraNodes.mapIndexed { i, node -> configs[i].remoteJmx.getClient(InstanceAddressSelector.getReachableIpAddress(node)) }
+            jmxClients = jiraNodes.mapIndexed { i, node -> configs[i].remoteJmx.getClient(node.publicIpAddress) }
         )
         logger.info("$jira is set up, will expire ${jiraStack.expiry}")
         return@time ProvisionedJira.Builder(jira)

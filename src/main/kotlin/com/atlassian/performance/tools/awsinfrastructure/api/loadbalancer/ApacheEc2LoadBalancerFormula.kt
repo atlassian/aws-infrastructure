@@ -3,7 +3,6 @@ package com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer
 import com.amazonaws.services.ec2.AmazonEC2
 import com.amazonaws.services.ec2.model.*
 import com.atlassian.performance.tools.aws.api.*
-import com.atlassian.performance.tools.awsinfrastructure.InstanceAddressSelector
 import com.atlassian.performance.tools.infrastructure.api.Sed
 import com.atlassian.performance.tools.infrastructure.api.loadbalancer.LoadBalancer
 import com.atlassian.performance.tools.jvmtasks.api.ExponentialBackoff
@@ -31,7 +30,7 @@ class ApacheEc2LoadBalancerFormula : LoadBalancerFormula {
         logger.info("Setting up Apache load balancer...")
         val ec2 = aws.ec2
         val httpAccess = httpAccess(investment, ec2, aws.awaitingEc2, vpc)
-        val (ssh, resource) = aws.awaitingEc2.allocateInstance(
+        val (ssh, resource, instance) = aws.awaitingEc2.allocateInstance(
             investment = investment,
             key = key,
             vpcId = vpc.vpcId,
@@ -46,9 +45,9 @@ class ApacheEc2LoadBalancerFormula : LoadBalancerFormula {
         key.file.facilitateSsh(ssh.host.ipAddress)
         val loadBalancer = ApacheProxyLoadBalancer(
             nodes = instances.map {
-                val ipAddress = InstanceAddressSelector.getReachableIpAddress(it)
-                URI("http://$ipAddress:8080/")
+                URI("http://${it.publicIpAddress}:8080/")
             },
+            ipAddress = instance.publicIpAddress,
             httpPort = balancerPort,
             ssh = ssh
         )
@@ -97,10 +96,11 @@ class ApacheEc2LoadBalancerFormula : LoadBalancerFormula {
 internal class ApacheProxyLoadBalancer(
     private val nodes: List<URI>,
     private val ssh: Ssh,
+    ipAddress: String,
     httpPort: Int
 ) : LoadBalancer {
 
-    override val uri: URI = URI("http://${ssh.host.ipAddress}:$httpPort/")
+    override val uri: URI = URI("http://${ipAddress}:$httpPort/")
 
     override fun waitUntilHealthy(
         timeout: Duration
