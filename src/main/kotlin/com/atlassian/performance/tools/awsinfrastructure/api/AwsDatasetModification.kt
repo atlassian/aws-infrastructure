@@ -109,19 +109,28 @@ class AwsDatasetModification private constructor(
         private var workspace: TestWorkspace = RootWorkspace().currentTask.isolateTest(javaClass.simpleName)
         private var newDatasetName: String = "dataset-${UUID.randomUUID()}"
         private var host: DatasetHost = DatasetHost {
-            InfrastructureFormula(
-                investment = Investment(
-                    useCase = "Generic purpose dataset modification",
-                    lifespan = Duration.ofMinutes(50)
-                ),
-                jiraFormula = StandaloneFormula.Builder(
-                    database = it.database,
-                    jiraHomeSource = it.jiraHomeSource,
-                    productDistribution = PublicJiraSoftwareDistribution("7.2.0")
-                ).computer(C5NineExtraLargeEphemeral()).build(),
-                virtualUsersFormula = AbsentVirtualUsersFormula(),
-                aws = aws
-            )
+            InfrastructureFormula
+                .Builder(
+                    aws = aws,
+                    virtualUsersFormula = AbsentVirtualUsersFormula()
+                )
+                .investment(
+                    investment = Investment(
+                        useCase = "Generic purpose dataset modification",
+                        lifespan = Duration.ofMinutes(50)
+                    )
+                )
+                .jiraFormula(
+                    jiraFormula = StandaloneFormula
+                        .Builder(
+                            database = it.database,
+                            jiraHomeSource = it.jiraHomeSource,
+                            productDistribution = PublicJiraSoftwareDistribution("7.2.0")
+                        )
+                        .computer(C5NineExtraLargeEphemeral())
+                        .build()
+                )
+                .build()
         }
 
         /**
