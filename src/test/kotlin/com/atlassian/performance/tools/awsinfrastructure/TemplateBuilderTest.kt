@@ -13,7 +13,15 @@ class TemplateBuilderTest {
         val baseTemplate = "single-node.yaml"
         val originalTemplate = TemplateBuilder(baseTemplate).build()
 
-        val changedTemplate = TemplateBuilder(baseTemplate).addSecurityGroupIngress(setOf(port)).build()
+        val changedTemplate = TemplateBuilder(baseTemplate)
+            .let {
+                it.addSecurityGroupIngress(
+                    newResourceKey = "TestIngress",
+                    groupId = it.getResourceReference("JiraNodeSecurityGroup"),
+                    ports = (port..port)
+                )
+            }
+            .build()
 
         val expectedOutputs = listOf("FromPort: $port", "ToPort: $port")
         for (expectedOutput in expectedOutputs) {
