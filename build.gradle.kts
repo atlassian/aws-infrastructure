@@ -69,7 +69,7 @@ dependencies {
 fun log4j(
     vararg modules: String
 ): List<String> = modules.map { module ->
-    "org.apache.logging.log4j:log4j-$module:2.10.0"
+    "org.apache.logging.log4j:log4j-$module:2.17.0"
 }
 
 tasks.getByName("test", Test::class).apply {
