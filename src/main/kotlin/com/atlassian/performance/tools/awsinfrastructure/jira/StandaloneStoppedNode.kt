@@ -28,7 +28,8 @@ internal data class StandaloneStoppedNode(
     private val launchTimeouts: JiraLaunchTimeouts,
     private val jdk: JavaDevelopmentKit,
     private val profiler: Profiler,
-    override val ssh: Ssh
+    override val ssh: Ssh,
+    private val adminPasswordPlainText: String
 ) : StoppedNode {
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
@@ -97,11 +98,16 @@ internal data class StandaloneStoppedNode(
         return ssh.execute("cat $unpackedProduct/work/catalina.pid").output.trim().toInt()
     }
 
+    /**
+     * Possible side effect: when wrong password provided increases cwd_user.invalidPasswordAttempts and that might result in
+     * - captcha input being needed at login
+     * - virtual user failing to login because of captcha
+     */
     private fun waitForUpgrades(
         ssh: SshConnection,
         threadDump: ThreadDump
     ) {
-        val upgradesEndpoint = URI("http://admin:admin@localhost:8080/rest/api/2/upgrade")
+        val upgradesEndpoint = URI("http://admin:${adminPasswordPlainText}@localhost:8080/rest/api/2/upgrade")
         waitForStatusToChange(
             statusQuo = "000",
             timeout = launchTimeouts.offlineTimeout,

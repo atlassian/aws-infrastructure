@@ -23,6 +23,12 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.24.0...master
 
+### Added
+- Add ability to use custom admin password by adding `adminPasswordPlainText` parameter to `DataCenterFormula`, `StandaloneFormula`, `StandaloneNodeFormula` and `StandaloneStoppedNode`. Part of [JPERF-729]
+
+[JPERF-729]: https://ecosystem.atlassian.net/browse/JPERF-729
+
+
 ## [2.24.0] - 2022-01-04
 [2.24.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.23.1...release-2.24.0
 

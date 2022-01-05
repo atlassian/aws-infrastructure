@@ -29,7 +29,8 @@ internal class StandaloneNodeFormula(
     private val productDistribution: ProductDistribution,
     private val ssh: Ssh,
     private val config: JiraNodeConfig,
-    private val computer: Computer
+    private val computer: Computer,
+    private val adminPasswordPlainText: String
 ) : NodeFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
     private val jdk = config.jdk
@@ -102,7 +103,8 @@ internal class StandaloneNodeFormula(
                     ssh = ssh,
                     launchTimeouts = config.launchTimeouts,
                     jdk = jdk,
-                    profiler = config.profiler
+                    profiler = config.profiler,
+                    adminPasswordPlainText = adminPasswordPlainText
                 )
             }
         } finally {

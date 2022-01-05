@@ -55,12 +55,14 @@ class DataCenterFormula private constructor(
     private val overriddenNetwork: Network? = null,
     private val databaseComputer: Computer,
     private val databaseVolume: Volume,
-    private val accessRequester: AccessRequester
+    private val accessRequester: AccessRequester,
+    private val adminPasswordPlainText: String
 ) : JiraFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
     object Defaults {
         val accessRequester: AccessRequester = ForIpAccessRequester(LocalPublicIpv4Provider())
+        val adminPasswordPlainText = "admin"
     }
 
     @Suppress("DEPRECATION")
@@ -85,7 +87,8 @@ class DataCenterFormula private constructor(
         stackCreationTimeout = Duration.ofMinutes(30),
         databaseComputer = M4ExtraLargeElastic(),
         databaseVolume = Volume(100),
-        accessRequester = Defaults.accessRequester
+        accessRequester = Defaults.accessRequester,
+        adminPasswordPlainText = Defaults.adminPasswordPlainText
     )
 
     @Suppress("DEPRECATION")
@@ -107,7 +110,8 @@ class DataCenterFormula private constructor(
         stackCreationTimeout = Duration.ofMinutes(30),
         databaseComputer = M4ExtraLargeElastic(),
         databaseVolume = Volume(100),
-        accessRequester = Defaults.accessRequester
+        accessRequester = Defaults.accessRequester,
+        adminPasswordPlainText = Defaults.adminPasswordPlainText
     )
 
     override fun provision(
@@ -234,7 +238,8 @@ class DataCenterFormula private constructor(
                             productDistribution = productDistribution,
                             ssh = ssh,
                             config = configs[i],
-                            computer = computer
+                            computer = computer,
+                            adminPasswordPlainText = adminPasswordPlainText
                         ),
                         nodeIndex = i,
                         sharedHome = sharedHome,
@@ -300,14 +305,14 @@ class DataCenterFormula private constructor(
         val setupDatabase = executor.submitWithLogContext("database") {
             databaseSsh.newConnection().use {
                 databaseComputer.setUp(it)
-                logger.info("Setting up database...")
+                logger.info("Setting up database with ip ${databaseSshIp}...")
                 key.get().file.facilitateSsh(databaseSshIp)
-                val location = database.setup(it)
+                val databaseDataLocation = database.setup(it)
                 logger.info("Database is set up")
                 logger.info("Starting database...")
                 database.start(loadBalancer.uri, it)
                 logger.info("Database is started")
-                RemoteLocation(databaseSsh.host, location)
+                RemoteLocation(databaseSsh.host, databaseDataLocation)
             }
         }
 
@@ -390,6 +395,7 @@ class DataCenterFormula private constructor(
         private var databaseComputer: Computer = M4ExtraLargeElastic()
         private var databaseVolume: Volume = Volume(100)
         private var accessRequester: AccessRequester = Defaults.accessRequester
+        private var adminPasswordPlainText: String = "admin"
 
         internal constructor(
             formula: DataCenterFormula
@@ -407,6 +413,7 @@ class DataCenterFormula private constructor(
             network = formula.overriddenNetwork
             databaseComputer = formula.databaseComputer
             databaseVolume = formula.databaseVolume
+            adminPasswordPlainText = formula.adminPasswordPlainText
         }
 
         fun configs(configs: List<JiraNodeConfig>): Builder = apply { this.configs = configs }
@@ -427,6 +434,8 @@ class DataCenterFormula private constructor(
 
         fun databaseVolume(databaseVolume: Volume): Builder = apply { this.databaseVolume = databaseVolume }
 
+        fun adminPasswordPlainText(adminPasswordPlainText: String): Builder = apply { this.adminPasswordPlainText = adminPasswordPlainText }
+
         internal fun network(network: Network) = apply { this.network = network }
 
         fun accessRequester(accessRequester: AccessRequester) = apply { this.accessRequester = accessRequester }
@@ -444,7 +453,8 @@ class DataCenterFormula private constructor(
             overriddenNetwork = network,
             databaseComputer = databaseComputer,
             databaseVolume = databaseVolume,
-            accessRequester = accessRequester
+            accessRequester = accessRequester,
+            adminPasswordPlainText  = adminPasswordPlainText
         )
     }
 }
