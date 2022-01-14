@@ -305,7 +305,7 @@ class DataCenterFormula private constructor(
         val setupDatabase = executor.submitWithLogContext("database") {
             databaseSsh.newConnection().use {
                 databaseComputer.setUp(it)
-                logger.info("Setting up database with ip ${databaseSshIp}...")
+                logger.info("Setting up database...")
                 key.get().file.facilitateSsh(databaseSshIp)
                 val databaseDataLocation = database.setup(it)
                 logger.info("Database is set up")
