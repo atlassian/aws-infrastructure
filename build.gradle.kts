@@ -41,10 +41,10 @@ configurations.all {
 }
 
 dependencies {
-    api("com.atlassian.performance.tools:infrastructure:[4.13.0,5.0.0)")
+    api("com.atlassian.performance.tools:infrastructure:[4.19.0,5.0.0)")
     api("com.atlassian.performance.tools:aws-resources:[1.1.1,2.0.0)")
     api("com.atlassian.performance.tools:jira-actions:[2.0.0,4.0.0)")
-    api("com.atlassian.performance.tools:ssh:[2.0.0,3.0.0)")
+    api("com.atlassian.performance.tools:ssh:[2.4.1,3.0.0)")
     api("com.atlassian.performance.tools:virtual-users:[3.3.0,4.0.0)")
     api("com.amazonaws:aws-java-sdk-ec2:1.11.817")
 
