@@ -224,6 +224,10 @@ class StandaloneFormula private constructor(
             )
         )
 
+        val selfDashboardAccess = executor.submitWithLogContext("self dashboard access") {
+            ForIpAccessRequester { jiraPublicIp }.requestAccess(jiraNodeHttpAccessProvider)
+        }
+
         val externalAccess = executor.submitWithLogContext("external access") {
             accessRequester.requestAccess(jiraAccessProvider)
         }
@@ -248,6 +252,10 @@ class StandaloneFormula private constructor(
 
         val databaseDataLocation = setupDatabase.get()
         val node = time("start") { provisionedNode.start(emptyList()) }
+
+        if (!selfDashboardAccess.get()) {
+            logger.warn("It's possible that Jira doesn't have HTTP access to itself. Dashboards may not work.")
+        }
 
         if (!externalAccess.get()) {
             logger.warn("It's possible that defined external access to Jira resources (e.g. http, debug, splunk) wasn't granted.")
