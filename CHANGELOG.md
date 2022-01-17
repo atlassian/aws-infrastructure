@@ -22,6 +22,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
 
+### Fixed
+- Grant Jira access to its own HTTP port in `StandaloneFormula`. Fix [JPERF-790].
+
+[JPERF-790]: https://ecosystem.atlassian.net/browse/JPERF-790
+
 ## [2.25.0] - 2022-01-14
 [2.25.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.24.0...release-2.25.0
 
