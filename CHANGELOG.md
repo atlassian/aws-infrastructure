@@ -22,6 +22,9 @@ Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
 
+## [2.25.2] - 2022-01-21
+[2.25.2]: https://github.com/atlassian/aws-infrastructure/compare/release-2.25.1...release-2.25.2
+
 ### Fixed
 - Grant Jira access to its own HTTP port in `StandaloneFormula`. Fix [JPERF-790].
 
