@@ -27,6 +27,12 @@ Dropping a requirement of a major version of a dependency is a new contract.
 
 [JPERF-790]: https://ecosystem.atlassian.net/browse/JPERF-790
 
+## [2.25.1] - 2022-01-14
+[2.25.1]: https://github.com/atlassian/aws-infrastructure/compare/release-2.25.0...release-2.25.1
+
+### Fixed
+- Roll back change made to one of `DataCenterFormula`'s log messages done accidentally as part of [2.25.0].
+
 ## [2.25.0] - 2022-01-14
 [2.25.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.24.0...release-2.25.0
 
@@ -34,7 +40,6 @@ Dropping a requirement of a major version of a dependency is a new contract.
 - Add ability to use custom admin password by adding `adminPasswordPlainText` parameter to `DataCenterFormula`, `StandaloneFormula`, `StandaloneNodeFormula` and `StandaloneStoppedNode`. Part of [JPERF-729]
 
 [JPERF-729]: https://ecosystem.atlassian.net/browse/JPERF-729
-
 
 ## [2.24.0] - 2022-01-04
 [2.24.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.23.1...release-2.24.0
