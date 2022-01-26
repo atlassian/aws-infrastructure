@@ -22,6 +22,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
 
+### Fixed
+- Grant load balancer access to every Jira node provisioned by `DataCenterFormula`. Fix [JPERF-792].
+
+[JPERF-792]: https://ecosystem.atlassian.net/browse/JPERF-792
+
 ## [2.25.2] - 2022-01-21
 [2.25.2]: https://github.com/atlassian/aws-infrastructure/compare/release-2.25.1...release-2.25.2
 
