@@ -295,6 +295,10 @@ class DataCenterFormula private constructor(
             MultiAccessRequester(jiraNodes.map { ForIpAccessRequester { it.publicIpAddress } })
                 .requestAccess(jiraNodeRmiAccessProvider)
         }
+        val selfDashboardAccess = executor.submitWithLogContext("self dashboard access") {
+            MultiAccessRequester(jiraNodes.map { ForIpAccessRequester { it.publicIpAddress } })
+                .requestAccess(provisionedLoadBalancer.accessProvider)
+        }
         val loadBalancerAccess = executor.submitWithLogContext("load balancer access") {
             provisionedLoadBalancer.accessRequester.requestAccess(jiraNodeHttpAccessProvider)
         }
@@ -331,6 +335,9 @@ class DataCenterFormula private constructor(
 
         if (!rmiNodePublicAccess.get()) {
             logger.warn("Jira nodes may not have access to other nodes RMI ports. This can cause slow Jira startup.")
+        }
+        if (!selfDashboardAccess.get()) {
+            logger.warn("It's possible that Jira nodes don't have HTTP access to the load balancer. Dashboards may not work.")
         }
         if (!loadBalancerAccess.get()) {
             logger.warn("Load balancer may not have access to Jira nodes")
