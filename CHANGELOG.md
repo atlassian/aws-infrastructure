@@ -22,6 +22,9 @@ Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
 
+## [2.25.3] - 2022-01-31
+[2.25.3]: https://github.com/atlassian/aws-infrastructure/compare/release-2.25.2...release-2.25.3
+
 ### Fixed
 - Grant load balancer access to every Jira node provisioned by `DataCenterFormula`. Fix [JPERF-792].
 
