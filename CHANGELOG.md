@@ -23,6 +23,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.25.3...master
 
+### Fixed
+- Expose `AccessRequester`s for VUs from `MulticastVirtualUsersFormula`, so that the tests based on it can work with `DataCenterFormula` and `StandaloneFormula`. Fix [JPERF-795].
+
+[JPERF-795]: https://ecosystem.atlassian.net/browse/JPERF-795
+
 ## [2.25.3] - 2022-01-31
 [2.25.3]: https://github.com/atlassian/aws-infrastructure/compare/release-2.25.2...release-2.25.3
 
