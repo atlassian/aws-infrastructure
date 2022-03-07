@@ -3,6 +3,7 @@ package com.atlassian.performance.tools.awsinfrastructure.api.virtualusers
 import com.amazonaws.services.ec2.model.InstanceType
 import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.api.network.Network
+import com.atlassian.performance.tools.awsinfrastructure.api.network.access.MultiAccessRequester
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.browser.Browser
 import com.atlassian.performance.tools.infrastructure.api.browser.Chrome
@@ -109,6 +110,7 @@ class MulticastVirtualUsersFormula private constructor(
         return ProvisionedVirtualUsers
             .Builder(MulticastVirtualUsers(provisionedVirtualUsers.map { it.virtualUsers }))
             .resource(CompositeResource(provisionedVirtualUsers.map { it.resource }))
+            .accessRequester(MultiAccessRequester(provisionedVirtualUsers.map { it.accessRequester }))
             .build()
     }
 
