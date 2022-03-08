@@ -21,7 +21,10 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.25.3...master
+[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.25.4...master
+
+## [2.25.4] - 2022-03-07
+[2.25.4]: https://github.com/atlassian/aws-infrastructure/compare/release-2.25.3...release-2.25.4
 
 ### Fixed
 - Expose `AccessRequester`s for VUs from `MulticastVirtualUsersFormula`, so that the tests based on it can work with `DataCenterFormula` and `StandaloneFormula`. Fix [JPERF-795].
