@@ -24,7 +24,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.25.5...master
 
 ## [2.25.5] - 2022-04-07
-[2.25.4]: https://github.com/atlassian/aws-infrastructure/compare/release-2.25.4...release-2.25.5
+[2.25.5]: https://github.com/atlassian/aws-infrastructure/compare/release-2.25.4...release-2.25.5
 
 ### Fixed
 - Bump log4j dependency to 2.17.2
