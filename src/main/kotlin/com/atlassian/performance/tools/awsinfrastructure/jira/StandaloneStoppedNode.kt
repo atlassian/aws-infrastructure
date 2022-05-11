@@ -153,6 +153,13 @@ internal data class StandaloneStoppedNode(
                 break
             }
             if (deadline < now()) {
+                if (logger.isDebugEnabled) {
+                    val logContent = ssh.safeExecute(
+                        cmd = "cat $jiraHome/log/atlassian-jira.log",
+                        timeout = ofMinutes(3)
+                    ).output
+                    logger.debug("Jira log file: <<$logContent>>")
+                }
                 throw Exception("$uri failed to get out of $statusQuo status within $timeout")
             }
             threadDump.gather(ssh, "thread-dumps")
