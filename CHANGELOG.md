@@ -23,6 +23,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.25.5...master
 
+### Added
+- Allow to diagnose the Jira node startup problems by printing atlassian-jira.log inside test log. Resolve [JPERF-760]
+
+[JPERF-760]: https://ecosystem.atlassian.net/browse/JPERF-760
+
 ## [2.25.5] - 2022-04-07
 [2.25.5]: https://github.com/atlassian/aws-infrastructure/compare/release-2.25.4...release-2.25.5
 
