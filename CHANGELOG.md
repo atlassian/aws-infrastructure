@@ -23,6 +23,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.25.6...master
 
+### Fixed
+- Be more specific when searching for AMI used by VU machines, so it's virtually impossible to find more than one matching the criteria. Resolve [JPERF-821].
+
+[JPERF-821]: https://ecosystem.atlassian.net/browse/JPERF-821
+
 ## [2.25.6] - 2022-05-27
 [2.25.6]: https://github.com/atlassian/aws-infrastructure/compare/release-2.25.5...release-2.25.6
 
