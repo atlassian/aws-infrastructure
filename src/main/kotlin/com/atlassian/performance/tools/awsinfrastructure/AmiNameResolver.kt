@@ -10,6 +10,11 @@ internal class AmiNameResolver {
     companion object {
         private const val vuAmiName = "ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220610"
 
+        /**
+         * Canonical owner ID for most of the regions based on https://ubuntu.com/server/docs/cloud-images/amazon-ec2
+         */
+        private const val vuAmiOwnerId = "099720109477"
+
         private val name2amiId: ConcurrentMap<AwsAndAmi, String> = ConcurrentHashMap()
 
         fun vuAmi(aws: Aws): String {
@@ -20,7 +25,8 @@ internal class AmiNameResolver {
             return awsAndAmi.aws.ec2
                 .describeImages(
                     DescribeImagesRequest().withFilters(
-                        Filter("name", listOf(vuAmiName))
+                        Filter("name", listOf(vuAmiName)),
+                        Filter("owner-id", listOf(vuAmiOwnerId))
                     )
                 )
                 .images
