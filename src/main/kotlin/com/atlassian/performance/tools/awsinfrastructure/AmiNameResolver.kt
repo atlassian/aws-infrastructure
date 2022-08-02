@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentMap
 
 internal class AmiNameResolver {
     companion object {
-        private const val vuAmiName = "ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200701"
+        private const val vuAmiName = "ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220610"
 
         private val name2amiId: ConcurrentMap<AwsAndAmi, String> = ConcurrentHashMap()
 
