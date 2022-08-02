@@ -156,7 +156,7 @@ internal data class StandaloneStoppedNode(
                 if (logger.isDebugEnabled) {
                     val logContent = ssh.safeExecute(
                         cmd = "cat $jiraHome/log/atlassian-jira.log",
-                        timeout = ofMinutes(3)
+                        timeout = ofMinutes(15)
                     ).output
                     logger.debug("Jira log file: <<$logContent>>")
                 }
