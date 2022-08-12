@@ -21,12 +21,23 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.25.6...master
+[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.25.8...master
+
+## [2.25.8] - 2022-08-12
+[2.25.8]: https://github.com/atlassian/aws-infrastructure/compare/release-2.25.7...release-2.25.8
 
 ### Fixed
 - Be more specific when searching for AMI used by VU machines, so it's virtually impossible to find more than one matching the criteria. Resolve [JPERF-821].
 
 [JPERF-821]: https://ecosystem.atlassian.net/browse/JPERF-821
+
+## [2.25.7] - 2022-07-05
+[2.25.7]: https://github.com/atlassian/aws-infrastructure/compare/release-2.25.6...release-2.25.7
+
+### Fixed
+- Update AMI used by VU machine, as the old one is no longer available. Resolve [JPERF-825].
+
+[JPERF-825]: https://ecosystem.atlassian.net/browse/JPERF-825
 
 ## [2.25.6] - 2022-05-27
 [2.25.6]: https://github.com/atlassian/aws-infrastructure/compare/release-2.25.5...release-2.25.6
