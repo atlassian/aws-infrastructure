@@ -15,7 +15,7 @@ internal class VerboseUriReader : (URI) -> String? {
             .readText()
             .also { logger.debug("Got \"$it\" from $serviceUri") }
     } catch (e: Exception) {
-        logger.error("Failed when querying $serviceUri", e)
+        logger.debug("Failed when querying $serviceUri", e)
         null
     }
 }
