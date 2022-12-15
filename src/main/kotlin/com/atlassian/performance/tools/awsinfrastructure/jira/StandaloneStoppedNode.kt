@@ -61,7 +61,8 @@ internal data class StandaloneStoppedNode(
                     resultsTransport = resultsTransport,
                     unpackedProduct = unpackedProduct,
                     monitoringProcesses = monitoringProcesses,
-                    ssh = ssh
+                    ssh = ssh,
+                    jdk = jdk
                 ).gatherResults()
                 throw Exception("Failed to start the Jira node.", exception)
             }
@@ -76,7 +77,8 @@ internal data class StandaloneStoppedNode(
             resultsTransport = resultsTransport,
             unpackedProduct = unpackedProduct,
             monitoringProcesses = monitoringProcesses,
-            ssh = ssh
+            ssh = ssh,
+            jdk = jdk
         )
     }
 

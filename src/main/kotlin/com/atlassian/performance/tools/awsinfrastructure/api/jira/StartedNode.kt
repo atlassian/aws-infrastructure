@@ -3,6 +3,7 @@ package com.atlassian.performance.tools.awsinfrastructure.api.jira
 import com.atlassian.performance.tools.aws.api.Storage
 import com.atlassian.performance.tools.awsinfrastructure.api.aws.AwsCli
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraGcLog
+import com.atlassian.performance.tools.infrastructure.api.jvm.JavaDevelopmentKit
 import com.atlassian.performance.tools.infrastructure.api.process.RemoteMonitoringProcess
 import com.atlassian.performance.tools.ssh.api.Ssh
 import java.time.Duration
@@ -14,7 +15,8 @@ class StartedNode(
     private val resultsTransport: Storage,
     private val unpackedProduct: String,
     private val monitoringProcesses: List<RemoteMonitoringProcess>,
-    private val ssh: Ssh
+    private val ssh: Ssh,
+    private val jdk: JavaDevelopmentKit
 ) {
     private val resultsDirectory = "results"
 
@@ -22,7 +24,7 @@ class StartedNode(
         ssh.newConnection().use { shell ->
             monitoringProcesses.forEach { it.stop(shell) }
             val nodeResultsDirectory = "$resultsDirectory/'$name'"
-            val threadDumpsFolder =  "thread-dumps"
+            val threadDumpsFolder = "thread-dumps"
             listOf(
                 "mkdir -p $nodeResultsDirectory",
                 "cp $unpackedProduct/logs/catalina.out $nodeResultsDirectory",
@@ -68,8 +70,19 @@ class StartedNode(
             resultsTransport = this.resultsTransport,
             unpackedProduct = this.unpackedProduct,
             monitoringProcesses = this.monitoringProcesses,
-            ssh = this.ssh
+            ssh = this.ssh,
+            jdk = this.jdk
         )
+    }
+
+    fun stopNode() {
+        ssh.newConnection()
+            .use { ssh ->
+                ssh.safeExecute(
+                    "${jdk.use()}; ./${unpackedProduct}/bin/stop-jira.sh",
+                    Duration.ofMinutes(3)
+                )
+            }
     }
 
     override fun toString() = name

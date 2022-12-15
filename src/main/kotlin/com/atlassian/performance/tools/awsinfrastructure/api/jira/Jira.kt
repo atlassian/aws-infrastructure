@@ -37,5 +37,9 @@ class Jira(
         executor.shutdownNow()
     }
 
+    fun stop() {
+        nodes.forEach { it.stopNode() }
+    }
+
     override fun toString() = "Jira(address=$address)"
 }

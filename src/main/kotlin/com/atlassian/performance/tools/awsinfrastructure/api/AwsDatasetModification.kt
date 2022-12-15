@@ -70,7 +70,8 @@ class AwsDatasetModification private constructor(
             database = jira.database ?: throw Exception("The database should have been provisioned")
         ).build()
         val storedDataset = source.store(
-            aws.customDatasetStorage(newDatasetName).location
+            aws.customDatasetStorage(newDatasetName).location,
+            jira
         )
         logger.info("Dataset $newDatasetName persisted")
         return storedDataset
@@ -143,7 +144,9 @@ class AwsDatasetModification private constructor(
          */
         fun host(host: DatasetHost) = apply { this.host = host }
 
-        fun onlineTransformation(onlineTransformation: Consumer<Infrastructure<*>>) = apply { this.onlineTransformation = onlineTransformation }
+        fun onlineTransformation(onlineTransformation: Consumer<Infrastructure<*>>) =
+            apply { this.onlineTransformation = onlineTransformation }
+
         fun workspace(workspace: TestWorkspace) = apply { this.workspace = workspace }
         fun newDatasetName(newDatasetName: String) = apply { this.newDatasetName = newDatasetName }
 

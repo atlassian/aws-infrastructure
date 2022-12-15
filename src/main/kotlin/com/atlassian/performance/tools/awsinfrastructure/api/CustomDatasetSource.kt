@@ -1,6 +1,7 @@
 package com.atlassian.performance.tools.awsinfrastructure.api
 
 import com.atlassian.performance.tools.aws.api.StorageLocation
+import com.atlassian.performance.tools.awsinfrastructure.api.jira.Jira
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.dataset.Dataset
 import com.atlassian.performance.tools.ssh.api.Ssh
@@ -59,14 +60,25 @@ class CustomDatasetSource private constructor(
             .build()
     }
 
+    @Deprecated(message = "Use CustomDatasetSource.storeInS3(location, jira) instead",
+        replaceWith = ReplaceWith("store(location, null)")
+    )
     fun storeInS3(
         location: StorageLocation
     ) {
-        store(location)
+        store(location, null)
+    }
+
+    fun storeInS3(
+        location: StorageLocation,
+        jira: Jira
+    ) {
+        store(location, jira)
     }
 
     internal fun store(
-        location: StorageLocation
+        location: StorageLocation,
+        jira: Jira?
     ): Dataset {
         logger.info("Uploading dataset to '$location'...")
         val executor = Executors.newFixedThreadPool(
@@ -76,7 +88,12 @@ class CustomDatasetSource private constructor(
                 .build()
         )
 
-        stopJira(jiraHome.host)
+        if (jira == null) {
+            @Suppress("DEPRECATION")
+            stopJira(jiraHome.host)
+        } else {
+            stopJira(jira)
+        }
         stopDockerContainers(database.host)
 
         val jiraHomeUpload = executor.submitWithLogContext("jiraHome") {
@@ -109,10 +126,15 @@ class CustomDatasetSource private constructor(
         return DatasetCatalogue().custom(location)
     }
 
+    @Deprecated(message = "Use CustomDatasetSource.stopJira(Jira, JavaDevelopmentKit) instead")
     private fun stopJira(host: SshHost) {
         val shutdownTomcat = "echo SHUTDOWN | nc localhost 8005"
         val waitForNoJavaProcess = "while ps -C java -o pid=; do sleep 5; done"
         Ssh(host, connectivityPatience = 4).newConnection().use { it.safeExecute("$shutdownTomcat && $waitForNoJavaProcess", Duration.ofMinutes(3)) }
+    }
+
+    private fun stopJira(jira: Jira) {
+        jira.stop()
     }
 
     private fun stopDockerContainers(host: SshHost) {
