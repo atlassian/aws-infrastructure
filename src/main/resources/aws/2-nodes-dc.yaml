@@ -21,6 +21,8 @@ Parameters:
     Type: String
   Subnet:
     Type: String
+  S3StorageBucketName:
+    Type: String
 Resources:
   jira1:
     Type: AWS::EC2::Instance
@@ -94,6 +96,11 @@ Resources:
           Ebs:
             VolumeSize: !Ref JiraVolumeSize
             VolumeType: gp2
+  S3Storage:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        Ref: S3StorageBucketName
   Database:
     Type: AWS::EC2::Instance
     Properties:

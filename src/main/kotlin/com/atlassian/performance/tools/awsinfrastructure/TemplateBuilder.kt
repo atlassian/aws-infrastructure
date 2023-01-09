@@ -14,7 +14,9 @@ internal class TemplateBuilder(
     private val baseTemplateName: String
 ) {
     private val logger: Logger = LogManager.getLogger(this::class.java)
-    private val template = readResourceText("aws/$baseTemplateName").replace("!Ref", "__Ref__")
+    private val template = readResourceText("aws/$baseTemplateName")
+        .replace("!Ref", "__Ref__")
+        .replace("''", "__empty_string__")
 
     private val mapper = ObjectMapper(YAMLFactory()
         .enable(YAMLGenerator.Feature.MINIMIZE_QUOTES)
@@ -75,6 +77,7 @@ internal class TemplateBuilder(
         .writerWithDefaultPrettyPrinter()
         .writeValueAsString(mappedTemplate)
         .replace("__Ref__", "!Ref")
+        .replace("__empty_string__", "''")
 
     fun build() = toString()
         .also { logger.debug("Transformed $baseTemplateName into: \n$it") }

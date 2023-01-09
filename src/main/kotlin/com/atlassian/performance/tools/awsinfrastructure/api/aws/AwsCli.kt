@@ -12,7 +12,14 @@ import java.util.concurrent.ConcurrentHashMap
  *
  * @since 2.15.0
  */
-class AwsCli {
+class AwsCli (val cliVersion: String = "1.15.51") {
+    private val versionRegex = Regex("""([0-9]+)\.[0-9]+\.[0-9]+""")
+    init {
+        require( versionRegex.matches(cliVersion)) {
+            "$cliVersion is not a valid aws cli version string."
+        }
+    }
+
     private companion object {
         private val LOCKS = ConcurrentHashMap<String, Any>()
     }
@@ -21,19 +28,45 @@ class AwsCli {
         val lock = LOCKS.computeIfAbsent(ssh.getHost().ipAddress) { Object() }
         synchronized(lock) {
             val awsCliExecutionResult = ssh.safeExecute("aws --version", Duration.ofSeconds(30), Level.TRACE, Level.TRACE)
-            if (!awsCliExecutionResult.isSuccessful()) {
+            if (awsCliExecutionResult.isSuccessful()) {
+                val combinedOutput = "${awsCliExecutionResult.output}${awsCliExecutionResult.errorOutput}"
+                require(combinedOutput.contains("aws-cli/$cliVersion")) {
+                    "Aws Cli version $cliVersion requested but different version is already installed: '${combinedOutput}'."
+                }
+            } else {
                 Ubuntu().install(ssh, listOf("zip", "python"), Duration.ofMinutes(3))
-                ssh.execute(
-                    cmd = "curl --silent https://s3.amazonaws.com/aws-cli/awscli-bundle-1.15.51.zip -o awscli-bundle.zip",
-                    timeout = Duration.ofSeconds(50)
-                )
-                ssh.execute("unzip -n -q awscli-bundle.zip")
-                ssh.execute(
-                    cmd = "sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws",
-                    timeout = Duration.ofSeconds(60)
-                )
+                val majorVersion = versionRegex.find(cliVersion)?.groupValues?.get(1)
+                when (majorVersion) {
+                    "1" -> installV1Cli(ssh)
+                    else -> installV2Cli(ssh)
+                }
             }
         }
+    }
+
+    private fun installV1Cli(ssh: SshConnection) {
+        ssh.execute(
+            cmd = "curl --silent https://s3.amazonaws.com/aws-cli/awscli-bundle-$cliVersion.zip -o awscli-bundle.zip",
+            timeout = Duration.ofSeconds(50)
+        )
+        ssh.execute("unzip -n -q awscli-bundle.zip")
+        ssh.execute(
+            cmd = "sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws",
+            timeout = Duration.ofSeconds(60)
+        )
+    }
+
+    private fun installV2Cli(ssh: SshConnection) {
+        // Instructions from https://docs.aws.amazon.com/cli/latest/userguide/getting-started-version.html
+        ssh.execute(
+            cmd="curl --silent https://awscli.amazonaws.com/awscli-exe-linux-x86_64-$cliVersion.zip -o awscliv2.zip",
+            timeout = Duration.ofSeconds(50)
+        )
+        ssh.execute("unzip -n -q awscliv2.zip")
+        ssh.execute(
+            cmd = "sudo ./aws/install -i /usr/local/aws-cli -b /usr/local/bin",
+            timeout = Duration.ofSeconds(60)
+        )
     }
 
     fun download(

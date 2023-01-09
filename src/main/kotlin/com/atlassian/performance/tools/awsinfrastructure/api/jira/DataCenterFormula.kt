@@ -35,6 +35,7 @@ import org.apache.logging.log4j.CloseableThreadContext
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.time.Duration
+import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
@@ -157,6 +158,7 @@ class DataCenterFormula private constructor(
         roleProfile: String,
         aws: Aws
     ): ProvisionedJira {
+        val s3StorageBucketName = "jpt-storage-${UUID.randomUUID()}"
         val provisionedNetwork = NetworkFormula(investment, aws).reuseOrProvision(overriddenNetwork)
         val network = provisionedNetwork.network
         val template = TemplateBuilder("2-nodes-dc.yaml").adaptTo(configs)
@@ -191,7 +193,10 @@ class DataCenterFormula private constructor(
                         .withParameterValue(network.vpc.vpcId),
                     Parameter()
                         .withParameterKey("Subnet")
-                        .withParameterValue(network.subnet.subnetId)
+                        .withParameterValue(network.subnet.subnetId),
+                    Parameter()
+                        .withParameterKey("S3StorageBucketName")
+                        .withParameterValue(s3StorageBucketName)
                 ),
                 aws = aws,
                 pollingTimeout = stackCreationTimeout
@@ -240,7 +245,8 @@ class DataCenterFormula private constructor(
                 pluginsTransport = pluginsTransport,
                 ip = sharedHomePrivateIp,
                 ssh = sharedHomeSsh,
-                computer = computer
+                computer = computer,
+                s3StorageBucketName = s3StorageBucketName
             ).provision()
             logger.info("Shared home is set up")
             sharedHome
