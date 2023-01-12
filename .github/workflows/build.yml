@@ -1,0 +1,79 @@
+name: build
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 'Release? yes/no'
+        default: 'no'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: eu-west-1
+      - name: Compile
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: wrapper
+          arguments: compileTestKotlin
+      - name: Build
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: build
+        timeout-minutes: 45
+      - name: Upload test reports
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-reports
+          path: ./build/reports/tests
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-results
+          path: ./build/test-results
+  build-check:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - run: echo "All build jobs successful."
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    needs: build-check
+    if: github.event.inputs.release == 'yes'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Get publish token
+        id: publish-token
+        uses: atlassian-labs/artifact-publish-token@v1.0.1
+      - name: Release
+        env:
+          atlassian_private_username: ${{ steps.publish-token.outputs.artifactoryUsername }}
+          atlassian_private_password: ${{ steps.publish-token.outputs.artifactoryApiKey }}
+        run: |
+          ./gradlew release \
+              -Prelease.customUsername=${{ github.actor }} \
+              -Prelease.customPassword=${{ github.token }}
+          ./gradlew publish

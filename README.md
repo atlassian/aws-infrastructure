@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/atlassian/aws-infrastructure.svg?style=svg)](https://circleci.com/gh/atlassian/aws-infrastructure)
+[![build](https://github.com/atlassian/aws-infrastructure/actions/workflows/build.yml/badge.svg)](https://github.com/atlassian/aws-infrastructure/actions/workflows/build.yml)
 
 # JPT infrastructure in AWS
 Provision JPT infrastructure in AWS.
