@@ -58,7 +58,7 @@ those contributing as an individual.
 
 ### Pull Request Checks
 
-Pull requests must pass a [CircleCI](https://circleci.com) build. This is **not** automatically run under Atlassian's account, as contributor you will need to setup and run the CI build against your own fork.
+Pull requests must pass a [Github Actions](https://github.com/atlassian/aws-infrastructure/actions) build. This is **not** automatically run under Atlassian's account, as contributor you will need to setup and run the CI build against your own fork.
 
 The CI build runs the IT tests which require your AWS credentials. At a minimum this will require the following Environent Variables to be set against the project in CircleCI:
 
