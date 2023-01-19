@@ -27,6 +27,7 @@ import com.atlassian.performance.tools.infrastructure.api.database.Database
 import com.atlassian.performance.tools.infrastructure.api.distribution.ProductDistribution
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
+import com.atlassian.performance.tools.io.api.readResourceText
 import com.atlassian.performance.tools.jvmtasks.api.TaskTimer.time
 import com.atlassian.performance.tools.ssh.api.Ssh
 import com.atlassian.performance.tools.ssh.api.SshHost
@@ -193,15 +194,26 @@ class DataCenterFormula private constructor(
                         .withParameterValue(network.vpc.vpcId),
                     Parameter()
                         .withParameterKey("Subnet")
-                        .withParameterValue(network.subnet.subnetId),
-                    Parameter()
-                        .withParameterKey("S3StorageBucketName")
-                        .withParameterValue(s3StorageBucketName)
+                        .withParameterValue(network.subnet.subnetId)
                 ),
                 aws = aws,
                 pollingTimeout = stackCreationTimeout
             ).provision()
         }
+
+        StackFormula(
+            investment = investment,
+            aws = aws,
+            cloudformationTemplate = readResourceText("aws/object-storage.yaml"),
+            parameters = listOf(
+                Parameter()
+                    .withParameterKey("S3StorageBucketName")
+                    .withParameterValue(s3StorageBucketName),
+                Parameter()
+                    .withParameterKey("AWSAccount")
+                    .withParameterValue(aws.callerIdentity.account)
+            )
+        ).provision()
 
         val uploadPlugins = executor.submitWithLogContext("upload plugins") {
             apps.listFiles().forEach { pluginsTransport.upload(it) }
