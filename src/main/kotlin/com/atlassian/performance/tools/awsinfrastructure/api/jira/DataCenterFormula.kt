@@ -19,6 +19,7 @@ import com.atlassian.performance.tools.awsinfrastructure.api.network.access.*
 import com.atlassian.performance.tools.awsinfrastructure.jira.DataCenterNodeFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.DiagnosableNodeFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.StandaloneNodeFormula
+import com.atlassian.performance.tools.awsinfrastructure.jira.home.JiraSharedStorageResource
 import com.atlassian.performance.tools.awsinfrastructure.jira.home.SharedHomeFormula
 import com.atlassian.performance.tools.concurrency.api.AbruptExecutorService
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
@@ -61,6 +62,7 @@ class DataCenterFormula private constructor(
     private val databaseVolume: Volume,
     private val accessRequester: AccessRequester,
     private val adminPasswordPlainText: String,
+    private val storeInS3: EnumSet<JiraSharedStorageResource>,
     private val waitForUpgrades: Boolean
 ) : JiraFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
@@ -94,6 +96,7 @@ class DataCenterFormula private constructor(
         databaseVolume = Volume(100),
         accessRequester = Defaults.accessRequester,
         adminPasswordPlainText = Defaults.adminPasswordPlainText,
+        storeInS3 = EnumSet.noneOf(JiraSharedStorageResource::class.java),
         waitForUpgrades = true
     )
 
@@ -118,6 +121,7 @@ class DataCenterFormula private constructor(
         databaseVolume = Volume(100),
         accessRequester = Defaults.accessRequester,
         adminPasswordPlainText = Defaults.adminPasswordPlainText,
+        storeInS3 = EnumSet.noneOf(JiraSharedStorageResource::class.java),
         waitForUpgrades = true
     )
 
@@ -201,19 +205,21 @@ class DataCenterFormula private constructor(
             ).provision()
         }
 
-        StackFormula(
-            investment = investment,
-            aws = aws,
-            cloudformationTemplate = readResourceText("aws/object-storage.yaml"),
-            parameters = listOf(
-                Parameter()
-                    .withParameterKey("S3StorageBucketName")
-                    .withParameterValue(s3StorageBucketName),
-                Parameter()
-                    .withParameterKey("AWSAccount")
-                    .withParameterValue(aws.callerIdentity.account)
-            )
-        ).provision()
+        if (storeInS3.isNotEmpty()) {
+            StackFormula(
+                investment = investment,
+                aws = aws,
+                cloudformationTemplate = readResourceText("aws/object-storage.yaml"),
+                parameters = listOf(
+                    Parameter()
+                        .withParameterKey("S3StorageBucketName")
+                        .withParameterValue(s3StorageBucketName),
+                    Parameter()
+                        .withParameterKey("AWSAccount")
+                        .withParameterValue(aws.callerIdentity.account)
+                )
+            ).provision()
+        }
 
         val uploadPlugins = executor.submitWithLogContext("upload plugins") {
             apps.listFiles().forEach { pluginsTransport.upload(it) }
@@ -258,7 +264,8 @@ class DataCenterFormula private constructor(
                 ip = sharedHomePrivateIp,
                 ssh = sharedHomeSsh,
                 computer = computer,
-                s3StorageBucketName = s3StorageBucketName
+                s3StorageBucketName = s3StorageBucketName,
+                storeInS3 = storeInS3
             ).provision()
             logger.info("Shared home is set up")
             sharedHome
@@ -456,6 +463,8 @@ class DataCenterFormula private constructor(
         private var databaseVolume: Volume = Volume(100)
         private var accessRequester: AccessRequester = Defaults.accessRequester
         private var adminPasswordPlainText: String = "admin"
+        private var storeInS3: EnumSet<JiraSharedStorageResource> = EnumSet.noneOf(
+            JiraSharedStorageResource::class.java)
         private var waitForUpgrades: Boolean = true
 
         internal constructor(
@@ -476,6 +485,7 @@ class DataCenterFormula private constructor(
             databaseVolume = formula.databaseVolume
             accessRequester = formula.accessRequester
             adminPasswordPlainText = formula.adminPasswordPlainText
+            storeInS3 = formula.storeInS3
             waitForUpgrades = formula.waitForUpgrades
         }
 
@@ -503,6 +513,8 @@ class DataCenterFormula private constructor(
 
         fun accessRequester(accessRequester: AccessRequester) = apply { this.accessRequester = accessRequester }
 
+        fun storeInS3(storeInS3: EnumSet<JiraSharedStorageResource>) = apply { this.storeInS3 = storeInS3 }
+
         /**
          * Don't change when starting up multi-node Jira DC of version lower than 9.1.0
          * See https://confluence.atlassian.com/jirakb/index-management-on-jira-start-up-1141500654.html for more details.
@@ -523,7 +535,8 @@ class DataCenterFormula private constructor(
             databaseComputer = databaseComputer,
             databaseVolume = databaseVolume,
             accessRequester = accessRequester,
-            adminPasswordPlainText  = adminPasswordPlainText,
+            adminPasswordPlainText = adminPasswordPlainText,
+            storeInS3 = storeInS3,
             waitForUpgrades = waitForUpgrades
         )
     }

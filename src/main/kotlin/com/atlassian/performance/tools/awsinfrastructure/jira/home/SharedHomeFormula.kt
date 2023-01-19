@@ -8,6 +8,7 @@ import com.atlassian.performance.tools.infrastructure.api.jira.SharedHome
 import com.atlassian.performance.tools.infrastructure.api.os.Ubuntu
 import com.atlassian.performance.tools.ssh.api.Ssh
 import java.time.Duration
+import java.util.EnumSet
 
 internal class SharedHomeFormula(
     private val pluginsTransport: Storage,
@@ -15,6 +16,8 @@ internal class SharedHomeFormula(
     private val ip: String,
     private val ssh: Ssh,
     private val computer: Computer,
+    private val storeInS3: EnumSet<JiraSharedStorageResource> = EnumSet.of(
+        JiraSharedStorageResource.ATTACHMENTS),
     private val s3StorageBucketName: String? = null
 ) {
     private val localSubnet = "10.0.0.0/24"
@@ -41,12 +44,14 @@ internal class SharedHomeFormula(
             ubuntu.install(it, listOf("nfs-kernel-server"))
             it.execute("sudo echo '$localSharedHome $localSubnet(rw,sync,no_subtree_check,no_root_squash)' | sudo tee -a /etc/exports")
 
-            if (s3StorageBucketName != null) {
+            if (s3StorageBucketName != null && storeInS3.isNotEmpty()) {
                 AwsCli(awsCliVersion).ensureAwsCli(it)
-                it.safeExecute(
-                    cmd = "export AWS_RETRY_MODE=standard; export AWS_MAX_ATTEMPTS=10; cd $localSharedHome/data && ( find attachments -mindepth 1 -maxdepth 1 -type d -print0 | xargs -n1 -0 -P30 -I {} aws s3 cp --recursive --only-show-errors {}/ s3://$s3StorageBucketName/{}/ )",
-                    timeout = Duration.ofMinutes(10)
-                )
+                if (storeInS3.contains(JiraSharedStorageResource.ATTACHMENTS)) {
+                    it.safeExecute(
+                        cmd = "export AWS_RETRY_MODE=standard; export AWS_MAX_ATTEMPTS=10; cd $localSharedHome/data && ( find attachments -mindepth 1 -maxdepth 1 -type d -print0 | xargs -n1 -0 -P30 -I {} aws s3 cp --recursive --only-show-errors {}/ s3://$s3StorageBucketName/{}/ )",
+                        timeout = Duration.ofMinutes(10)
+                    )
+                }
             }
 
             it.execute("sudo service nfs-kernel-server restart")
