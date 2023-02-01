@@ -13,6 +13,9 @@ class ApacheEc2LoadBalancerFormula : LoadBalancerFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
     private val balancerPort = 80
 
+    /**
+     * @param aws provides `shortTermStorageAccess` IAM role used for LB nodes
+     */
     override fun provision(
         investment: Investment,
         instances: List<Instance>,
@@ -40,6 +43,7 @@ class ApacheEc2LoadBalancerFormula : LoadBalancerFormula {
                     .withSecurityGroupIds(securityGroup.groupId)
                     .withSubnetId(subnet.subnetId)
                     .withInstanceType(InstanceType.M5Large)
+                    .withIamInstanceProfile(IamInstanceProfileSpecification().withName(aws.shortTermStorageAccess()))
             }
         )
         key.file.facilitateSsh(ssh.host.ipAddress)
