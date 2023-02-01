@@ -23,6 +23,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.25.8...master
 
+### Added
+- Use `aws.defaultAmi` in `StackVirtualUsersFormula`. Resolve [JPERF-951].
+
+[JPERF-951]: https://ecosystem.atlassian.net/browse/JPERF-951
+
 ## [2.25.8] - 2022-08-12
 [2.25.8]: https://github.com/atlassian/aws-infrastructure/compare/release-2.25.7...release-2.25.8
 

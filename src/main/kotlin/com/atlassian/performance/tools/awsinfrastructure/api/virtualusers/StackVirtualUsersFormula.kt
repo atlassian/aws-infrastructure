@@ -3,7 +3,6 @@ package com.atlassian.performance.tools.awsinfrastructure.api.virtualusers
 import com.amazonaws.services.cloudformation.model.Parameter
 import com.amazonaws.services.ec2.model.InstanceType
 import com.atlassian.performance.tools.aws.api.*
-import com.atlassian.performance.tools.awsinfrastructure.AmiNameResolver
 import com.atlassian.performance.tools.awsinfrastructure.InstanceFilters
 import com.atlassian.performance.tools.awsinfrastructure.api.network.Network
 import com.atlassian.performance.tools.awsinfrastructure.api.network.NetworkFormula
@@ -86,6 +85,9 @@ class StackVirtualUsersFormula private constructor(
         sshCidrIp = ""
     )
 
+    /**
+     * @param aws provides `defaultAmi` used for VU nodes
+     */
     override fun provision(
         investment: Investment,
         shadowJarTransport: Storage,
@@ -108,7 +110,7 @@ class StackVirtualUsersFormula private constructor(
                     .withParameterValue(roleProfile),
                 Parameter()
                     .withParameterKey("Ami")
-                    .withParameterValue(AmiNameResolver.vuAmi(aws)),
+                    .withParameterValue(aws.defaultAmi),
                 Parameter()
                     .withParameterKey("Vpc")
                     .withParameterValue(network.vpc.vpcId),
