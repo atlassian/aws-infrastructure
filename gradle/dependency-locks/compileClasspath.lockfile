@@ -12,7 +12,7 @@ com.amazonaws:aws-java-sdk-s3:1.11.817
 com.amazonaws:aws-java-sdk-sts:1.11.817
 com.amazonaws:aws-java-sdk-support:1.11.817
 com.amazonaws:jmespath-java:1.11.817
-com.atlassian.performance.tools:aws-resources:1.9.1
+com.atlassian.performance.tools:aws-resources:1.10.2
 com.atlassian.performance.tools:concurrency:1.1.2
 com.atlassian.performance.tools:infrastructure:4.22.2
 com.atlassian.performance.tools:io:1.2.0
