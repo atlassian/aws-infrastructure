@@ -25,8 +25,10 @@ Dropping a requirement of a major version of a dependency is a new contract.
 
 ### Added
 - Use `aws.defaultAmi` in `StackVirtualUsersFormula`. Resolve [JPERF-951].
+- Use `aws.shortTermStorageAccess` in `ApacheEc2LoadBalancerFormula`. Resolve [JPERF-952].
 
 [JPERF-951]: https://ecosystem.atlassian.net/browse/JPERF-951
+[JPERF-952]: https://ecosystem.atlassian.net/browse/JPERF-952
 
 ## [2.25.8] - 2022-08-12
 [2.25.8]: https://github.com/atlassian/aws-infrastructure/compare/release-2.25.7...release-2.25.8
