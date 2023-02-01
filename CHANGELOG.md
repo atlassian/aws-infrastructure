@@ -21,7 +21,10 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.25.8...master
+[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.26.0...master
+
+## [2.26.0] - 2022-02-01
+[2.26.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.25.8...release-2.26.0
 
 ### Added
 - Use `aws.defaultAmi` in `StackVirtualUsersFormula`. Resolve [JPERF-951].
