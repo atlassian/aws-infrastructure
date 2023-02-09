@@ -118,7 +118,8 @@ class StandaloneFormula private constructor(
                 .setNameFormat("standalone-provisioning-thread-%d")
                 .build()
         )
-        val network = NetworkFormula(investment, aws).reuseOrProvision(overriddenNetwork).network
+        val provisionedNetwork = NetworkFormula(investment, aws).reuseOrProvision(overriddenNetwork)
+        val network = provisionedNetwork.network
         val template = TemplateBuilder("single-node.yaml").adaptTo(listOf(config))
 
         val stackProvisioning = executor.submitWithLogContext("provision stack") {
@@ -275,7 +276,12 @@ class StandaloneFormula private constructor(
         )
         logger.info("$jira is set up, will expire ${jiraStack.expiry}")
         return@time ProvisionedJira.Builder(jira)
-            .resource(jiraStack)
+            .resource(
+                DependentResources(
+                    user = jiraStack,
+                    dependency = provisionedNetwork.resource
+                )
+            )
             .accessProvider(jiraAccessProvider)
             .build()
     }

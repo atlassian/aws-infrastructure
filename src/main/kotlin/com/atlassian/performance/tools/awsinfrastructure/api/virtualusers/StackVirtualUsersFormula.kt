@@ -97,7 +97,8 @@ class StackVirtualUsersFormula private constructor(
         aws: Aws
     ): ProvisionedVirtualUsers<SshVirtualUsers> {
         logger.debug("Setting up $name...")
-        val network = NetworkFormula(investment, aws).reuseOrProvision(overriddenNetwork).network
+        val provisionedNetwork = NetworkFormula(investment, aws).reuseOrProvision(overriddenNetwork)
+        val network = provisionedNetwork.network
         val virtualUsersStack = StackFormula(
             investment = investment,
             cloudformationTemplate = readResourceText("aws/virtual-users.yaml"),
@@ -155,7 +156,12 @@ class StackVirtualUsersFormula private constructor(
                     ssh = virtualUsersSsh
                 )
             )
-            .resource(virtualUsersStack)
+            .resource(
+                DependentResources(
+                    user = virtualUsersStack,
+                    dependency = provisionedNetwork.resource
+                )
+            )
             .accessRequester(ForIpAccessRequester { virtualUsersMachine.publicIpAddress })
             .build()
     }

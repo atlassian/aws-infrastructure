@@ -73,9 +73,10 @@ class InfrastructureFormula<out T : VirtualUsers> private constructor(
         }
 
         logger.info("Provisioning network...")
-        val network = CloseableThreadContext.push("network").use {
-            NetworkFormula(investment, aws).reuseOrProvision(preProvisionedNetwork).network
+        val provisionedNetwork = CloseableThreadContext.push("network").use {
+            NetworkFormula(investment, aws).reuseOrProvision(preProvisionedNetwork)
         }
+        val network = provisionedNetwork.network
         logger.info("Network ready.")
 
         val provisionJira = executor.submitWithLogContext("jira") {
@@ -129,6 +130,7 @@ class InfrastructureFormula<out T : VirtualUsers> private constructor(
                     listOf(
                         provisionedJira.resource,
                         provisionedVirtualUsers.resource,
+                        provisionedNetwork.resource,
                         sshKey.remote
                     )
                 )

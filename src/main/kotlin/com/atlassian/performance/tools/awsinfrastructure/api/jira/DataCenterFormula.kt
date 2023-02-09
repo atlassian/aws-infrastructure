@@ -129,7 +129,8 @@ class DataCenterFormula private constructor(
                 .setNameFormat("data-center-provisioning-thread-%d")
                 .build()
         )
-        val network = NetworkFormula(investment, aws).reuseOrProvision(overriddenNetwork).network
+        val provisionedNetwork = NetworkFormula(investment, aws).reuseOrProvision(overriddenNetwork)
+        val network = provisionedNetwork.network
         val template = TemplateBuilder("2-nodes-dc.yaml").adaptTo(configs)
         val stackProvisioning = executor.submitWithLogContext("provision stack") {
             StackFormula(
@@ -368,7 +369,12 @@ class DataCenterFormula private constructor(
                 DependentResources(
                     user = provisionedLoadBalancer.resource,
                     dependency = jiraStack
-                )
+                ).let { instances ->
+                    DependentResources(
+                        user = instances,
+                        dependency = provisionedNetwork.resource
+                    )
+                }
             )
             .accessProvider(jiraAccessProvider)
             .build()
