@@ -15,6 +15,7 @@ import com.atlassian.performance.tools.awsinfrastructure.virtualusers.S3ResultsT
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.virtualusers.VirtualUsers
 import com.google.common.util.concurrent.ThreadFactoryBuilder
+import org.apache.logging.log4j.CloseableThreadContext
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.nio.file.Path
@@ -72,9 +73,9 @@ class InfrastructureFormula<out T : VirtualUsers> private constructor(
         }
 
         logger.info("Provisioning network...")
-        val network = preProvisionedNetwork ?: executor.submitWithLogContext("network") {
-            NetworkFormula(investment, aws).provisionAsResource().network
-        }.get()
+        val network = CloseableThreadContext.push("network").use {
+            preProvisionedNetwork ?:  NetworkFormula(investment, aws).provisionAsResource().network
+        }
         logger.info("Network ready.")
 
         val provisionJira = executor.submitWithLogContext("jira") {
