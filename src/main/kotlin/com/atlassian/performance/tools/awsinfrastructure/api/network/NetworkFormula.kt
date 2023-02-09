@@ -4,6 +4,7 @@ import com.amazonaws.services.cloudformation.model.Parameter
 import com.atlassian.performance.tools.aws.api.Aws
 import com.atlassian.performance.tools.aws.api.Investment
 import com.atlassian.performance.tools.aws.api.StackFormula
+import com.atlassian.performance.tools.aws.api.UnallocatedResource
 import com.atlassian.performance.tools.awsinfrastructure.pickAvailabilityZone
 import com.atlassian.performance.tools.io.api.readResourceText
 import org.apache.logging.log4j.LogManager
@@ -36,6 +37,14 @@ class NetworkFormula(
         )
         logger.info("Network provisioned: $network")
         return ProvisionedNetwork(network, stack)
+    }
+
+    internal fun reuseOrProvision(existing: Network?) : ProvisionedNetwork {
+        return if (existing != null) {
+            ProvisionedNetwork(existing, UnallocatedResource())
+        } else {
+            provisionAsResource()
+        }
     }
 
     @Deprecated(
