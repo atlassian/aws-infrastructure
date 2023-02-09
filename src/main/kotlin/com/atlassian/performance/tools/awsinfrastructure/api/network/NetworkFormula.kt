@@ -35,7 +35,8 @@ class NetworkFormula(
             stack.findVpc("Vpc"),
             stack.findSubnet("TheOnlySubnet")
         )
-        logger.info("Network provisioned: $network")
+        logger.info("Network provisioned")
+        logger.debug("Network provisioned: $network")
         return ProvisionedNetwork(network, stack)
     }
 

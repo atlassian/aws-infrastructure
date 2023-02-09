@@ -33,6 +33,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 - Substitute the lost `DatasetCatalogue().largeJiraEight()` with an equivalent. Fix [JPERF-980].
   JQL data might be bigger than in the original. Requires Jira v8.22.0 or higher.
 - Track AWS resources from `ProvisionedNetwork` for release.
+- Stop spamming INFO log with network internals.
 
 [JPERF-980]: https://ecosystem.atlassian.net/browse/JPERF-980
 
