@@ -40,7 +40,7 @@ class AwsCliIT {
             lifespan = lifespan
         )
         val networkFormula = NetworkFormula(investment, aws)
-        val network = networkFormula.provision()
+        val network = networkFormula.provisionAsResource().network
         sshInstance = aws.awaitingEc2.allocateInstance(
             investment = investment,
             key = keyFormula.provision(),

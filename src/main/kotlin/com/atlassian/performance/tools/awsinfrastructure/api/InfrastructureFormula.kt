@@ -1,9 +1,6 @@
 package com.atlassian.performance.tools.awsinfrastructure.api
 
-import com.atlassian.performance.tools.aws.api.Aws
-import com.atlassian.performance.tools.aws.api.CompositeResource
-import com.atlassian.performance.tools.aws.api.Investment
-import com.atlassian.performance.tools.aws.api.SshKeyFormula
+import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.DataCenterFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.JiraFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.JiraSoftwareDevDistribution
@@ -76,7 +73,7 @@ class InfrastructureFormula<out T : VirtualUsers> private constructor(
 
         logger.info("Provisioning network...")
         val network = preProvisionedNetwork ?: executor.submitWithLogContext("network") {
-            NetworkFormula(investment, aws).provision()
+            NetworkFormula(investment, aws).provisionAsResource().network
         }.get()
         logger.info("Network ready.")
 

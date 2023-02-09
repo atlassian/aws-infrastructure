@@ -17,7 +17,7 @@ class NetworkFormula(
 ) {
     private val logger = LogManager.getLogger(this::class.java)
 
-    fun provision(): ProvisionedNetwork {
+    fun provisionAsResource(): ProvisionedNetwork {
         val stackFormula = StackFormula(
             investment = investment,
             aws = aws,
@@ -37,4 +37,10 @@ class NetworkFormula(
         logger.info("Network provisioned: $network")
         return ProvisionedNetwork(network, stack)
     }
+
+    @Deprecated(
+        "Allocates AWS resources, use provisionAsResource to release the resource",
+        ReplaceWith("provisionAsResource().network")
+    )
+    fun provision(): Network = provisionAsResource().network
 }

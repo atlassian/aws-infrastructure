@@ -31,7 +31,7 @@ class Ec2VirtualUsersFormulaIT {
         )
 
         Ec2VirtualUsersFormula.Builder(jar)
-            .network(networkFormula.provision())
+            .network(networkFormula.provisionAsResource().network)
             .instanceType(InstanceType.C59xlarge)
             .build()
             .provision(

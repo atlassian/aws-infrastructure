@@ -129,7 +129,7 @@ class DataCenterFormula private constructor(
                 .setNameFormat("data-center-provisioning-thread-%d")
                 .build()
         )
-        val network = overriddenNetwork ?: NetworkFormula(investment, aws).provision()
+        val network = overriddenNetwork ?: NetworkFormula(investment, aws).provisionAsResource().network
         val template = TemplateBuilder("2-nodes-dc.yaml").adaptTo(configs)
         val stackProvisioning = executor.submitWithLogContext("provision stack") {
             StackFormula(

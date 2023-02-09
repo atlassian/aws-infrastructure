@@ -118,7 +118,7 @@ class StandaloneFormula private constructor(
                 .setNameFormat("standalone-provisioning-thread-%d")
                 .build()
         )
-        val network = overriddenNetwork ?: NetworkFormula(investment, aws).provision()
+        val network = overriddenNetwork ?: NetworkFormula(investment, aws).provisionAsResource().network
         val template = TemplateBuilder("single-node.yaml").adaptTo(listOf(config))
 
         val stackProvisioning = executor.submitWithLogContext("provision stack") {
