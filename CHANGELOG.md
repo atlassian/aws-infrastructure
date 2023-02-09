@@ -34,6 +34,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
   JQL data might be bigger than in the original. Requires Jira v8.22.0 or higher.
 - Track AWS resources from `ProvisionedNetwork` for release.
 - Stop spamming INFO log with network internals.
+- Stop double-logging network provisioning.
 
 [JPERF-980]: https://ecosystem.atlassian.net/browse/JPERF-980
 

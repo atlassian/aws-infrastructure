@@ -72,12 +72,10 @@ class InfrastructureFormula<out T : VirtualUsers> private constructor(
             ).provision()
         }
 
-        logger.info("Provisioning network...")
         val provisionedNetwork = CloseableThreadContext.push("network").use {
             NetworkFormula(investment, aws).reuseOrProvision(preProvisionedNetwork)
         }
         val network = provisionedNetwork.network
-        logger.info("Network ready.")
 
         val provisionJira = executor.submitWithLogContext("jira") {
             overrideJiraNetwork(network).provision(
