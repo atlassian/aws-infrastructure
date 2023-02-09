@@ -7,6 +7,7 @@ import com.atlassian.performance.tools.aws.api.SshInstance
 import com.atlassian.performance.tools.aws.api.SshKeyFormula
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime
 import com.atlassian.performance.tools.awsinfrastructure.api.network.NetworkFormula
+import com.atlassian.performance.tools.awsinfrastructure.api.network.ProvisionedNetwork
 import org.assertj.core.api.Assertions
 import org.junit.After
 import org.junit.Before
@@ -23,6 +24,7 @@ class AwsCliIT {
     private val aws = IntegrationTestRuntime.aws
     private lateinit var executor: ExecutorService
     private lateinit var sshInstance: SshInstance
+    private lateinit var provisionedNetwork: ProvisionedNetwork
 
     @Before
     fun setUp() {
@@ -40,7 +42,8 @@ class AwsCliIT {
             lifespan = lifespan
         )
         val networkFormula = NetworkFormula(investment, aws)
-        val network = networkFormula.provisionAsResource().network
+        provisionedNetwork = networkFormula.provisionAsResource()
+        val network = provisionedNetwork.network
         sshInstance = aws.awaitingEc2.allocateInstance(
             investment = investment,
             key = keyFormula.provision(),
@@ -57,6 +60,7 @@ class AwsCliIT {
     @After
     fun cleanUp() {
         sshInstance.resource.release()
+        provisionedNetwork.resource.release()
         executor.shutdownNow()
     }
 
