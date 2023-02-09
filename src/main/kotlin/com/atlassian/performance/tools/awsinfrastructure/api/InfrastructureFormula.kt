@@ -74,7 +74,7 @@ class InfrastructureFormula<out T : VirtualUsers> private constructor(
 
         logger.info("Provisioning network...")
         val network = CloseableThreadContext.push("network").use {
-            preProvisionedNetwork ?:  NetworkFormula(investment, aws).provisionAsResource().network
+            NetworkFormula(investment, aws).reuseOrProvision(preProvisionedNetwork).network
         }
         logger.info("Network ready.")
 

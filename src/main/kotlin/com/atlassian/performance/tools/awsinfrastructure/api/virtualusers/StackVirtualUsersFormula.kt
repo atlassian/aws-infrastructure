@@ -97,7 +97,7 @@ class StackVirtualUsersFormula private constructor(
         aws: Aws
     ): ProvisionedVirtualUsers<SshVirtualUsers> {
         logger.debug("Setting up $name...")
-        val network = overriddenNetwork ?: NetworkFormula(investment, aws).provisionAsResource().network
+        val network = NetworkFormula(investment, aws).reuseOrProvision(overriddenNetwork).network
         val virtualUsersStack = StackFormula(
             investment = investment,
             cloudformationTemplate = readResourceText("aws/virtual-users.yaml"),
