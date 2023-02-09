@@ -23,6 +23,10 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.26.0...master
 
+### Added
+- Return the AWS `Resource` allocated by `NetworkFormula` as `ProvisionedNetwork`.
+- Open `Network` for inheritance.
+
 ### Fixed
 - Substitute the lost `DatasetCatalogue().largeJiraEight()` with an equivalent. Fix [JPERF-980].
   JQL data might be bigger than in the original. Requires Jira v8.22.0 or higher.

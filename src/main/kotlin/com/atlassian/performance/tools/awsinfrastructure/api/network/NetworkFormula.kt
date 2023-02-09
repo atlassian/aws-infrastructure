@@ -17,7 +17,7 @@ class NetworkFormula(
 ) {
     private val logger = LogManager.getLogger(this::class.java)
 
-    fun provision(): Network {
+    fun provision(): ProvisionedNetwork {
         val stackFormula = StackFormula(
             investment = investment,
             aws = aws,
@@ -35,6 +35,6 @@ class NetworkFormula(
             stack.findSubnet("TheOnlySubnet")
         )
         logger.info("Network provisioned: $network")
-        return network
+        return ProvisionedNetwork(network, stack)
     }
 }
