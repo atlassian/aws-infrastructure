@@ -25,7 +25,9 @@ Dropping a requirement of a major version of a dependency is a new contract.
 
 ### Added
 - Return the AWS `Resource` allocated by `NetworkFormula` as `ProvisionedNetwork`.
-- Open `Network` for inheritance.
+
+### Deprecated
+- Deprecate `NetworkFormula.provision` in favor of `NetworkFormula.provisionAsResource`.
 
 ### Fixed
 - Substitute the lost `DatasetCatalogue().largeJiraEight()` with an equivalent. Fix [JPERF-980].

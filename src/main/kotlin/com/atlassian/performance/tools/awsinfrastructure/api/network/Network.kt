@@ -6,7 +6,7 @@ import com.amazonaws.services.ec2.model.Vpc
 /**
  * @since 2.14.0
  */
-open class Network(
+class Network(
     val vpc: Vpc,
     val subnet: Subnet
 ) {

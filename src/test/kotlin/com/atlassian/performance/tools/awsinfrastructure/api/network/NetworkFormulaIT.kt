@@ -16,7 +16,7 @@ class NetworkFormulaIT {
             lifespan = Duration.ofMinutes(10)
         )
 
-        val network = NetworkFormula(investment, aws).provision()
-        network.release().get(4, MINUTES)
+        val network = NetworkFormula(investment, aws).provisionAsResource()
+        network.resource.release().get(4, MINUTES)
     }
 }
