@@ -36,19 +36,22 @@ class DatasetCatalogue {
         )
     }
 
+    /**
+     * Contains data for Jira 8: v8.22.0 or higher.
+     */
     fun largeJiraEight(): Dataset {
-        val bucketUri = URI("https://s3.eu-central-1.amazonaws.com/jpt-custom-datasets-storage-a008820-datasetbucket-dah44h6l1l8p/")
+        val bucketUri = URI("https://s3.eu-central-1.amazonaws.com/jpt-custom-datasets-storage-a008820-datasetbucket-1nrja8d1upind/")
         return Dataset(
             label = "2M issues, format 8",
             database = MySqlDatabase(
                 HttpDatasetPackage(
-                    uri = bucketUri.resolve("dataset-631c70d4-084b-455c-9785-b01068b9f07c/database.tar.bz2"),
+                    uri = bucketUri.resolve("dataset-fa563790-84c2-4cdf-a49c-c5ca4b223c94/database.tar.bz2"),
                     downloadTimeout = ofMinutes(17)
                 )
             ),
             jiraHomeSource = JiraHomePackage(
                 HttpDatasetPackage(
-                    uri = bucketUri.resolve("dataset-631c70d4-084b-455c-9785-b01068b9f07c/jirahome.tar.bz2"),
+                    uri = bucketUri.resolve("dataset-fa563790-84c2-4cdf-a49c-c5ca4b223c94/jirahome.tar.bz2"),
                     downloadTimeout = ofMinutes(21)
                 )
             )
