@@ -23,6 +23,12 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.26.0...master
 
+### Fixed
+- Substitute the lost `DatasetCatalogue().largeJiraEight()` with an equivalent. Fix [JPERF-980].
+  JQL data might be bigger than in the original.
+
+[JPERF-980]: https://ecosystem.atlassian.net/browse/JPERF-980
+
 ## [2.26.0] - 2022-02-01
 [2.26.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.25.8...release-2.26.0
 
