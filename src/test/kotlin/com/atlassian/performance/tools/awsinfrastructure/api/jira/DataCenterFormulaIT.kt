@@ -28,7 +28,7 @@ class DataCenterFormulaIT {
     private val workspace = IntegrationTestRuntime.taskWorkspace
     private val aws = IntegrationTestRuntime.aws
     private val jiraVersionSeven = "7.2.0"
-    private val jiraVersionEight = "8.0.0"
+    private val jiraVersionEight = "8.22.0"
     private val datasetSeven = DatasetCatalogue().smallJiraSeven()
     private val datasetEight = DatasetCatalogue().largeJiraEight()
 
