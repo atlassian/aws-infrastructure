@@ -25,6 +25,7 @@ internal data class StandaloneStoppedNode(
     private val resultsTransport: Storage,
     private val unpackedProduct: String,
     private val osMetrics: List<OsMetric>,
+    private val waitForUpgrades: Boolean,
     private val launchTimeouts: JiraLaunchTimeouts,
     private val jdk: JavaDevelopmentKit,
     private val profiler: Profiler,
@@ -107,6 +108,11 @@ internal data class StandaloneStoppedNode(
         ssh: SshConnection,
         threadDump: ThreadDump
     ) {
+        if (!waitForUpgrades) {
+            logger.debug("Skipping Jira startup wait")
+            return
+        }
+        logger.debug("Waiting for Jira node to start...")
         val upgradesEndpoint = URI("http://admin:${adminPasswordPlainText}@localhost:8080/rest/api/2/upgrade")
         waitForStatusToChange(
             statusQuo = "000",

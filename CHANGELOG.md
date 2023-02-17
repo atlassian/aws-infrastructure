@@ -51,6 +51,14 @@ Dropping a requirement of a major version of a dependency is a new contract.
 [JPERF-951]: https://ecosystem.atlassian.net/browse/JPERF-951
 [JPERF-952]: https://ecosystem.atlassian.net/browse/JPERF-952
 
+### Added
+- Make it possible to handle waiting for Jira startup outside provisioning process. Unblock [JPERF-996].
+
+### Fixed
+- Fix bug where accessRequester wouldn't be preserved when JiraFormula is used with InfrastructureFormula.
+
+[JPERF-996]: https://ecosystem.atlassian.net/browse/JPERF-996
+
 ## [2.25.8] - 2022-08-12
 [2.25.8]: https://github.com/atlassian/aws-infrastructure/compare/release-2.25.7...release-2.25.8
 

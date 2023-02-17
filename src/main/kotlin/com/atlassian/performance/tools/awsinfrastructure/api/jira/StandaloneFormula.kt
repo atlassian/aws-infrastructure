@@ -48,7 +48,8 @@ class StandaloneFormula private constructor(
     private val databaseComputer: Computer,
     private val databaseVolume: Volume,
     private val accessRequester: AccessRequester,
-    private val adminPasswordPlainText: String
+    private val adminPasswordPlainText: String,
+    private val waitForUpgrades: Boolean
 ) : JiraFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
@@ -77,7 +78,8 @@ class StandaloneFormula private constructor(
         databaseComputer = M4ExtraLargeElastic(),
         databaseVolume = Volume(100),
         accessRequester = Defaults.accessRequester,
-        adminPasswordPlainText = "admin"
+        adminPasswordPlainText = "admin",
+        waitForUpgrades = true
     )
 
     @Suppress("DEPRECATION")
@@ -99,7 +101,8 @@ class StandaloneFormula private constructor(
         databaseComputer = M4ExtraLargeElastic(),
         databaseVolume = Volume(100),
         accessRequester = Defaults.accessRequester,
-        adminPasswordPlainText = "admin"
+        adminPasswordPlainText = "admin",
+        waitForUpgrades = true
     )
 
     override fun provision(
@@ -192,7 +195,8 @@ class StandaloneFormula private constructor(
             productDistribution = productDistribution,
             ssh = jiraSsh,
             computer = computer,
-            adminPasswordPlainText  = adminPasswordPlainText
+            adminPasswordPlainText  = adminPasswordPlainText,
+            waitForUpgrades = waitForUpgrades
         )
 
         val jiraNodeSecurityGroup = jiraStack.findSecurityGroup("JiraNodeSecurityGroup")
@@ -313,6 +317,7 @@ class StandaloneFormula private constructor(
         private var databaseVolume: Volume = Volume(100)
         private var accessRequester: AccessRequester = Defaults.accessRequester
         private var adminPasswordPlainText: String = "admin"
+        private var waitForUpgrades: Boolean = true
 
         internal constructor(
             formula: StandaloneFormula
@@ -329,7 +334,9 @@ class StandaloneFormula private constructor(
             network = formula.overriddenNetwork
             databaseComputer = formula.databaseComputer
             databaseVolume = formula.databaseVolume
+            accessRequester = formula.accessRequester
             adminPasswordPlainText = formula.adminPasswordPlainText
+            waitForUpgrades = formula.waitForUpgrades
         }
 
         fun config(config: JiraNodeConfig): Builder = apply { this.config = config }
@@ -348,6 +355,8 @@ class StandaloneFormula private constructor(
 
         fun accessRequester(accessRequester: AccessRequester) = apply { this.accessRequester = accessRequester }
 
+        fun waitForUpgrades(waitForUpgrades: Boolean) = apply { this.waitForUpgrades = waitForUpgrades }
+
         fun build(): StandaloneFormula = StandaloneFormula(
             apps = apps,
             productDistribution = productDistribution,
@@ -361,7 +370,8 @@ class StandaloneFormula private constructor(
             databaseComputer = databaseComputer,
             databaseVolume = databaseVolume,
             accessRequester = accessRequester,
-            adminPasswordPlainText  = adminPasswordPlainText
+            adminPasswordPlainText  = adminPasswordPlainText,
+            waitForUpgrades = waitForUpgrades
         )
     }
 }
