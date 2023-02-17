@@ -28,6 +28,7 @@ internal class StandaloneNodeFormula(
     private val databaseIp: String,
     private val productDistribution: ProductDistribution,
     private val ssh: Ssh,
+    private val waitForUpgrades: Boolean,
     private val config: JiraNodeConfig,
     private val computer: Computer,
     private val adminPasswordPlainText: String
@@ -101,6 +102,7 @@ internal class StandaloneNodeFormula(
                     unpackedProduct = unpackedProduct,
                     osMetrics = osMetrics,
                     ssh = ssh,
+                    waitForUpgrades = waitForUpgrades,
                     launchTimeouts = config.launchTimeouts,
                     jdk = jdk,
                     profiler = config.profiler,

@@ -56,7 +56,8 @@ class DataCenterFormula private constructor(
     private val databaseComputer: Computer,
     private val databaseVolume: Volume,
     private val accessRequester: AccessRequester,
-    private val adminPasswordPlainText: String
+    private val adminPasswordPlainText: String,
+    private val waitForUpgrades: Boolean
 ) : JiraFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
@@ -88,7 +89,8 @@ class DataCenterFormula private constructor(
         databaseComputer = M4ExtraLargeElastic(),
         databaseVolume = Volume(100),
         accessRequester = Defaults.accessRequester,
-        adminPasswordPlainText = Defaults.adminPasswordPlainText
+        adminPasswordPlainText = Defaults.adminPasswordPlainText,
+        waitForUpgrades = true
     )
 
     @Suppress("DEPRECATION")
@@ -111,7 +113,8 @@ class DataCenterFormula private constructor(
         databaseComputer = M4ExtraLargeElastic(),
         databaseVolume = Volume(100),
         accessRequester = Defaults.accessRequester,
-        adminPasswordPlainText = Defaults.adminPasswordPlainText
+        adminPasswordPlainText = Defaults.adminPasswordPlainText,
+        waitForUpgrades = true
     )
 
     override fun provision(
@@ -237,6 +240,7 @@ class DataCenterFormula private constructor(
                             pluginsTransport = pluginsTransport,
                             productDistribution = productDistribution,
                             ssh = ssh,
+                            waitForUpgrades = waitForUpgrades,
                             config = configs[i],
                             computer = computer,
                             adminPasswordPlainText = adminPasswordPlainText
@@ -403,6 +407,7 @@ class DataCenterFormula private constructor(
         private var databaseVolume: Volume = Volume(100)
         private var accessRequester: AccessRequester = Defaults.accessRequester
         private var adminPasswordPlainText: String = "admin"
+        private var waitForUpgrades: Boolean = true
 
         internal constructor(
             formula: DataCenterFormula
@@ -420,7 +425,9 @@ class DataCenterFormula private constructor(
             network = formula.overriddenNetwork
             databaseComputer = formula.databaseComputer
             databaseVolume = formula.databaseVolume
+            accessRequester = formula.accessRequester
             adminPasswordPlainText = formula.adminPasswordPlainText
+            waitForUpgrades = formula.waitForUpgrades
         }
 
         fun configs(configs: List<JiraNodeConfig>): Builder = apply { this.configs = configs }
@@ -447,6 +454,12 @@ class DataCenterFormula private constructor(
 
         fun accessRequester(accessRequester: AccessRequester) = apply { this.accessRequester = accessRequester }
 
+        /**
+         * Don't change when starting up multi-node Jira DC of version lower than 9.1.0
+         * See https://confluence.atlassian.com/jirakb/index-management-on-jira-start-up-1141500654.html for more details.
+         */
+        fun waitForUpgrades(waitForUpgrades: Boolean) = apply { this.waitForUpgrades = waitForUpgrades }
+
         fun build(): DataCenterFormula = DataCenterFormula(
             configs = configs,
             loadBalancerFormula = loadBalancerFormula,
@@ -461,7 +474,8 @@ class DataCenterFormula private constructor(
             databaseComputer = databaseComputer,
             databaseVolume = databaseVolume,
             accessRequester = accessRequester,
-            adminPasswordPlainText  = adminPasswordPlainText
+            adminPasswordPlainText  = adminPasswordPlainText,
+            waitForUpgrades = waitForUpgrades
         )
     }
 }
