@@ -241,6 +241,7 @@ This is an erroneous release. Please use `2.21.0` instead.
 - Reduce provisioning logging.
 - Enrich the provisioning logging messages.
 - Fix `UriJiraFormula` failing to download results due to zero nodes and zero threads.
+- Improve `stopJira` to wait only for Jira process shutdown instead of all Java processes
 
 [JPERF-595]: https://ecosystem.atlassian.net/browse/JPERF-595
 
