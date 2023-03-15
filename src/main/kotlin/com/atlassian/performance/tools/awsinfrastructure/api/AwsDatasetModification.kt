@@ -26,7 +26,8 @@ class AwsDatasetModification private constructor(
     private val workspace: TestWorkspace,
     private val newDatasetName: String,
     private val host: DatasetHost,
-    private val onlineTransformation: Consumer<Infrastructure<*>>
+    private val onlineTransformation: Consumer<Infrastructure<*>>,
+    private val datasetSourceConfig: Consumer<CustomDatasetSource.Builder>
 ) {
 
     fun modify(): Dataset {
@@ -65,10 +66,11 @@ class AwsDatasetModification private constructor(
         jira: Jira
     ): Dataset {
         logger.info("Persisting the $newDatasetName dataset ...")
-        val source = CustomDatasetSource.Builder(
-            jiraHome = jira.jiraHome,
-            database = jira.database ?: throw Exception("The database should have been provisioned")
-        ).build()
+        val jiraHome = jira.jiraHome
+        val database = jira.database ?: throw Exception("The database should have been provisioned")
+        val source = CustomDatasetSource.Builder(jiraHome, database)
+            .also { datasetSourceConfig.accept(it) }
+            .build()
         val storedDataset = source.store(
             aws.customDatasetStorage(newDatasetName).location
         )
@@ -132,6 +134,7 @@ class AwsDatasetModification private constructor(
                 )
                 .build()
         }
+        private var datasetSourceConfig: Consumer<CustomDatasetSource.Builder> = Consumer {  }
 
         /**
          * @since 2.12.0
@@ -146,6 +149,7 @@ class AwsDatasetModification private constructor(
         fun onlineTransformation(onlineTransformation: Consumer<Infrastructure<*>>) = apply { this.onlineTransformation = onlineTransformation }
         fun workspace(workspace: TestWorkspace) = apply { this.workspace = workspace }
         fun newDatasetName(newDatasetName: String) = apply { this.newDatasetName = newDatasetName }
+        fun datasetSourceConfig(datasetSourceConfig: Consumer<CustomDatasetSource.Builder>) = apply { this.datasetSourceConfig = datasetSourceConfig }
 
         @Deprecated("This ignores `dataset` building. Replace with `host` or `dataset`.")
         fun formula(formula: InfrastructureFormula<*>) = apply {
@@ -158,7 +162,8 @@ class AwsDatasetModification private constructor(
             workspace = workspace,
             newDatasetName = newDatasetName,
             host = host,
-            onlineTransformation = onlineTransformation
+            onlineTransformation = onlineTransformation,
+            datasetSourceConfig = datasetSourceConfig
         )
     }
 
