@@ -40,7 +40,7 @@ class RemoteLocation(val host: SshHost, val location: String) {
     fun archive(timeout: Duration): RemoteLocation {
         logger.info("Archiving $location...")
         val destination = Ssh(host, connectivityPatience = 4).newConnection().use {
-            FileArchiver().zip(it, location, timeout)
+            FileArchiver().zip(it, location, timeout, level = 1)
         }
         logger.info("Archiving $location complete")
         return RemoteLocation(host, destination)
