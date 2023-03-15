@@ -23,8 +23,13 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.28.0...master
 
+### Added
+- Make it possible to override `AwsDatasetModification`'s timeouts of storing datasets. Unblock [JPERF-990].
+
 ### Fixed
 - Stop logging ERRORs while `LocalPublicIpv4Provider` expects services to fail
+
+[JPERF-990]: https://ecosystem.atlassian.net/browse/JPERF-990
 
 ## [2.28.0] - 2023-03-01
 [2.28.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.27.0...release-2.28.0
