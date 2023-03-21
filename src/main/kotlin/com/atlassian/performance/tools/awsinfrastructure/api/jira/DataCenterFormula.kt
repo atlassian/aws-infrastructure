@@ -20,6 +20,7 @@ import com.atlassian.performance.tools.awsinfrastructure.jira.DataCenterNodeForm
 import com.atlassian.performance.tools.awsinfrastructure.jira.DiagnosableNodeFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.StandaloneNodeFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.home.SharedHomeFormula
+import com.atlassian.performance.tools.concurrency.api.AbruptExecutorService
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
 import com.atlassian.performance.tools.infrastructure.api.database.Database
@@ -34,6 +35,7 @@ import org.apache.logging.log4j.CloseableThreadContext
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.time.Duration
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 
@@ -127,11 +129,34 @@ class DataCenterFormula private constructor(
     ): ProvisionedJira = time("provision Jira Data Center") {
         logger.info("Setting up Jira...")
 
-        val executor = Executors.newCachedThreadPool(
-            ThreadFactoryBuilder()
-                .setNameFormat("data-center-provisioning-thread-%d")
-                .build()
-        )
+        AbruptExecutorService(
+            Executors.newCachedThreadPool(
+                ThreadFactoryBuilder()
+                    .setNameFormat("data-center-provisioning-thread-%d")
+                    .build()
+            )
+        ).use { executor ->
+            provision(
+                executor = executor,
+                investment = investment,
+                pluginsTransport = pluginsTransport,
+                resultsTransport = resultsTransport,
+                key = key,
+                roleProfile = roleProfile,
+                aws = aws
+            )
+        }
+    }
+
+    private fun provision(
+        executor: ExecutorService,
+        investment: Investment,
+        pluginsTransport: Storage,
+        resultsTransport: Storage,
+        key: Future<SshKey>,
+        roleProfile: String,
+        aws: Aws
+    ): ProvisionedJira {
         val provisionedNetwork = NetworkFormula(investment, aws).reuseOrProvision(overriddenNetwork)
         val network = provisionedNetwork.network
         val template = TemplateBuilder("2-nodes-dc.yaml").adaptTo(configs)
@@ -368,7 +393,7 @@ class DataCenterFormula private constructor(
             jmxClients = jiraNodes.mapIndexed { i, node -> configs[i].remoteJmx.getClient(node.publicIpAddress) }
         )
         logger.info("$jira is set up, will expire ${jiraStack.expiry}")
-        return@time ProvisionedJira.Builder(jira)
+        return ProvisionedJira.Builder(jira)
             .resource(
                 DependentResources(
                     user = provisionedLoadBalancer.resource,
