@@ -14,6 +14,7 @@ import com.atlassian.performance.tools.awsinfrastructure.api.network.Network
 import com.atlassian.performance.tools.awsinfrastructure.api.network.NetworkFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.network.access.*
 import com.atlassian.performance.tools.awsinfrastructure.jira.StandaloneNodeFormula
+import com.atlassian.performance.tools.concurrency.api.AbruptExecutorService
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
 import com.atlassian.performance.tools.infrastructure.api.database.Database
@@ -29,6 +30,7 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.net.URI
 import java.time.Duration
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 
@@ -115,12 +117,35 @@ class StandaloneFormula private constructor(
     ): ProvisionedJira = time("provision Jira Server") {
         logger.info("Setting up Jira...")
 
-        val executor = Executors.newFixedThreadPool(
-            4,
-            ThreadFactoryBuilder()
-                .setNameFormat("standalone-provisioning-thread-%d")
-                .build()
-        )
+        AbruptExecutorService(
+            Executors.newFixedThreadPool(
+                4,
+                ThreadFactoryBuilder()
+                    .setNameFormat("standalone-provisioning-thread-%d")
+                    .build()
+            )
+        ).use { executor ->
+            provision(
+                executor = executor,
+                investment = investment,
+                pluginsTransport = pluginsTransport,
+                resultsTransport = resultsTransport,
+                key = key,
+                roleProfile = roleProfile,
+                aws = aws
+            )
+        }
+    }
+
+    private fun provision(
+        executor: ExecutorService,
+        investment: Investment,
+        pluginsTransport: Storage,
+        resultsTransport: Storage,
+        key: Future<SshKey>,
+        roleProfile: String,
+        aws: Aws
+    ): ProvisionedJira {
         val provisionedNetwork = NetworkFormula(investment, aws).reuseOrProvision(overriddenNetwork)
         val network = provisionedNetwork.network
         val template = TemplateBuilder("single-node.yaml").adaptTo(listOf(config))
@@ -266,8 +291,6 @@ class StandaloneFormula private constructor(
             logger.warn("It's possible that defined external access to Jira resources (e.g. http, debug, splunk) wasn't granted.")
         }
 
-        executor.shutdownNow()
-
         val jira = Jira(
             nodes = listOf(node),
             jiraHome = RemoteLocation(
@@ -279,7 +302,7 @@ class StandaloneFormula private constructor(
             jmxClients = listOf(config.remoteJmx.getClient(jiraPublicIp))
         )
         logger.info("$jira is set up, will expire ${jiraStack.expiry}")
-        return@time ProvisionedJira.Builder(jira)
+        return ProvisionedJira.Builder(jira)
             .resource(
                 DependentResources(
                     user = jiraStack,
