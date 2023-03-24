@@ -21,7 +21,10 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.28.0...master
+[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.29.0...master
+
+## [2.29.0] - 2023-03-24
+[2.29.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.28.0...release-2.29.0
 
 ### Added
 - Make it possible to override `AwsDatasetModification`'s timeouts of storing datasets. Unblock [JPERF-990].
