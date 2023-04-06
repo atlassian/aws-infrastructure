@@ -58,6 +58,25 @@ class DatasetCatalogue {
         )
     }
 
+    fun mediumJiraNine(): Dataset {
+        val bucketUri = URI("https://s3.eu-central-1.amazonaws.com/jpt-custom-datasets-storage-a008820-datasetbucket-1nrja8d1upind/")
+        return Dataset(
+            label = "1M issues, index format 8, reindexed on Jira 9",
+            database = MySqlDatabase(
+                HttpDatasetPackage(
+                    uri = bucketUri.resolve("dataset-cf2d6ef0-73ee-41b3-9138-49b47f01c94d/database.tar.bz2"),
+                    downloadTimeout = ofMinutes(30)
+                )
+            ),
+            jiraHomeSource = JiraHomePackage(
+                HttpDatasetPackage(
+                    uri = bucketUri.resolve("dataset-cf2d6ef0-73ee-41b3-9138-49b47f01c94d/jirahome.tar.bz2"),
+                    downloadTimeout = ofMinutes(30)
+                )
+            )
+        )
+    }
+
     /**
      * Has more active users than the timebomb license, so on DC, it will refuse to create issues.
      * Use [LicenseOverridingMysql] to supply a bigger license if need be.
