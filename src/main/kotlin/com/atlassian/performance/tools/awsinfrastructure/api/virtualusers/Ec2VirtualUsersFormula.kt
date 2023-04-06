@@ -34,7 +34,7 @@ class Ec2VirtualUsersFormula private constructor(
         shadowJar = shadowJar,
         browser = browser,
         network = null,
-        instanceType = InstanceType.C48xlarge
+        instanceType = InstanceType.C59xlarge
     )
 
     @Deprecated("Use Ec2VirtualUsersFormula.Builder")
@@ -45,7 +45,7 @@ class Ec2VirtualUsersFormula private constructor(
         shadowJar = shadowJar,
         browser = Chrome(),
         network = null,
-        instanceType = InstanceType.C48xlarge
+        instanceType = InstanceType.C59xlarge
     )
 
     private val logger: Logger = LogManager.getLogger(this::class.java)
@@ -106,7 +106,7 @@ class Ec2VirtualUsersFormula private constructor(
         private var browser: Browser = Chrome()
         private var network: Network? = null
         private var nodeOrder: Int = 1
-        private var instanceType: InstanceType = InstanceType.C48xlarge
+        private var instanceType: InstanceType = InstanceType.C59xlarge
 
         internal constructor(
             formula: Ec2VirtualUsersFormula

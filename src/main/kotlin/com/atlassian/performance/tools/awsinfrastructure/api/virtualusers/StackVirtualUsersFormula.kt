@@ -54,7 +54,7 @@ class StackVirtualUsersFormula private constructor(
         splunkForwarder = splunkForwarder,
         browser = browser,
         stackCreationTimeout = Duration.ofMinutes(30),
-        instanceType = InstanceType.C48xlarge,
+        instanceType = InstanceType.C59xlarge,
         sshCidrIp = ""
     )
 
@@ -67,7 +67,7 @@ class StackVirtualUsersFormula private constructor(
         splunkForwarder = DisabledSplunkForwarder(),
         browser = Chrome(),
         stackCreationTimeout = Duration.ofMinutes(30),
-        instanceType = InstanceType.C48xlarge,
+        instanceType = InstanceType.C59xlarge,
         sshCidrIp = ""
     )
 
@@ -81,7 +81,7 @@ class StackVirtualUsersFormula private constructor(
         splunkForwarder = splunkForwarder,
         browser = Chrome(),
         stackCreationTimeout = Duration.ofMinutes(30),
-        instanceType = InstanceType.C48xlarge,
+        instanceType = InstanceType.C59xlarge,
         sshCidrIp = ""
     )
 
@@ -174,7 +174,7 @@ class StackVirtualUsersFormula private constructor(
         private var browser: Browser = Chrome()
         private var stackCreationTimeout: Duration = Duration.ofMinutes(30)
         private var network: Network? = null
-        private var instanceType: InstanceType = InstanceType.C48xlarge
+        private var instanceType: InstanceType = InstanceType.C59xlarge
         private var sshCidrIp: String = ""
 
         internal constructor(
