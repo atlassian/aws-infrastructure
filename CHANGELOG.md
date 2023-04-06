@@ -23,6 +23,9 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.29.0...master
 
+### Fixed
+- Change default virtual user instance type to `c5.9xlarge`. It's better, cheaper and there seem to be availability issues with previous default (`c4.8xlarge`).
+
 ## [2.29.0] - 2023-03-24
 [2.29.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.28.0...release-2.29.0
 

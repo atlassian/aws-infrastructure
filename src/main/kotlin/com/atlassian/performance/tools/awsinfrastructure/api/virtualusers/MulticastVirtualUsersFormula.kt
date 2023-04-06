@@ -43,7 +43,7 @@ class MulticastVirtualUsersFormula private constructor(
         splunkForwarder = splunkForwarder,
         browser = browser,
         network = null,
-        instanceType = InstanceType.C48xlarge,
+        instanceType = InstanceType.C59xlarge,
         sshCidrIp = ""
     )
 
@@ -57,7 +57,7 @@ class MulticastVirtualUsersFormula private constructor(
         splunkForwarder = DisabledSplunkForwarder(),
         browser = Chrome(),
         network = null,
-        instanceType = InstanceType.C48xlarge,
+        instanceType = InstanceType.C59xlarge,
         sshCidrIp = ""
     )
 
@@ -121,7 +121,7 @@ class MulticastVirtualUsersFormula private constructor(
         private var browser: Browser = Chrome()
         private var network: Network? = null
         private var splunkForwarder: SplunkForwarder = DisabledSplunkForwarder()
-        private var instanceType: InstanceType = InstanceType.C48xlarge
+        private var instanceType: InstanceType = InstanceType.C59xlarge
         private var sshCidrIp: String = ""
 
         internal constructor(
