@@ -1,5 +1,6 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
+import com.atlassian.performance.tools.awsinfrastructure.api.CustomDatasetSource
 import com.atlassian.performance.tools.awsinfrastructure.api.RemoteLocation
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.MeasurementSource
@@ -14,7 +15,7 @@ import java.util.concurrent.Executors
 class Jira(
     private val nodes: List<StartedNode>,
     val jiraHome: RemoteLocation,
-    val database: RemoteLocation?,
+    val database: RemoteLocation,
     val address: URI,
     val jmxClients: List<JmxClient> = emptyList()
 ) : MeasurementSource {
@@ -37,5 +38,31 @@ class Jira(
         executor.shutdownNow()
     }
 
+    fun toDatasetSource(): CustomDatasetSource.Builder {
+        return CustomDatasetSource.Builder(
+            jiraHome = jiraHome,
+            database = database,
+            nodes = nodes.map { it.toStoppableNode() }
+        )
+    }
+
     override fun toString() = "Jira(address=$address)"
+
+    class Builder(
+        private val nodes: List<StartedNode>,
+        private val jiraHome: RemoteLocation,
+        private val database: RemoteLocation,
+        private val address: URI
+    ) {
+        private var jmxClients: List<JmxClient> = emptyList()
+        fun jmxClients(jmxClients: List<JmxClient>) = apply { this.jmxClients = jmxClients }
+
+        fun build() = Jira(
+            nodes = nodes,
+            jiraHome = jiraHome,
+            database = database,
+            address = address,
+            jmxClients = jmxClients
+        )
+    }
 }

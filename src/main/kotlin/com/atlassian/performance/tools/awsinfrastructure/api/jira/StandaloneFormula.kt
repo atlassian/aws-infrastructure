@@ -220,7 +220,7 @@ class StandaloneFormula private constructor(
             productDistribution = productDistribution,
             ssh = jiraSsh,
             computer = computer,
-            adminPasswordPlainText  = adminPasswordPlainText,
+            adminPasswordPlainText = adminPasswordPlainText,
             waitForUpgrades = waitForUpgrades
         )
 
@@ -291,16 +291,18 @@ class StandaloneFormula private constructor(
             logger.warn("It's possible that defined external access to Jira resources (e.g. http, debug, splunk) wasn't granted.")
         }
 
-        val jira = Jira(
+        val jira = Jira.Builder(
             nodes = listOf(node),
             jiraHome = RemoteLocation(
                 jiraSsh.host,
                 provisionedNode.jiraHome
             ),
             database = databaseDataLocation,
-            address = jiraPublicHttpAddress,
-            jmxClients = listOf(config.remoteJmx.getClient(jiraPublicIp))
+            address = jiraPublicHttpAddress
         )
+            .jmxClients(listOf(config.remoteJmx.getClient(jiraPublicIp)))
+            .build()
+
         logger.info("$jira is set up, will expire ${jiraStack.expiry}")
         return ProvisionedJira.Builder(jira)
             .resource(
@@ -313,7 +315,7 @@ class StandaloneFormula private constructor(
             .build()
     }
 
-    class Builder constructor(
+    class Builder(
         private val productDistribution: ProductDistribution,
         private val jiraHomeSource: JiraHomeSource,
         private val database: Database
@@ -372,7 +374,8 @@ class StandaloneFormula private constructor(
         fun databaseComputer(databaseComputer: Computer): Builder = apply { this.databaseComputer = databaseComputer }
         fun databaseVolume(databaseVolume: Volume): Builder = apply { this.databaseVolume = databaseVolume }
 
-        fun adminPasswordPlainText(adminPasswordPlainText: String): Builder = apply { this.adminPasswordPlainText = adminPasswordPlainText }
+        fun adminPasswordPlainText(adminPasswordPlainText: String): Builder =
+            apply { this.adminPasswordPlainText = adminPasswordPlainText }
 
         internal fun network(network: Network) = apply { this.network = network }
 
@@ -393,7 +396,7 @@ class StandaloneFormula private constructor(
             databaseComputer = databaseComputer,
             databaseVolume = databaseVolume,
             accessRequester = accessRequester,
-            adminPasswordPlainText  = adminPasswordPlainText,
+            adminPasswordPlainText = adminPasswordPlainText,
             waitForUpgrades = waitForUpgrades
         )
     }

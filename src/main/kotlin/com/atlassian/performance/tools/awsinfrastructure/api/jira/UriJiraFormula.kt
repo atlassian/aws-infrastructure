@@ -1,6 +1,9 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
-import com.atlassian.performance.tools.aws.api.*
+import com.atlassian.performance.tools.aws.api.Aws
+import com.atlassian.performance.tools.aws.api.Investment
+import com.atlassian.performance.tools.aws.api.SshKey
+import com.atlassian.performance.tools.aws.api.Storage
 import com.atlassian.performance.tools.awsinfrastructure.api.RemoteLocation
 import com.atlassian.performance.tools.ssh.api.SshHost
 import com.atlassian.performance.tools.ssh.api.auth.PasswordAuthentication
@@ -20,20 +23,25 @@ class UriJiraFormula(
         aws: Aws
     ): ProvisionedJira = ProvisionedJira
         .Builder(
-            Jira(
+            Jira.Builder(
                 nodes = emptyList(),
-                jiraHome = RemoteLocation(
-                    host = SshHost(
-                        ipAddress = "unknown",
-                        userName = "unknown",
-                        authentication = PasswordAuthentication("unknown"),
-                        port = -1
-                    ),
-                    location = "unknown"
-                ),
-                database = null,
+                jiraHome = dummyRemoteLocation(),
+                database = dummyRemoteLocation(),
                 address = jiraAddress
             )
+                .build()
         )
         .build()
+
+    private fun dummyRemoteLocation(): RemoteLocation {
+        return RemoteLocation(
+            host = SshHost(
+                ipAddress = "unknown",
+                userName = "unknown",
+                authentication = PasswordAuthentication("unknown"),
+                port = -1
+            ),
+            location = "unknown"
+        )
+    }
 }

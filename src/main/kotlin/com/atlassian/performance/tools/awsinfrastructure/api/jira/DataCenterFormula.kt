@@ -382,16 +382,18 @@ class DataCenterFormula private constructor(
             loadBalancer.waitUntilHealthy(Duration.ofMinutes(5))
         }
 
-        val jira = Jira(
+        val jira = Jira.Builder(
             nodes = nodes,
             jiraHome = RemoteLocation(
                 sharedHomeSsh.host,
                 sharedHome.get().remoteSharedHome
             ),
             database = databaseDataLocation,
-            address = loadBalancer.uri,
-            jmxClients = jiraNodes.mapIndexed { i, node -> configs[i].remoteJmx.getClient(node.publicIpAddress) }
+            address = loadBalancer.uri
         )
+            .jmxClients(jiraNodes.mapIndexed { i, node -> configs[i].remoteJmx.getClient(node.publicIpAddress) })
+            .build()
+
         logger.info("$jira is set up, will expire ${jiraStack.expiry}")
         return ProvisionedJira.Builder(jira)
             .resource(
@@ -427,7 +429,8 @@ class DataCenterFormula private constructor(
             database = database
         )
 
-        private var configs: List<JiraNodeConfig> = (1..2).map { JiraNodeConfig.Builder().name("jira-node-$it").build() }
+        private var configs: List<JiraNodeConfig> =
+            (1..2).map { JiraNodeConfig.Builder().name("jira-node-$it").build() }
         private var loadBalancerFormula: LoadBalancerFormula = ApacheEc2LoadBalancerFormula()
         private var apps: Apps = Apps(emptyList())
         private var computer: Computer = C4EightExtraLargeElastic()
@@ -479,7 +482,8 @@ class DataCenterFormula private constructor(
 
         fun databaseVolume(databaseVolume: Volume): Builder = apply { this.databaseVolume = databaseVolume }
 
-        fun adminPasswordPlainText(adminPasswordPlainText: String): Builder = apply { this.adminPasswordPlainText = adminPasswordPlainText }
+        fun adminPasswordPlainText(adminPasswordPlainText: String): Builder =
+            apply { this.adminPasswordPlainText = adminPasswordPlainText }
 
         internal fun network(network: Network) = apply { this.network = network }
 
@@ -505,7 +509,7 @@ class DataCenterFormula private constructor(
             databaseComputer = databaseComputer,
             databaseVolume = databaseVolume,
             accessRequester = accessRequester,
-            adminPasswordPlainText  = adminPasswordPlainText,
+            adminPasswordPlainText = adminPasswordPlainText,
             waitForUpgrades = waitForUpgrades
         )
     }
