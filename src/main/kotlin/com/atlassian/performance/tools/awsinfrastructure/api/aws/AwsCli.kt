@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap
  *
  * @since 2.15.0
  */
-class AwsCli (val cliVersion: String = "1.15.51") {
+class AwsCli (val cliVersion: String = "2.9.12") {
     private val versionRegex = Regex("""([0-9]+)\.[0-9]+\.[0-9]+""")
     init {
         require( versionRegex.matches(cliVersion)) {

@@ -8,6 +8,7 @@ import com.atlassian.performance.tools.aws.api.SshKeyFormula
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime
 import com.atlassian.performance.tools.awsinfrastructure.api.network.NetworkFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.network.ProvisionedNetwork
+import org.apache.logging.log4j.Level
 import org.assertj.core.api.Assertions
 import org.junit.After
 import org.junit.Before
