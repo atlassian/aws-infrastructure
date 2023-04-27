@@ -3,12 +3,15 @@ package com.atlassian.performance.tools.awsinfrastructure.jira.home
 import com.atlassian.performance.tools.aws.api.Storage
 import com.atlassian.performance.tools.awsinfrastructure.api.aws.AwsCli
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
+import com.atlassian.performance.tools.awsinfrastructure.api.jira.JiraSharedStorageResource
+import com.atlassian.performance.tools.awsinfrastructure.api.jira.JiraSharedStorageResource.ATTACHMENTS
+import com.atlassian.performance.tools.awsinfrastructure.api.jira.JiraSharedStorageResource.AVATARS
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource
 import com.atlassian.performance.tools.infrastructure.api.jira.SharedHome
 import com.atlassian.performance.tools.infrastructure.api.os.Ubuntu
 import com.atlassian.performance.tools.ssh.api.Ssh
 import java.time.Duration
-import java.util.EnumSet
+import java.util.*
 
 internal class SharedHomeFormula(
     private val pluginsTransport: Storage,
@@ -17,7 +20,8 @@ internal class SharedHomeFormula(
     private val ssh: Ssh,
     private val computer: Computer,
     private val storeInS3: EnumSet<JiraSharedStorageResource> = EnumSet.of(
-        JiraSharedStorageResource.ATTACHMENTS),
+        ATTACHMENTS
+    ),
     private val s3StorageBucketName: String? = null
 ) {
     private val localSubnet = "10.0.0.0/24"
@@ -46,9 +50,20 @@ internal class SharedHomeFormula(
 
             if (s3StorageBucketName != null && storeInS3.isNotEmpty()) {
                 AwsCli(awsCliVersion).ensureAwsCli(it)
-                if (storeInS3.contains(JiraSharedStorageResource.ATTACHMENTS)) {
+                if (storeInS3.contains(ATTACHMENTS)) {
                     it.safeExecute(
                         cmd = "export AWS_RETRY_MODE=standard; export AWS_MAX_ATTEMPTS=10; cd $localSharedHome/data && ( find attachments -mindepth 1 -maxdepth 1 -type d -print0 | xargs -n1 -0 -P30 -I {} aws s3 cp --recursive --only-show-errors {}/ s3://$s3StorageBucketName/{}/ )",
+                        timeout = Duration.ofMinutes(10)
+                    )
+                }
+                if (storeInS3.contains(AVATARS)) {
+                    // Split up into subdirs for faster s3 copy
+                    it.safeExecute(
+                        cmd = "cd $localSharedHome/data/avatars && ( find . -type f -print0 | xargs -0 -n 1000 bash -c 'dir=\"subdir_\$\$\"; mkdir -p \"\$dir\"; mv \"\${@:1}\" \"\$dir\"' )",
+                        timeout = Duration.ofMinutes(3)
+                    )
+                    it.safeExecute(
+                        cmd = "export AWS_RETRY_MODE=standard; export AWS_MAX_ATTEMPTS=10; cd $localSharedHome/data && ( find avatars -mindepth 1 -maxdepth 1 -type d -print0 | xargs -n1 -0 -P30 -I {} aws s3 cp --recursive --only-show-errors {}/ s3://$s3StorageBucketName/avatars )",
                         timeout = Duration.ofMinutes(10)
                     )
                 }
