@@ -66,14 +66,10 @@ class AwsDatasetModification private constructor(
         jira: Jira
     ): Dataset {
         logger.info("Persisting the $newDatasetName dataset ...")
-        val jiraHome = jira.jiraHome
-        val database = jira.database ?: throw Exception("The database should have been provisioned")
-        val source = CustomDatasetSource.Builder(jiraHome, database)
+        val source = jira.toDatasetSource()
             .also { datasetSourceConfig.accept(it) }
             .build()
-        val storedDataset = source.store(
-            aws.customDatasetStorage(newDatasetName).location
-        )
+        val storedDataset = source.store(aws.customDatasetStorage(newDatasetName).location)
         logger.info("Dataset $newDatasetName persisted")
         return storedDataset
     }

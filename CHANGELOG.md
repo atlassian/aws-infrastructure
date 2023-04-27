@@ -23,6 +23,20 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.29.0...master
 
+### Remove
+- Remove deprecated constructors of `CustomDatasetSource`.
+- Remove `Jira` constructor.
+- Remove `Jira.getDatabase`.
+- Remove `CustomDatasetSource.Builder` constructor with two parameters.
+
+### Added
+- Add `StoppableNode` class to allow stopping nodes in a uniform way. Fix [JPERF-188].
+- Serialize `StoppableNode` to JSON.
+- Add `Jira.Builder`.
+- Add `Jira.toDatasetSource` function.
+- Add `CustomDatasetSource.Builder` constructor with additional `List<StoppableNode>` parameter.
+
+[JPERF-188]: https://ecosystem.atlassian.net/browse/JPERF-188
 ### Fixed
 - Change default virtual user instance type to `c5.9xlarge`. It's better, cheaper and there seem to be availability issues with previous default (`c4.8xlarge`).
 

@@ -5,14 +5,17 @@ import com.atlassian.performance.tools.awsinfrastructure.api.aws.AwsCli
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraGcLog
 import com.atlassian.performance.tools.infrastructure.api.process.RemoteMonitoringProcess
 import com.atlassian.performance.tools.ssh.api.Ssh
+import com.atlassian.performance.tools.ssh.api.SshHost
 import java.time.Duration
+import javax.json.Json
+import javax.json.JsonObject
 
 class StartedNode(
     private val name: String,
     private val jiraHome: String,
     private val analyticLogs: String,
     private val resultsTransport: Storage,
-    private val unpackedProduct: String,
+    private val jiraPath: String,
     private val monitoringProcesses: List<RemoteMonitoringProcess>,
     private val ssh: Ssh
 ) {
@@ -22,15 +25,15 @@ class StartedNode(
         ssh.newConnection().use { shell ->
             monitoringProcesses.forEach { it.stop(shell) }
             val nodeResultsDirectory = "$resultsDirectory/'$name'"
-            val threadDumpsFolder =  "thread-dumps"
+            val threadDumpsFolder = "thread-dumps"
             listOf(
                 "mkdir -p $nodeResultsDirectory",
-                "cp $unpackedProduct/logs/catalina.out $nodeResultsDirectory",
-                "cp $unpackedProduct/logs/*access* $nodeResultsDirectory",
+                "cp $jiraPath/logs/catalina.out $nodeResultsDirectory",
+                "cp $jiraPath/logs/*access* $nodeResultsDirectory",
                 "mkdir -p $nodeResultsDirectory/$threadDumpsFolder",
                 "cp $threadDumpsFolder/* $nodeResultsDirectory/$threadDumpsFolder",
                 "cp $jiraHome/log/atlassian-jira.log $nodeResultsDirectory",
-                "cp ${JiraGcLog(unpackedProduct).path()} $nodeResultsDirectory",
+                "cp ${JiraGcLog(jiraPath).path()} $nodeResultsDirectory",
                 "cp /var/log/syslog $nodeResultsDirectory",
                 "cp /var/log/cloud-init.log $nodeResultsDirectory",
                 "cp /var/log/cloud-init-output.log $nodeResultsDirectory"
@@ -66,11 +69,61 @@ class StartedNode(
             jiraHome = this.jiraHome,
             analyticLogs = analyticLogs,
             resultsTransport = this.resultsTransport,
-            unpackedProduct = this.unpackedProduct,
+            jiraPath = this.jiraPath,
             monitoringProcesses = this.monitoringProcesses,
             ssh = this.ssh
         )
     }
 
     override fun toString() = name
+
+    fun toStoppableNode(): StoppableNode {
+        return StoppableNode.Builder(
+            jiraPath = jiraPath,
+            ssh = ssh
+        ).build()
+    }
+
+    class StoppableNode private constructor(
+        private val jiraPath: String,
+        private val ssh: Ssh
+    ) {
+        fun stopNode() {
+            ssh.newConnection().use { ssh ->
+                ssh.execute(
+                    """
+                    |source ~/.profile
+                    |${jiraPath}/bin/stop-jira.sh
+                    """.trimMargin(),
+                    Duration.ofMinutes(3)
+                )
+            }
+        }
+
+        fun toJson(): JsonObject {
+            return Json.createObjectBuilder()
+                .add("jiraPath", jiraPath)
+                .add("ssh", ssh.host.toJson())
+                .build()
+        }
+
+        class Builder(
+            private var jiraPath: String,
+            private var ssh: Ssh
+        ) {
+            constructor(json: JsonObject) : this(
+                jiraPath = json.getString("jiraPath"),
+                ssh = Ssh(
+                    SshHost(json.getJsonObject("ssh"))
+                )
+            )
+
+            fun jiraPath(jiraPath: String) = apply { this.jiraPath = jiraPath }
+            fun ssh(ssh: Ssh) = apply { this.ssh = ssh }
+            fun build() = StoppableNode(
+                jiraPath = jiraPath,
+                ssh = ssh
+            )
+        }
+    }
 }

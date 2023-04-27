@@ -60,7 +60,7 @@ internal data class StandaloneStoppedNode(
                     jiraHome = jiraHome,
                     analyticLogs = analyticLogs,
                     resultsTransport = resultsTransport,
-                    unpackedProduct = unpackedProduct,
+                    jiraPath = unpackedProduct,
                     monitoringProcesses = monitoringProcesses,
                     ssh = ssh
                 ).gatherResults()
@@ -75,7 +75,7 @@ internal data class StandaloneStoppedNode(
             jiraHome = jiraHome,
             analyticLogs = analyticLogs,
             resultsTransport = resultsTransport,
-            unpackedProduct = unpackedProduct,
+            jiraPath = unpackedProduct,
             monitoringProcesses = monitoringProcesses,
             ssh = ssh
         )
