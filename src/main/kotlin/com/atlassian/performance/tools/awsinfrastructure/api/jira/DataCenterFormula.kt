@@ -19,7 +19,6 @@ import com.atlassian.performance.tools.awsinfrastructure.api.network.access.*
 import com.atlassian.performance.tools.awsinfrastructure.jira.DataCenterNodeFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.DiagnosableNodeFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.StandaloneNodeFormula
-import com.atlassian.performance.tools.awsinfrastructure.jira.home.JiraSharedStorageResource
 import com.atlassian.performance.tools.awsinfrastructure.jira.home.SharedHomeFormula
 import com.atlassian.performance.tools.concurrency.api.AbruptExecutorService
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
@@ -298,12 +297,14 @@ class DataCenterFormula private constructor(
                         ),
                         nodeIndex = i,
                         sharedHome = sharedHome,
-                        privateIpAddress = instance.privateIpAddress
+                        privateIpAddress = instance.privateIpAddress,
+                        s3StorageBucketName = s3StorageBucketName,
+                        storeInS3 = storeInS3,
+                        awsRegion = aws.region.name
                     )
                 )
             }
             .toList()
-
         val provisionedLoadBalancer = futureLoadBalancer.get()
         val loadBalancer = provisionedLoadBalancer.loadBalancer
 
