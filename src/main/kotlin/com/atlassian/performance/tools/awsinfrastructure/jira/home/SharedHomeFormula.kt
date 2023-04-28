@@ -59,7 +59,7 @@ internal class SharedHomeFormula(
                 if (storeInS3.contains(AVATARS)) {
                     // Split up into subdirs for faster s3 copy
                     it.safeExecute(
-                        cmd = "cd $localSharedHome/data/avatars && ( find . -type f -print0 | xargs -0 -n 1000 bash -c 'dir=\"subdir_\$\$\"; mkdir -p \"\$dir\"; mv \"\${@:1}\" \"\$dir\"' )",
+                        cmd = "cd $localSharedHome/data/avatars && ( find . -mindepth 1 -maxdepth 1 -type f -print0 | xargs -0 -n 1000 bash -c 'dir=\"subdir_\$(date +%s%N)\"; mkdir -p \"\$dir\"; mv \"\${@:1}\" \"\$dir\"' _ )",
                         timeout = Duration.ofMinutes(3)
                     )
                     it.safeExecute(
