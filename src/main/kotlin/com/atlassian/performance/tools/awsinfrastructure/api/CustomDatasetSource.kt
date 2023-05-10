@@ -1,7 +1,7 @@
 package com.atlassian.performance.tools.awsinfrastructure.api
 
 import com.atlassian.performance.tools.aws.api.StorageLocation
-import com.atlassian.performance.tools.awsinfrastructure.api.jira.StartedNode
+import com.atlassian.performance.tools.awsinfrastructure.api.jira.StoppableNode
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.dataset.Dataset
 import com.atlassian.performance.tools.ssh.api.Ssh
@@ -19,7 +19,7 @@ class CustomDatasetSource private constructor(
     val database: RemoteLocation,
     private val jiraHomeTimeouts: Timeouts,
     private val databaseTimeouts: Timeouts,
-    private val nodes: List<StartedNode.StoppableNode>
+    private val nodes: List<StoppableNode>
 ) {
 
     object FileNames {
@@ -90,7 +90,7 @@ class CustomDatasetSource private constructor(
     }
 
     private fun stopJira() {
-        nodes.forEach { it.stopNode() }
+        nodes.forEach { it.stop() }
     }
 
     private fun stopDockerContainers(host: SshHost) {
@@ -110,7 +110,7 @@ class CustomDatasetSource private constructor(
     class Builder(
         private var jiraHome: RemoteLocation,
         private var database: RemoteLocation,
-        private var nodes: List<StartedNode.StoppableNode>
+        private var nodes: List<StoppableNode>
     ) {
         private var jiraHomeArchiveTimeout: Duration = Duration.ofMinutes(25)
         private var jiraHomeUploadTimeout: Duration = Duration.ofMinutes(10)
@@ -122,7 +122,7 @@ class CustomDatasetSource private constructor(
         constructor(json: JsonObject) : this(
             jiraHome = RemoteLocation(json.getJsonObject("jiraHome")),
             database = RemoteLocation(json.getJsonObject("database")),
-            nodes = json.getJsonArray("nodes").map { StartedNode.StoppableNode.Builder(it.asJsonObject()).build() }
+            nodes = json.getJsonArray("nodes").map { StoppableNode.Builder(it.asJsonObject()).build() }
         )
 
 
@@ -146,7 +146,7 @@ class CustomDatasetSource private constructor(
         fun databaseMoveTimeout(databaseMoveTimeout: Duration) =
             apply { this.databaseMoveTimeout = databaseMoveTimeout }
 
-        fun nodes(nodes: List<StartedNode.StoppableNode>) = apply { this.nodes = nodes }
+        fun nodes(nodes: List<StoppableNode>) = apply { this.nodes = nodes }
 
         fun build() = CustomDatasetSource(
             jiraHome,
