@@ -12,7 +12,7 @@ import org.apache.logging.log4j.Logger
 import java.net.URI
 import java.util.concurrent.Executors
 
-class Jira(
+class Jira private constructor(
     private val nodes: List<StartedNode>,
     val jiraHome: RemoteLocation,
     val database: RemoteLocation,
