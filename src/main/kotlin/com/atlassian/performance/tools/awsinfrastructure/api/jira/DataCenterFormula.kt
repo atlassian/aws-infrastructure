@@ -11,6 +11,7 @@ import com.atlassian.performance.tools.awsinfrastructure.api.hardware.M4ExtraLar
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
 import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.ApacheEc2LoadBalancerFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.ApacheProxyLoadBalancer
+import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.DiagnosableLoadBalancer
 import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.LoadBalancerFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.network.Network
 import com.atlassian.performance.tools.awsinfrastructure.api.network.NetworkFormula
@@ -19,6 +20,7 @@ import com.atlassian.performance.tools.awsinfrastructure.jira.DataCenterNodeForm
 import com.atlassian.performance.tools.awsinfrastructure.jira.DiagnosableNodeFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.StandaloneNodeFormula
 import com.atlassian.performance.tools.awsinfrastructure.jira.home.SharedHomeFormula
+import com.atlassian.performance.tools.awsinfrastructure.loadbalancer.LoadBalancerMeasurementSource.Extension.asMeasurementSource
 import com.atlassian.performance.tools.concurrency.api.AbruptExecutorService
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.app.Apps
@@ -326,6 +328,8 @@ class DataCenterFormula private constructor(
             loadBalancer.waitUntilHealthy(Duration.ofMinutes(5))
         }
 
+        val loadBalancerResultsSource = (provisionedLoadBalancer.loadBalancer as? DiagnosableLoadBalancer)
+            ?.asMeasurementSource(resultsTransport.location)
         val jira = Jira.Builder(
             nodes = nodes,
             jiraHome = RemoteLocation(
@@ -336,6 +340,7 @@ class DataCenterFormula private constructor(
             address = loadBalancer.uri
         )
             .jmxClients(jiraNodes.mapIndexed { i, node -> configs[i].remoteJmx.getClient(node.publicIpAddress) })
+            .extraMeasurementSources(listOfNotNull(loadBalancerResultsSource))
             .build()
 
         logger.info("$jira is set up, will expire ${jiraStack.expiry}")

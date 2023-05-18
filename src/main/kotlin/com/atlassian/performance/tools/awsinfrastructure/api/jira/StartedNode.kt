@@ -2,6 +2,7 @@ package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
 import com.atlassian.performance.tools.aws.api.Storage
 import com.atlassian.performance.tools.awsinfrastructure.api.aws.AwsCli
+import com.atlassian.performance.tools.infrastructure.api.MeasurementSource
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraGcLog
 import com.atlassian.performance.tools.infrastructure.api.process.RemoteMonitoringProcess
 import com.atlassian.performance.tools.ssh.api.Ssh
@@ -15,10 +16,10 @@ class StartedNode(
     private val jiraPath: String,
     private val monitoringProcesses: List<RemoteMonitoringProcess>,
     private val ssh: Ssh
-) {
+) : MeasurementSource {
     private val resultsDirectory = "results"
 
-    fun gatherResults() {
+    override fun gatherResults() {
         ssh.newConnection().use { shell ->
             monitoringProcesses.forEach { it.stop(shell) }
             val nodeResultsDirectory = "$resultsDirectory/'$name'"

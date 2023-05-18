@@ -23,6 +23,19 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-3.0.0...master
 
+## Added
+- Add `DiagnosableLoadBalancer`.
+- Add ability to `gatherEvidence` from `ApacheProxyLoadBalancer` by making it `DiagnosableLoadBalancer`.
+- Make it possible to specify `extraMeasurementSources` inside `Jira`, so that it's possible to `gatherResults` from any of Jira hosted integrations, e.g. load balancer or plugins.
+- Let `Jira` produced by `DataCenterFormula` gather logs of `ApacheProxyLoadBalancer`. Resolve [JPERF-1106].
+- Make `StartedNode` a `MeasurementSource`.
+
+## Fixed
+- Let every `MeasurementSource` inside `Jira` finish its gathering even if one of them fails. Fix [JPERF-1114].
+
+[JPERF-1106]: https://ecosystem.atlassian.net/browse/JPERF-1106
+[JPERF-1114]: https://ecosystem.atlassian.net/browse/JPERF-1114
+
 ## [3.0.0] - 2023-05-25
 [3.0.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.29.0...release-3.0.0
 
