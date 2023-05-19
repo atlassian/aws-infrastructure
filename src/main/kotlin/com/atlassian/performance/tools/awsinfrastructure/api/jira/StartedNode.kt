@@ -5,6 +5,7 @@ import com.atlassian.performance.tools.awsinfrastructure.api.aws.AwsCli
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraGcLog
 import com.atlassian.performance.tools.infrastructure.api.process.RemoteMonitoringProcess
 import com.atlassian.performance.tools.ssh.api.Ssh
+import org.apache.logging.log4j.LogManager
 import java.time.Duration
 
 class StartedNode(
@@ -16,11 +17,20 @@ class StartedNode(
     private val monitoringProcesses: List<RemoteMonitoringProcess>,
     private val ssh: Ssh
 ) {
+    private val logger = LogManager.getLogger(this::class.java)
     private val resultsDirectory = "results"
 
     fun gatherResults() {
         ssh.newConnection().use { shell ->
-            monitoringProcesses.forEach { it.stop(shell) }
+            val successfullyStoppedProcesses = monitoringProcesses.mapNotNull {
+                try {
+                    it.stop(shell)
+                    it
+                } catch (e: Exception) {
+                    logger.error("Failed to stop $it process, so we won't be able to gather it's results", e)
+                    null
+                }
+            }
             val nodeResultsDirectory = "$resultsDirectory/'$name'"
             val threadDumpsFolder =  "thread-dumps"
             listOf(
@@ -35,7 +45,7 @@ class StartedNode(
                 "cp /var/log/cloud-init.log $nodeResultsDirectory",
                 "cp /var/log/cloud-init-output.log $nodeResultsDirectory"
             )
-                .plus(monitoringProcesses.map { "cp ${it.getResultPath()} $nodeResultsDirectory" })
+                .plus(successfullyStoppedProcesses.map { "cp ${it.getResultPath()} $nodeResultsDirectory" })
                 .plus("find $nodeResultsDirectory -empty -type f -delete")
                 .forEach { shell.safeExecute(it) }
             AwsCli().upload(
