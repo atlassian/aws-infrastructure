@@ -23,6 +23,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-3.0.0...master
 
+### Fixed
+- Let `StartedNode.gatherResults` finish despite failure in `stop` of `RemoteMonitoringProcess`. Fix [JPERF-1117].
+
+[JPERF-1117]: https://ecosystem.atlassian.net/browse/JPERF-1117
+
 ## [3.0.0] - 2023-05-25
 [3.0.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.29.0...release-3.0.0
 

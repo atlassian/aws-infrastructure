@@ -5,6 +5,7 @@ import com.atlassian.performance.tools.awsinfrastructure.api.aws.AwsCli
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraGcLog
 import com.atlassian.performance.tools.infrastructure.api.process.RemoteMonitoringProcess
 import com.atlassian.performance.tools.ssh.api.Ssh
+import org.apache.logging.log4j.LogManager
 import java.time.Duration
 
 class StartedNode(
@@ -16,11 +17,18 @@ class StartedNode(
     private val monitoringProcesses: List<RemoteMonitoringProcess>,
     private val ssh: Ssh
 ) {
+    private val logger = LogManager.getLogger(this::class.java)
     private val resultsDirectory = "results"
 
     fun gatherResults() {
         ssh.newConnection().use { shell ->
-            monitoringProcesses.forEach { it.stop(shell) }
+            monitoringProcesses.forEach {
+                try {
+                    it.stop(shell)
+                } catch (e: Exception) {
+                    logger.error("Failed to stop $it process", e)
+                }
+            }
             val nodeResultsDirectory = "$resultsDirectory/'$name'"
             val threadDumpsFolder = "thread-dumps"
             listOf(
