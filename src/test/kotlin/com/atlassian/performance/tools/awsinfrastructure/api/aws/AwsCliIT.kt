@@ -8,6 +8,7 @@ import com.atlassian.performance.tools.aws.api.SshKeyFormula
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime
 import com.atlassian.performance.tools.awsinfrastructure.api.network.NetworkFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.network.ProvisionedNetwork
+import org.apache.logging.log4j.Level
 import org.assertj.core.api.Assertions
 import org.junit.After
 import org.junit.Before
@@ -79,5 +80,27 @@ class AwsCliIT {
         }
 
         Assertions.assertThat(ensureCliErrors).containsOnlyNulls()
+    }
+
+    @Test
+    fun shouldSetupV2Cli() {
+        val ssh = sshInstance.ssh.newConnection()
+        AwsCli("2.9.12").ensureAwsCli(ssh)
+
+        val awsCliExecutionResult = ssh.execute("aws --version",
+            Duration.ofSeconds(30), Level.TRACE, Level.TRACE)
+
+        Assertions.assertThat(awsCliExecutionResult.output).startsWith("aws-cli/2.9.12")
+        Assertions.assertThat(awsCliExecutionResult.isSuccessful()).isTrue()
+    }
+
+    @Test
+    fun shouldRaiseExceptionWhenRequestingVersionDifferentToThatInstalled() {
+        val ssh = sshInstance.ssh.newConnection()
+        AwsCli("1.15.51").ensureAwsCli(ssh)
+
+        AwsCli("1.15.51").ensureAwsCli(ssh)
+        Assertions.assertThatThrownBy { AwsCli("2.9.12").ensureAwsCli(ssh) }
+            .isInstanceOf(IllegalArgumentException::class.java)
     }
 }
