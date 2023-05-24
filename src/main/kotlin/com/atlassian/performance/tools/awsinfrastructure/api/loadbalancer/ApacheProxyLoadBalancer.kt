@@ -16,18 +16,6 @@ class ApacheProxyLoadBalancer private constructor(
     httpPort: Int
 ) : LoadBalancer {
 
-    @Deprecated(message = "Use ApacheProxyLoadBalancer.Builder instead.")
-    constructor(
-        nodes: List<URI>,
-        ssh: Ssh,
-        httpPort: Int
-    ) : this(
-        nodes = nodes,
-        ssh = ssh,
-        ipAddress = ssh.host.ipAddress,
-        httpPort = httpPort
-    )
-
     override val uri: URI = URI("http://${ipAddress}:$httpPort/")
 
     override fun waitUntilHealthy(

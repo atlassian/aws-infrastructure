@@ -22,6 +22,7 @@ import org.apache.logging.log4j.Logger
 import java.io.File
 import java.time.Duration
 import java.util.concurrent.Future
+import java.util.function.Supplier
 
 /**
  * The EC2 instances provisioned with this class will have 'instance initiated shutdown' parameter set to 'terminate'.
@@ -41,49 +42,6 @@ class StackVirtualUsersFormula private constructor(
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
     private val name: String = "virtual-user-node-$nodeOrder"
-
-    @Deprecated(message = "Use StackVirtualUsersFormula.Builder instead.")
-    constructor(
-        nodeOrder: Int = 1,
-        shadowJar: File,
-        splunkForwarder: SplunkForwarder,
-        browser: Browser
-    ) : this(
-        nodeOrder = nodeOrder,
-        shadowJar = shadowJar,
-        splunkForwarder = splunkForwarder,
-        browser = browser,
-        stackCreationTimeout = Duration.ofMinutes(30),
-        instanceType = InstanceType.C59xlarge,
-        sshCidrIp = ""
-    )
-
-    @Deprecated(message = "Use StackVirtualUsersFormula.Builder instead.")
-    constructor(
-        shadowJar: File
-    ) : this(
-        nodeOrder = 1,
-        shadowJar = shadowJar,
-        splunkForwarder = DisabledSplunkForwarder(),
-        browser = Chrome(),
-        stackCreationTimeout = Duration.ofMinutes(30),
-        instanceType = InstanceType.C59xlarge,
-        sshCidrIp = ""
-    )
-
-    @Deprecated(message = "Use StackVirtualUsersFormula.Builder instead.")
-    constructor(
-        shadowJar: File,
-        splunkForwarder: SplunkForwarder
-    ) : this(
-        nodeOrder = 1,
-        shadowJar = shadowJar,
-        splunkForwarder = splunkForwarder,
-        browser = Chrome(),
-        stackCreationTimeout = Duration.ofMinutes(30),
-        instanceType = InstanceType.C59xlarge,
-        sshCidrIp = ""
-    )
 
     /**
      * @param aws provides `defaultAmi` used for VU nodes
@@ -162,7 +120,7 @@ class StackVirtualUsersFormula private constructor(
                     dependency = provisionedNetwork.resource
                 )
             )
-            .accessRequester(ForIpAccessRequester { virtualUsersMachine.publicIpAddress })
+            .accessRequester(ForIpAccessRequester(Supplier { virtualUsersMachine.publicIpAddress }))
             .build()
     }
 
@@ -192,9 +150,13 @@ class StackVirtualUsersFormula private constructor(
         }
 
         fun nodeOrder(nodeOrder: Int): Builder = apply { this.nodeOrder = nodeOrder }
-        fun splunkForwarder(splunkForwarder: SplunkForwarder): Builder = apply { this.splunkForwarder = splunkForwarder }
+        fun splunkForwarder(splunkForwarder: SplunkForwarder): Builder =
+            apply { this.splunkForwarder = splunkForwarder }
+
         fun browser(browser: Browser): Builder = apply { this.browser = browser }
-        fun stackCreationTimeout(stackCreationTimeout: Duration): Builder = apply { this.stackCreationTimeout = stackCreationTimeout }
+        fun stackCreationTimeout(stackCreationTimeout: Duration): Builder =
+            apply { this.stackCreationTimeout = stackCreationTimeout }
+
         fun instanceType(instanceType: InstanceType): Builder = apply { this.instanceType = instanceType }
         fun sshCidrIp(sshCidrIp: String): Builder = apply { this.sshCidrIp = sshCidrIp }
         internal fun network(network: Network): Builder = apply { this.network = network }

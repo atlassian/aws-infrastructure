@@ -36,7 +36,7 @@ class NetworkFormula(
             stack.findSubnet("TheOnlySubnet")
         )
         logger.info("Network provisioned")
-        logger.debug("Network provisioned: $network")
+        logger.debug("Network provisioned: {}", network)
         return ProvisionedNetwork(network, stack)
     }
 
@@ -47,10 +47,4 @@ class NetworkFormula(
             provisionAsResource()
         }
     }
-
-    @Deprecated(
-        "Allocates AWS resources, use provisionAsResource to release the resource",
-        ReplaceWith("provisionAsResource().network")
-    )
-    fun provision(): Network = provisionAsResource().network
 }

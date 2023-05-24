@@ -13,10 +13,6 @@ import java.time.Duration
 import java.time.Duration.ofMinutes
 
 class DatasetCatalogue {
-
-    @Deprecated(message = "Use largeJiraSeven() instead")
-    fun largeJira() = largeJiraSeven()
-
     fun largeJiraSeven(): Dataset {
         val bucketUri = URI("https://s3-eu-west-1.amazonaws.com/jpt-custom-datasets-storage-a008820-datasetbucket-1sjxdtrv5hdhj/")
         return Dataset(

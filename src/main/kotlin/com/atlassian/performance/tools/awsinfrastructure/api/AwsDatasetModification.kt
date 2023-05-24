@@ -147,11 +147,6 @@ class AwsDatasetModification private constructor(
         fun newDatasetName(newDatasetName: String) = apply { this.newDatasetName = newDatasetName }
         fun datasetSourceConfig(datasetSourceConfig: Consumer<CustomDatasetSource.Builder>) = apply { this.datasetSourceConfig = datasetSourceConfig }
 
-        @Deprecated("This ignores `dataset` building. Replace with `host` or `dataset`.")
-        fun formula(formula: InfrastructureFormula<*>) = apply {
-            this.host = DatasetHost { formula }
-        }
-
         fun build() = AwsDatasetModification(
             aws = aws,
             dataset = dataset,

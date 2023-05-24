@@ -15,6 +15,7 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.io.File
 import java.util.concurrent.Future
+import java.util.function.Supplier
 
 class Ec2VirtualUsersFormula private constructor(
     private val nodeOrder: Int,
@@ -23,30 +24,6 @@ class Ec2VirtualUsersFormula private constructor(
     private val network: Network?,
     private val instanceType: InstanceType
 ) : VirtualUsersFormula<SshVirtualUsers> {
-
-    @Deprecated("Use Ec2VirtualUsersFormula.Builder")
-    constructor(
-        nodeOrder: Int = 1,
-        shadowJar: File,
-        browser: Browser
-    ) : this(
-        nodeOrder = nodeOrder,
-        shadowJar = shadowJar,
-        browser = browser,
-        network = null,
-        instanceType = InstanceType.C59xlarge
-    )
-
-    @Deprecated("Use Ec2VirtualUsersFormula.Builder")
-    constructor(
-        shadowJar: File
-    ) : this(
-        nodeOrder = 1,
-        shadowJar = shadowJar,
-        browser = Chrome(),
-        network = null,
-        instanceType = InstanceType.C59xlarge
-    )
 
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
@@ -76,7 +53,7 @@ class Ec2VirtualUsersFormula private constructor(
                 )
             )
             .resource(resource)
-            .accessRequester(ForIpAccessRequester { instance.publicIpAddress })
+            .accessRequester(ForIpAccessRequester(Supplier { instance.publicIpAddress }))
             .build()
     }
 
@@ -100,6 +77,7 @@ class Ec2VirtualUsersFormula private constructor(
         }
     )
 
+    @Suppress("unused")
     class Builder(
         private var shadowJar: File
     ) {
@@ -120,10 +98,6 @@ class Ec2VirtualUsersFormula private constructor(
         }
 
         internal fun network(network: Network) = apply { this.network = network }
-        @Deprecated("This method sets instanceType, not network." +
-            "It was introduced by mistake and it'll be removed in the next MAJOR release." +
-            "Please use `instanceType` method instead.")
-        fun network(instanceType: InstanceType) = apply { this.instanceType = instanceType }
         fun instanceType(instanceType: InstanceType) = apply { this.instanceType = instanceType }
         fun browser(browser: Browser) = apply { this.browser = browser }
         fun nodeOrder(nodeOrder: Int) = apply { this.nodeOrder = nodeOrder }

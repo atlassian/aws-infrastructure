@@ -31,36 +31,6 @@ class MulticastVirtualUsersFormula private constructor(
 ) : VirtualUsersFormula<MulticastVirtualUsers<SshVirtualUsers>> {
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
-    @Deprecated("Use MulticastVirtualUsersFormula.Builder")
-    constructor(
-        shadowJar: File,
-        nodes: Int,
-        splunkForwarder: SplunkForwarder,
-        browser: Browser
-    ) : this(
-        shadowJar = shadowJar,
-        nodes = nodes,
-        splunkForwarder = splunkForwarder,
-        browser = browser,
-        network = null,
-        instanceType = InstanceType.C59xlarge,
-        sshCidrIp = ""
-    )
-
-    @Deprecated("Use MulticastVirtualUsersFormula.Builder")
-    constructor(
-        shadowJar: File,
-        nodes: Int
-    ) : this(
-        shadowJar = shadowJar,
-        nodes = nodes,
-        splunkForwarder = DisabledSplunkForwarder(),
-        browser = Chrome(),
-        network = null,
-        instanceType = InstanceType.C59xlarge,
-        sshCidrIp = ""
-    )
-
     override fun provision(
         investment: Investment,
         shadowJarTransport: Storage,
@@ -144,7 +114,7 @@ class MulticastVirtualUsersFormula private constructor(
          */
         fun network(network: Network) = apply { this.network = network }
         fun splunkForwarder(splunkForwarder: SplunkForwarder) = apply { this.splunkForwarder = splunkForwarder }
-        fun instanceType(instanceType: InstanceType): MulticastVirtualUsersFormula.Builder = apply { this.instanceType = instanceType }
+        fun instanceType(instanceType: InstanceType): Builder = apply { this.instanceType = instanceType }
         fun sshCidrIp(sshCidrIp: String) = apply { this.sshCidrIp = sshCidrIp }
 
         fun build(): VirtualUsersFormula<MulticastVirtualUsers<SshVirtualUsers>> = MulticastVirtualUsersFormula(

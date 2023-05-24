@@ -5,6 +5,8 @@ import org.junit.Assert.assertThat
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.net.URI
+import java.util.function.Function
+import java.util.function.Predicate
 
 class LocalPublicIpv4ProviderTest {
 
@@ -18,8 +20,8 @@ class LocalPublicIpv4ProviderTest {
         )
         val localPublicIpv4Provider = LocalPublicIpv4Provider.Builder()
             .servicesToQuery(servicesAndTheirResponses.keys.toList())
-            .uriReader { serviceUri: URI -> servicesAndTheirResponses[serviceUri] }
-            .ipValidator { true }
+            .uriReader(Function { serviceUri: URI -> servicesAndTheirResponses[serviceUri] })
+            .ipValidator(Predicate { true })
             .build()
 
         // when
@@ -39,8 +41,8 @@ class LocalPublicIpv4ProviderTest {
         )
         val localPublicIpv4Provider = LocalPublicIpv4Provider.Builder()
             .servicesToQuery(servicesAndTheirResponses.keys.toList())
-            .uriReader { serviceUri: URI -> servicesAndTheirResponses[serviceUri] }
-            .ipValidator { true }
+            .uriReader(Function { serviceUri: URI -> servicesAndTheirResponses[serviceUri] })
+            .ipValidator(Predicate { true })
             .build()
 
         // when
@@ -60,8 +62,8 @@ class LocalPublicIpv4ProviderTest {
         )
         val localPublicIpv4Provider = LocalPublicIpv4Provider.Builder()
             .servicesToQuery(servicesAndTheirResponses.keys.toList())
-            .uriReader { serviceUri: URI -> servicesAndTheirResponses[serviceUri] }
-            .ipValidator { true }
+            .uriReader(Function { serviceUri: URI -> servicesAndTheirResponses[serviceUri] })
+            .ipValidator(Predicate { true })
             .build()
 
         // when
@@ -86,8 +88,8 @@ class LocalPublicIpv4ProviderTest {
         )
         val localPublicIpv4Provider = LocalPublicIpv4Provider.Builder()
             .servicesToQuery(servicesAndTheirResponses.keys.toList())
-            .uriReader { serviceUri: URI -> servicesAndTheirResponses[serviceUri] }
-            .ipValidator { true }
+            .uriReader(Function { serviceUri: URI -> servicesAndTheirResponses[serviceUri] })
+            .ipValidator(Predicate { true })
             .build()
 
         // when
