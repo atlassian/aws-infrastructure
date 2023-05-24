@@ -1,5 +1,7 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.network.access
 
+import java.util.function.Supplier
+
 class ForIpAccessRequester(
-    ipProvider: () -> String
-) : AccessRequester by ForCidrAccessRequester(cidrProvider = { "${ipProvider()}/32" })
+    ipProvider: Supplier<String>
+) : AccessRequester by ForCidrAccessRequester(cidrProvider = Supplier { "${ipProvider.get()}/32" })

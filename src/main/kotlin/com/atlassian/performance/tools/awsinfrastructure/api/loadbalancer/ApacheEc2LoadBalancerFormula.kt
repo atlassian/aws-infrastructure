@@ -7,6 +7,7 @@ import com.atlassian.performance.tools.awsinfrastructure.api.network.access.Secu
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.net.URI
+import java.util.function.Supplier
 
 class ApacheEc2LoadBalancerFormula : LoadBalancerFormula {
 
@@ -62,9 +63,10 @@ class ApacheEc2LoadBalancerFormula : LoadBalancerFormula {
             )
             .accessProvider(
                 SecurityGroupIngressAccessProvider
-                    .Builder(ec2 = aws.ec2, securityGroup = securityGroup, portRange = balancerPort..balancerPort).build()
+                    .Builder(ec2 = aws.ec2, securityGroup = securityGroup, portRange = balancerPort..balancerPort)
+                    .build()
             )
-            .accessRequester(ForIpAccessRequester { instance.publicIpAddress })
+            .accessRequester(ForIpAccessRequester(Supplier { instance.publicIpAddress }))
             .build()
     }
 }

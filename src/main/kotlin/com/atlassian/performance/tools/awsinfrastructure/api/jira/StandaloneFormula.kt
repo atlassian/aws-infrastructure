@@ -2,7 +2,6 @@ package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
 import com.amazonaws.services.cloudformation.model.Parameter
 import com.atlassian.performance.tools.aws.api.*
-import com.atlassian.performance.tools.awsinfrastructure.ApplicationStorageWrapper
 import com.atlassian.performance.tools.awsinfrastructure.InstanceFilters
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
 import com.atlassian.performance.tools.awsinfrastructure.api.RemoteLocation
@@ -33,6 +32,7 @@ import java.time.Duration
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
+import java.util.function.Supplier
 
 /**
  * The EC2 instances provisioned with this class will have 'instance initiated shutdown' parameter set to 'terminate'.
@@ -54,58 +54,6 @@ class StandaloneFormula private constructor(
     private val waitForUpgrades: Boolean
 ) : JiraFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
-
-    object Defaults {
-        val accessRequester: AccessRequester = ForIpAccessRequester(LocalPublicIpv4Provider())
-    }
-
-    @Suppress("DEPRECATION")
-    @Deprecated(message = "Use StandaloneFormula.Builder instead.")
-    constructor(
-        apps: Apps,
-        application: com.atlassian.performance.tools.awsinfrastructure.api.storage.ApplicationStorage,
-        jiraHomeSource: JiraHomeSource,
-        database: Database,
-        config: JiraNodeConfig,
-        computer: Computer
-    ) : this(
-        apps = apps,
-        productDistribution = ApplicationStorageWrapper(application),
-        jiraHomeSource = jiraHomeSource,
-        database = database,
-        config = config,
-        computer = computer,
-        jiraVolume = Volume(200),
-        stackCreationTimeout = Duration.ofMinutes(30),
-        databaseComputer = M4ExtraLargeElastic(),
-        databaseVolume = Volume(100),
-        accessRequester = Defaults.accessRequester,
-        adminPasswordPlainText = "admin",
-        waitForUpgrades = true
-    )
-
-    @Suppress("DEPRECATION")
-    @Deprecated(message = "Use StandaloneFormula.Builder instead.")
-    constructor (
-        apps: Apps,
-        application: com.atlassian.performance.tools.awsinfrastructure.api.storage.ApplicationStorage,
-        jiraHomeSource: JiraHomeSource,
-        database: Database
-    ) : this(
-        apps = apps,
-        productDistribution = ApplicationStorageWrapper(application),
-        jiraHomeSource = jiraHomeSource,
-        database = database,
-        config = JiraNodeConfig.Builder().build(),
-        computer = C4EightExtraLargeElastic(),
-        jiraVolume = Volume(200),
-        stackCreationTimeout = Duration.ofMinutes(30),
-        databaseComputer = M4ExtraLargeElastic(),
-        databaseVolume = Volume(100),
-        accessRequester = Defaults.accessRequester,
-        adminPasswordPlainText = "admin",
-        waitForUpgrades = true
-    )
 
     override fun provision(
         investment: Investment,
@@ -255,7 +203,7 @@ class StandaloneFormula private constructor(
         )
 
         val selfDashboardAccess = executor.submitWithLogContext("self dashboard access") {
-            ForIpAccessRequester { jiraPublicIp }.requestAccess(jiraNodeHttpAccessProvider)
+            ForIpAccessRequester(Supplier { jiraPublicIp }).requestAccess(jiraNodeHttpAccessProvider)
         }
 
         val externalAccess = executor.submitWithLogContext("external access") {
@@ -320,18 +268,6 @@ class StandaloneFormula private constructor(
         private val jiraHomeSource: JiraHomeSource,
         private val database: Database
     ) {
-        @Suppress("DEPRECATION")
-        @Deprecated("Use `ProductDistribution` instead of `ApplicationStorage`.")
-        constructor(
-            application: com.atlassian.performance.tools.awsinfrastructure.api.storage.ApplicationStorage,
-            jiraHomeSource: JiraHomeSource,
-            database: Database
-        ) : this(
-            productDistribution = ApplicationStorageWrapper(application),
-            jiraHomeSource = jiraHomeSource,
-            database = database
-        )
-
         private var config: JiraNodeConfig = JiraNodeConfig.Builder().build()
         private var apps: Apps = Apps(emptyList())
         private var computer: Computer = C4EightExtraLargeElastic()
@@ -340,7 +276,7 @@ class StandaloneFormula private constructor(
         private var network: Network? = null
         private var databaseComputer: Computer = M4ExtraLargeElastic()
         private var databaseVolume: Volume = Volume(100)
-        private var accessRequester: AccessRequester = Defaults.accessRequester
+        private var accessRequester: AccessRequester = ForIpAccessRequester(LocalPublicIpv4Provider.Builder().build())
         private var adminPasswordPlainText: String = "admin"
         private var waitForUpgrades: Boolean = true
 

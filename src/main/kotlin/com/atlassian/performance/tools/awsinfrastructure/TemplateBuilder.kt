@@ -8,6 +8,8 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import java.util.function.Function
+
 
 // This is a workaround for JPT-296. Please use EC2 API instead of template hacking when fixed.
 internal class TemplateBuilder(
@@ -16,20 +18,22 @@ internal class TemplateBuilder(
     private val logger: Logger = LogManager.getLogger(this::class.java)
     private val template = readResourceText("aws/$baseTemplateName").replace("!Ref", "__Ref__")
 
-    private val mapper = ObjectMapper(YAMLFactory()
-        .enable(YAMLGenerator.Feature.MINIMIZE_QUOTES)
-        .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER))
+    private val mapper = ObjectMapper(
+        YAMLFactory()
+            .enable(YAMLGenerator.Feature.MINIMIZE_QUOTES)
+            .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER)
+    )
     private val mappedTemplate = mapper.readTree(template)
 
     fun adaptTo(
         configs: List<JiraNodeConfig>
     ): String {
         setNodesCount(configs.size)
-        replaceDescription { oldDescription ->
+        replaceDescription(Function { oldDescription ->
             oldDescription
                 ?.replace(Regex("\\d node"), "${configs.size} node")
                 ?: "Serves a ${configs.size} node Jira without a load balancer"
-        }
+        })
         return build()
     }
 
@@ -41,7 +45,8 @@ internal class TemplateBuilder(
 
         for (resource in resources.fieldNames()) {
             if (resource.startsWith("jira", ignoreCase = true) &&
-                resources.get(resource).get("Type").asText() == "AWS::EC2::Instance") {
+                resources.get(resource).get("Type").asText() == "AWS::EC2::Instance"
+            ) {
                 logger.debug("Existing Jira node in $baseTemplateName: $resource")
                 existingNodes.add(resource)
             }
@@ -59,15 +64,15 @@ internal class TemplateBuilder(
         }
     }
 
-    fun replaceDescription(
-        descriptionTransform: (String?) -> String
+    private fun replaceDescription(
+        descriptionTransform: Function<String?, String>
     ): TemplateBuilder = apply {
         (mappedTemplate as ObjectNode).let {
             val currentDescription = when {
                 it.has("Description") -> it.get("Description").asText()
                 else -> null
             }
-            it.put("Description", descriptionTransform(currentDescription))
+            it.put("Description", descriptionTransform.apply(currentDescription))
         }
     }
 

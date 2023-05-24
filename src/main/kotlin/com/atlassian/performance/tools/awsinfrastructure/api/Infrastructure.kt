@@ -8,8 +8,6 @@ import com.atlassian.performance.tools.infrastructure.api.MeasurementSource
 import com.atlassian.performance.tools.infrastructure.api.virtualusers.VirtualUsers
 import com.atlassian.performance.tools.jvmtasks.api.TaskTimer.time
 import com.atlassian.performance.tools.virtualusers.api.VirtualUserOptions
-import com.atlassian.performance.tools.virtualusers.api.config.VirtualUserBehavior
-import com.atlassian.performance.tools.virtualusers.api.config.VirtualUserTarget
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -35,26 +33,13 @@ class Infrastructure<out T : VirtualUsers>(
         }
     }
 
-    @Deprecated(
-        "Use applyLoad(TargetingVirtualUserOptions)",
-        ReplaceWith(
-            "applyLoad(LegacyTargetingVirtualUserOptions(behavior))",
-            "com.atlassian.performance.tools.awsinfrastructure.api.LegacyTargetingVirtualUserOptions"
-        )
-    )
-    fun applyLoad(
-        behavior: VirtualUserBehavior
-    ) {
-        applyLoad(LegacyTargetingVirtualUserOptions(behavior))
-    }
-
     fun downloadResults(
         target: Path
     ): Path {
         logger.info("Downloading results...")
         val resultSources: List<MeasurementSource> = listOf(virtualUsers, jira)
         val executor = Executors.newFixedThreadPool(
-            resultSources.size.butNotMoreThan(4),
+            resultSources.size.coerceAtMost(4),
             ThreadFactoryBuilder()
                 .setNameFormat("gather-results-thread-%d")
                 .build()
@@ -86,23 +71,3 @@ interface TargetingVirtualUserOptions {
         jira: URI
     ): VirtualUserOptions
 }
-
-private class LegacyTargetingVirtualUserOptions(
-    private val behavior: VirtualUserBehavior
-) : TargetingVirtualUserOptions {
-
-    override fun target(
-        jira: URI
-    ): VirtualUserOptions = VirtualUserOptions(
-        target = VirtualUserTarget(
-            webApplication = jira,
-            userName = "admin",
-            password = "admin"
-        ),
-        behavior = behavior
-    )
-}
-
-private fun Int.butNotMoreThan(
-    max: Int
-) = Math.min(this, max)

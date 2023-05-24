@@ -14,6 +14,7 @@ import com.atlassian.performance.tools.awsinfrastructure.loadbalancer.ElasticLoa
 import com.atlassian.performance.tools.io.api.readResourceText
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import java.util.function.Supplier
 
 class ElasticLoadBalancerFormula : LoadBalancerFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
@@ -58,7 +59,7 @@ class ElasticLoadBalancerFormula : LoadBalancerFormula {
                 SecurityGroupIngressAccessProvider
                     .Builder(ec2 = aws.ec2, securityGroup = securityGroup, portRange = 80..80).build()
             )
-            .accessRequester(ForSecurityGroupAccessRequester { securityGroup })
+            .accessRequester(ForSecurityGroupAccessRequester(Supplier { securityGroup }))
             .build()
     }
 }

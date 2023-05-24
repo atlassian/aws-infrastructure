@@ -18,7 +18,7 @@ import java.time.Duration.ofMinutes
 import java.time.Duration.ofSeconds
 import java.time.Instant.now
 
-internal data class StandaloneStoppedNode(
+internal class StandaloneStoppedNode(
     private val name: String,
     override val jiraHome: String,
     private val analyticLogs: String,
@@ -172,4 +172,9 @@ internal data class StandaloneStoppedNode(
             Thread.sleep(backoff.toMillis())
         }
     }
+
+    override fun toString(): String {
+        return "StandaloneStoppedNode(name='$name', jiraHome='$jiraHome', analyticLogs='$analyticLogs', resultsTransport=$resultsTransport, unpackedProduct='$unpackedProduct', osMetrics=$osMetrics, waitForUpgrades=$waitForUpgrades, launchTimeouts=$launchTimeouts, jdk=$jdk, profiler=$profiler)"
+    }
+
 }

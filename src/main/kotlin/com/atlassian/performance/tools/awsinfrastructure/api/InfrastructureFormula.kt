@@ -41,14 +41,6 @@ class InfrastructureFormula<out T : VirtualUsers> private constructor(
 ) {
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
-    @Deprecated("Use InfrastructureFormula.Builder instead.")
-    constructor(
-        investment: Investment,
-        jiraFormula: JiraFormula,
-        virtualUsersFormula: VirtualUsersFormula<T>,
-        aws: Aws
-    ) : this(investment, jiraFormula, virtualUsersFormula, aws, null)
-
     fun provision(
         workingDirectory: Path
     ): ProvisionedInfrastructure<T> {
@@ -156,7 +148,7 @@ class InfrastructureFormula<out T : VirtualUsers> private constructor(
     } as VirtualUsersFormula<T>
 
     class Builder<out T : VirtualUsers>(
-        private val aws: Aws,         
+        private val aws: Aws,
         private val virtualUsersFormula: VirtualUsersFormula<T>
     ) {
         private var investment: Investment? = null
@@ -174,7 +166,7 @@ class InfrastructureFormula<out T : VirtualUsers> private constructor(
             aws = aws,
             preProvisionedNetwork = network
         )
-        
+
         private fun defaultJiraFormula(): JiraFormula {
             val dataset = DatasetCatalogue().smallJiraSeven()
             return StandaloneFormula.Builder(

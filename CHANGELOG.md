@@ -22,12 +22,15 @@ Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.29.0...master
-
 ### Remove
 - Remove deprecated constructors of `CustomDatasetSource`.
 - Remove `Jira` constructor.
 - Remove `Jira.getDatabase`.
 - Remove `CustomDatasetSource.Builder` constructor with two parameters.
+- Remove deprecated functions.
+- Remove Defaults objects.
+- Remove data classes.
+- Remove Kotlin types.
 
 ### Added
 - Add `StoppableNode` class to allow stopping nodes in a uniform way. Fix [JPERF-188].

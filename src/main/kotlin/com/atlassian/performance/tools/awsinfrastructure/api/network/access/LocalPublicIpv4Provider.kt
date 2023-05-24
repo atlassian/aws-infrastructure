@@ -3,6 +3,8 @@ package com.atlassian.performance.tools.awsinfrastructure.api.network.access
 import com.atlassian.performance.tools.awsinfrastructure.Ipv4Validator
 import com.atlassian.performance.tools.awsinfrastructure.VerboseUriReader
 import java.net.URI
+import java.util.function.Function
+import java.util.function.Predicate
 import java.util.function.Supplier
 
 /**
@@ -10,32 +12,15 @@ import java.util.function.Supplier
  */
 class LocalPublicIpv4Provider private constructor(
     private val servicesToQuery: List<URI>,
-    private val uriReader: (serviceUri: URI) -> String?,
-    private val ipValidator: (ip: String) -> Boolean
-) : () -> String, Supplier<String> {
-    object Defaults {
-        val servicesToQuery: List<URI> = listOf(
-            URI("https://checkip.amazonaws.com"),
-            URI("https://ifconfig.me/ip"),
-            URI("https://api.ipify.org")
-        )
-        val uriReader: (serviceUri: URI) -> String? = VerboseUriReader()
-        val ipValidator: (ip: String) -> Boolean = Ipv4Validator()
-    }
-
-    constructor() : this(
-        servicesToQuery = Defaults.servicesToQuery,
-        uriReader = Defaults.uriReader,
-        ipValidator = Defaults.ipValidator
-    )
-
-    override fun invoke() = get()
+    private val uriReader: Function<URI, String?>,
+    private val ipValidator: Predicate<String>
+) : Supplier<String> {
 
     override fun get() = servicesToQuery
         .asSequence()
-        .mapNotNull { serviceUri -> uriReader(serviceUri)?.trim() }
+        .mapNotNull { serviceUri -> uriReader.apply(serviceUri)?.trim() }
         .filter { it.isNotEmpty() }
-        .filter { ipValidator(it) }
+        .filter { ipValidator.test(it) }
         .toSet()
         .let { set ->
             if (set.isEmpty()) {
@@ -56,14 +41,20 @@ class LocalPublicIpv4Provider private constructor(
         }
 
     class Builder {
-        private var servicesToQuery: MutableList<URI> = Defaults.servicesToQuery.toMutableList()
-        private var uriReader: (serviceUri: URI) -> String? = Defaults.uriReader
-        private var ipValidator: (ip: String) -> Boolean = Defaults.ipValidator
+        private var servicesToQuery: MutableList<URI> = mutableListOf(
+            URI("https://checkip.amazonaws.com"),
+            URI("https://ifconfig.me/ip"),
+            URI("https://api.ipify.org")
+        )
+        private var uriReader: Function<URI, String?> = VerboseUriReader()
+        private var ipValidator: Predicate<String> = Ipv4Validator()
 
-        fun servicesToQuery(servicesToQuery: List<URI>) = apply { this.servicesToQuery = servicesToQuery.toMutableList() }
+        fun servicesToQuery(servicesToQuery: List<URI>) =
+            apply { this.servicesToQuery = servicesToQuery.toMutableList() }
+
         fun serviceToQuery(serviceUri: URI) = apply { this.servicesToQuery.add(serviceUri) }
-        fun uriReader(uriReader: (serviceUri: URI) -> String?) = apply { this.uriReader = uriReader }
-        fun ipValidator(ipValidator: (ip: String) -> Boolean) = apply { this.ipValidator = ipValidator }
+        fun uriReader(uriReader: Function<URI, String?>) = apply { this.uriReader = uriReader }
+        fun ipValidator(ipValidator: Predicate<String>) = apply { this.ipValidator = ipValidator }
 
         fun build() = LocalPublicIpv4Provider(
             servicesToQuery = servicesToQuery,

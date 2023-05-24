@@ -2,7 +2,6 @@ package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
 import com.amazonaws.services.cloudformation.model.Parameter
 import com.atlassian.performance.tools.aws.api.*
-import com.atlassian.performance.tools.awsinfrastructure.ApplicationStorageWrapper
 import com.atlassian.performance.tools.awsinfrastructure.InstanceFilters
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
 import com.atlassian.performance.tools.awsinfrastructure.api.RemoteLocation
@@ -38,6 +37,7 @@ import java.time.Duration
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
+import java.util.function.Supplier
 
 /**
  * The EC2 instances provisioned with this class will have 'instance initiated shutdown' parameter set to 'terminate'.
@@ -62,62 +62,6 @@ class DataCenterFormula private constructor(
     private val waitForUpgrades: Boolean
 ) : JiraFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
-
-    object Defaults {
-        val accessRequester: AccessRequester = ForIpAccessRequester(LocalPublicIpv4Provider())
-        val adminPasswordPlainText = "admin"
-    }
-
-    @Suppress("DEPRECATION")
-    @Deprecated(message = "Use DataCenterFormula.Builder instead.")
-    constructor(
-        configs: List<JiraNodeConfig>,
-        loadBalancerFormula: LoadBalancerFormula,
-        apps: Apps,
-        application: com.atlassian.performance.tools.awsinfrastructure.api.storage.ApplicationStorage,
-        jiraHomeSource: JiraHomeSource,
-        database: Database,
-        computer: Computer
-    ) : this(
-        configs = configs,
-        loadBalancerFormula = loadBalancerFormula,
-        apps = apps,
-        productDistribution = ApplicationStorageWrapper(application),
-        jiraHomeSource = jiraHomeSource,
-        database = database,
-        computer = computer,
-        jiraVolume = Volume(100),
-        stackCreationTimeout = Duration.ofMinutes(30),
-        databaseComputer = M4ExtraLargeElastic(),
-        databaseVolume = Volume(100),
-        accessRequester = Defaults.accessRequester,
-        adminPasswordPlainText = Defaults.adminPasswordPlainText,
-        waitForUpgrades = true
-    )
-
-    @Suppress("DEPRECATION")
-    @Deprecated(message = "Use DataCenterFormula.Builder instead.")
-    constructor(
-        apps: Apps,
-        application: com.atlassian.performance.tools.awsinfrastructure.api.storage.ApplicationStorage,
-        jiraHomeSource: JiraHomeSource,
-        database: Database
-    ) : this(
-        configs = (1..2).map { JiraNodeConfig.Builder().name("jira-node-$it").build() },
-        loadBalancerFormula = ApacheEc2LoadBalancerFormula(),
-        apps = apps,
-        productDistribution = ApplicationStorageWrapper(application),
-        jiraHomeSource = jiraHomeSource,
-        database = database,
-        computer = C4EightExtraLargeElastic(),
-        jiraVolume = Volume(100),
-        stackCreationTimeout = Duration.ofMinutes(30),
-        databaseComputer = M4ExtraLargeElastic(),
-        databaseVolume = Volume(100),
-        accessRequester = Defaults.accessRequester,
-        adminPasswordPlainText = Defaults.adminPasswordPlainText,
-        waitForUpgrades = true
-    )
 
     override fun provision(
         investment: Investment,
@@ -322,11 +266,11 @@ class DataCenterFormula private constructor(
         // When JMX is enabled without granting ehcache RMI port access to *PUBLIC* IP addresses of Jira nodes,
         // it takes longer for Jira DC to start. It's unknown why exactly is that.
         val rmiNodePublicAccess = executor.submitWithLogContext("rmi node public access") {
-            MultiAccessRequester(jiraNodes.map { ForIpAccessRequester { it.publicIpAddress } })
+            MultiAccessRequester(jiraNodes.map { ForIpAccessRequester(Supplier { it.publicIpAddress }) })
                 .requestAccess(jiraNodeRmiAccessProvider)
         }
         val selfDashboardAccess = executor.submitWithLogContext("self dashboard access") {
-            MultiAccessRequester(jiraNodes.map { ForIpAccessRequester { it.publicIpAddress } })
+            MultiAccessRequester(jiraNodes.map { ForIpAccessRequester(Supplier { it.publicIpAddress }) })
                 .requestAccess(provisionedLoadBalancer.accessProvider)
         }
         val loadBalancerAccess = executor.submitWithLogContext("load balancer access") {
@@ -411,24 +355,11 @@ class DataCenterFormula private constructor(
             .build()
     }
 
-    class Builder constructor(
+    class Builder(
         private val productDistribution: ProductDistribution,
         private val jiraHomeSource: JiraHomeSource,
         private val database: Database
     ) {
-
-        @Suppress("DEPRECATION")
-        @Deprecated("Use `ProductDistribution` instead of `ApplicationStorage`.")
-        constructor(
-            application: com.atlassian.performance.tools.awsinfrastructure.api.storage.ApplicationStorage,
-            jiraHomeSource: JiraHomeSource,
-            database: Database
-        ) : this(
-            productDistribution = ApplicationStorageWrapper(application),
-            jiraHomeSource = jiraHomeSource,
-            database = database
-        )
-
         private var configs: List<JiraNodeConfig> =
             (1..2).map { JiraNodeConfig.Builder().name("jira-node-$it").build() }
         private var loadBalancerFormula: LoadBalancerFormula = ApacheEc2LoadBalancerFormula()
@@ -439,7 +370,7 @@ class DataCenterFormula private constructor(
         private var network: Network? = null
         private var databaseComputer: Computer = M4ExtraLargeElastic()
         private var databaseVolume: Volume = Volume(100)
-        private var accessRequester: AccessRequester = Defaults.accessRequester
+        private var accessRequester: AccessRequester = ForIpAccessRequester(LocalPublicIpv4Provider.Builder().build())
         private var adminPasswordPlainText: String = "admin"
         private var waitForUpgrades: Boolean = true
 

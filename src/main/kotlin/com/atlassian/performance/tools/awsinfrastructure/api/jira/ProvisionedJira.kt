@@ -10,21 +10,6 @@ class ProvisionedJira private constructor(
     val resource: Resource,
     val accessProvider: AccessProvider
 ) {
-    object Defaults {
-        val resource: Resource = UnallocatedResource()
-        val accessProvider = NoAccessProvider()
-    }
-
-    @Deprecated(message = "Use ProvisionedJira.Builder instead.")
-    constructor(
-        jira: Jira,
-        resource: Resource
-    ) : this(
-        jira = jira,
-        resource = resource,
-        accessProvider = Defaults.accessProvider
-    )
-
     override fun toString(): String {
         return "ProvisionedJira(jira=$jira, resource=$resource)"
     }
@@ -32,8 +17,8 @@ class ProvisionedJira private constructor(
     class Builder(
         private val jira: Jira
     ) {
-        private var resource: Resource = Defaults.resource
-        private var accessProvider: AccessProvider = Defaults.accessProvider
+        private var resource: Resource = UnallocatedResource()
+        private var accessProvider: AccessProvider = NoAccessProvider()
 
         fun resource(resource: Resource) = apply { this.resource = resource }
         fun accessProvider(accessProvider: AccessProvider) = apply { this.accessProvider = accessProvider }
