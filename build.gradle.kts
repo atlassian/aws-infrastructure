@@ -66,6 +66,8 @@ dependencies {
     testCompile("junit:junit:4.12")
     testCompile("org.assertj:assertj-core:3.11.1")
     testCompile("org.hamcrest:hamcrest-library:1.3")
+    // This is here to allow overriding the aws-resources dependency without publishing it
+    implementation(fileTree("lib") { include("*.jar") })
 }
 
 fun log4j(
