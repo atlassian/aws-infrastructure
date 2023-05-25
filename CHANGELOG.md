@@ -21,7 +21,11 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-2.29.0...master
+[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-3.0.0...master
+
+## [3.0.0] - 2023-05-25
+[3.0.0]: https://github.com/atlassian/aws-infrastructure/compare/release-2.29.0...release-3.0.0
+
 ### Remove
 - Remove deprecated constructors of `CustomDatasetSource`.
 - Remove `Jira` constructor.
@@ -40,6 +44,7 @@ Dropping a requirement of a major version of a dependency is a new contract.
 - Add `CustomDatasetSource.Builder` constructor with additional `List<StoppableNode>` parameter.
 
 [JPERF-188]: https://ecosystem.atlassian.net/browse/JPERF-188
+
 ### Fixed
 - Change default virtual user instance type to `c5.9xlarge`. It's better, cheaper and there seem to be availability issues with previous default (`c4.8xlarge`).
 
