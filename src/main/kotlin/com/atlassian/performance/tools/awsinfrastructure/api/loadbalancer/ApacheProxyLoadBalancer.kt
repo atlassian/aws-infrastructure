@@ -1,7 +1,8 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer
 
+import com.atlassian.performance.tools.aws.api.StorageLocation
+import com.atlassian.performance.tools.awsinfrastructure.api.aws.AwsCli
 import com.atlassian.performance.tools.infrastructure.api.Sed
-import com.atlassian.performance.tools.infrastructure.api.loadbalancer.LoadBalancer
 import com.atlassian.performance.tools.jvmtasks.api.ExponentialBackoff
 import com.atlassian.performance.tools.jvmtasks.api.IdempotentAction
 import com.atlassian.performance.tools.ssh.api.Ssh
@@ -14,7 +15,7 @@ class ApacheProxyLoadBalancer private constructor(
     private val ssh: Ssh,
     ipAddress: String,
     httpPort: Int
-) : LoadBalancer {
+) : DiagnosableLoadBalancer {
 
     override val uri: URI = URI("http://${ipAddress}:$httpPort/")
 
@@ -79,6 +80,15 @@ class ApacheProxyLoadBalancer private constructor(
         line: String
     ) {
         connection.execute("echo \"$line\" | sudo tee -a $APACHE_CONFIG_PATH")
+    }
+
+    override fun gatherEvidence(location: StorageLocation) {
+        ssh.newConnection().use { connection ->
+            val resultsDir = "/tmp/s3-results"
+            connection.execute("mkdir -p $resultsDir")
+            connection.execute("cp -R /var/log/apache2 $resultsDir")
+            AwsCli().upload(location, connection, resultsDir, Duration.ofMinutes(1))
+        }
     }
 
     class Builder(
