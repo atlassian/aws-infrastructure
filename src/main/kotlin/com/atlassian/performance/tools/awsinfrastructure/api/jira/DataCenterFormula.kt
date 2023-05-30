@@ -61,7 +61,8 @@ class DataCenterFormula private constructor(
     private val databaseVolume: Volume,
     private val accessRequester: AccessRequester,
     private val adminPasswordPlainText: String,
-    private val storeInS3: EnumSet<JiraSharedStorageResource>,
+    private val storeAvatarsInS3: Boolean,
+    private val storeAttachmentsInS3: Boolean,
     private val waitForUpgrades: Boolean
 ) : JiraFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
@@ -146,7 +147,7 @@ class DataCenterFormula private constructor(
             ).provision()
         }
 
-        if (storeInS3.isNotEmpty()) {
+        if (storeAvatarsInS3 || storeAttachmentsInS3) {
             StackFormula(
                 investment = investment,
                 aws = aws,
@@ -206,7 +207,8 @@ class DataCenterFormula private constructor(
                 ssh = sharedHomeSsh,
                 computer = computer,
                 s3StorageBucketName = s3StorageBucketName,
-                storeInS3 = storeInS3
+                storeAvatarsInS3 = storeAvatarsInS3,
+                storeAttachmentsInS3 = storeAttachmentsInS3
             ).provision()
             logger.info("Shared home is set up")
             sharedHome
@@ -241,7 +243,8 @@ class DataCenterFormula private constructor(
                         sharedHome = sharedHome,
                         privateIpAddress = instance.privateIpAddress,
                         s3StorageBucketName = s3StorageBucketName,
-                        storeInS3 = storeInS3,
+                        storeAvatarsInS3 = storeAvatarsInS3,
+                        storeAttachmentsInS3 = storeAttachmentsInS3,
                         awsRegion = aws.region.name
                     )
                 )
@@ -397,8 +400,8 @@ class DataCenterFormula private constructor(
         private var databaseVolume: Volume = Volume(100)
         private var accessRequester: AccessRequester = ForIpAccessRequester(LocalPublicIpv4Provider.Builder().build())
         private var adminPasswordPlainText: String = "admin"
-        private var storeInS3: EnumSet<JiraSharedStorageResource> = EnumSet.noneOf(
-            JiraSharedStorageResource::class.java)
+        private var storeAvatarsInS3: Boolean = false
+        private var storeAttachmentsInS3: Boolean = false
         private var waitForUpgrades: Boolean = true
 
         internal constructor(
@@ -419,7 +422,8 @@ class DataCenterFormula private constructor(
             databaseVolume = formula.databaseVolume
             accessRequester = formula.accessRequester
             adminPasswordPlainText = formula.adminPasswordPlainText
-            storeInS3 = formula.storeInS3
+            storeAvatarsInS3 = formula.storeAvatarsInS3
+            storeAttachmentsInS3 = formula.storeAttachmentsInS3
             waitForUpgrades = formula.waitForUpgrades
         }
 
@@ -448,7 +452,9 @@ class DataCenterFormula private constructor(
 
         fun accessRequester(accessRequester: AccessRequester) = apply { this.accessRequester = accessRequester }
 
-        fun storeInS3(storeInS3: EnumSet<JiraSharedStorageResource>) = apply { this.storeInS3 = storeInS3 }
+        fun storeAvatarsInS3(storeAvatarsInS3: Boolean) = apply { this.storeAvatarsInS3 = storeAvatarsInS3 }
+
+        fun storeAttachmentsInS3(storeAttachmentsInS3: Boolean) = apply { this.storeAttachmentsInS3 = storeAttachmentsInS3 }
 
         /**
          * Don't change when starting up multi-node Jira DC of version lower than 9.1.0
@@ -471,7 +477,8 @@ class DataCenterFormula private constructor(
             databaseVolume = databaseVolume,
             accessRequester = accessRequester,
             adminPasswordPlainText = adminPasswordPlainText,
-            storeInS3 = storeInS3,
+            storeAvatarsInS3 = storeAvatarsInS3,
+            storeAttachmentsInS3 = storeAttachmentsInS3,
             waitForUpgrades = waitForUpgrades
         )
     }
