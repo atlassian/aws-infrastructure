@@ -56,8 +56,11 @@ class AwsCli (val cliVersion: String = "2.9.12") {
         )
     }
 
+    /**
+     * Instructions for setting up a V2 CLI are from
+     * [link](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-version.html)
+     */
     private fun installV2Cli(ssh: SshConnection) {
-        // Instructions from https://docs.aws.amazon.com/cli/latest/userguide/getting-started-version.html
         ssh.execute(
             cmd="curl --silent https://awscli.amazonaws.com/awscli-exe-linux-x86_64-$cliVersion.zip -o awscliv2.zip",
             timeout = Duration.ofSeconds(50)
