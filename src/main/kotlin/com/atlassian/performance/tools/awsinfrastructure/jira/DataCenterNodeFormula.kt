@@ -1,10 +1,8 @@
 package com.atlassian.performance.tools.awsinfrastructure.jira
 
-import com.atlassian.performance.tools.awsinfrastructure.api.jira.JiraSharedStorageResource
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.StartedNode
 import com.atlassian.performance.tools.infrastructure.api.jira.SharedHome
 import com.atlassian.performance.tools.ssh.api.Ssh
-import java.util.EnumSet
 import java.util.concurrent.Future
 
 internal class DataCenterNodeFormula(
@@ -12,9 +10,8 @@ internal class DataCenterNodeFormula(
     private val sharedHome: Future<SharedHome>,
     private val base: NodeFormula,
     private val privateIpAddress: String,
-    private val storeInS3: EnumSet<JiraSharedStorageResource> = EnumSet.of(
-        JiraSharedStorageResource.ATTACHMENTS
-    ),
+    private val storeAvatarsInS3: Boolean = false,
+    private val storeAttachmentsInS3: Boolean = false,
     private val s3StorageBucketName: String? = null,
     private val awsRegion: String? = null
 ) : NodeFormula by base {
@@ -33,11 +30,15 @@ internal class DataCenterNodeFormula(
             it.execute("echo jira.node.id = node$nodeIndex >> $jiraHome/cluster.properties")
             it.execute("echo jira.shared.home = `realpath $localSharedHome` >> $jiraHome/cluster.properties")
 
-            if (s3StorageBucketName != null && storeInS3.isNotEmpty()) {
-                val associations = storeInS3.map { element ->
-                    """<association target="${element.name.toLowerCase()}" file-store="s3Bucket" />"""
+            if (s3StorageBucketName != null && (storeAvatarsInS3 || storeAttachmentsInS3)) {
+                val associations = mutableListOf<String>()
+                if (storeAvatarsInS3) {
+                    associations.add(createAssociation("avatars"))
                 }
-                val formattedRegion = awsRegion?.let { it1 -> convertRegionFormat(it1) }
+                if (storeAttachmentsInS3) {
+                    associations.add(createAssociation("attachments"))
+                }
+                val formattedRegion = awsRegion?.let { region -> convertRegionFormat(region) }
                 it.execute(
                     """
                     cat <<EOT > $jiraHome/filestore-config.xml
@@ -56,7 +57,7 @@ internal class DataCenterNodeFormula(
                       </associations>
                     </filestore-config>
                     EOT
-                """.trimIndent()
+                    """.trimIndent()
                 )
             }
         }
@@ -72,6 +73,10 @@ internal class DataCenterNodeFormula(
             override fun toString() = "node #$nodeIndex"
         }
     }
+
+   fun createAssociation(target: String): String {
+       return """<association target="$target" file-store="s3Bucket" />"""
+   }
 
     fun convertRegionFormat(region: String): String {
         return region.toLowerCase().replace('_', '-')
