@@ -5,6 +5,7 @@ import com.atlassian.performance.tools.aws.api.SshKeyFormula
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime
 import com.atlassian.performance.tools.awsinfrastructure.api.DatasetCatalogue
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C5NineExtraLargeEphemeral
+import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.ApacheEc2LoadBalancerFormula
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.dataset.Dataset
 import com.atlassian.performance.tools.infrastructure.api.distribution.PublicJiraSoftwareDistribution
@@ -18,6 +19,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.data.Percentage
 import org.junit.Test
 import java.net.URI
+import java.nio.file.Files
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -35,7 +37,7 @@ class DataCenterFormulaIT {
     @Test
     fun shouldProvisionDataCenter() {
         val executor = Executors.newFixedThreadPool(
-            2,
+            3,
             ThreadFactoryBuilder()
                 .setNameFormat("DCFIT-test-thread-%d")
                 .build()
@@ -46,6 +48,10 @@ class DataCenterFormulaIT {
                 dataset = datasetSeven
             ),
             DataCenterJmxProvisioningTest(
+                jiraVersion = jiraVersionEight,
+                dataset = datasetEight
+            ),
+            ShouldGatherApacheLogsFromDataCenter(
                 jiraVersion = jiraVersionEight,
                 dataset = datasetEight
             )
@@ -188,6 +194,49 @@ class DataCenterFormulaIT {
             }
 
             resource.release().get(3, TimeUnit.MINUTES)
+        }
+    }
+
+    private inner class ShouldGatherApacheLogsFromDataCenter(
+        override val jiraVersion: String,
+        private val dataset: Dataset
+    ) : GroupableTest("Should gather Apache logs from Data Center") {
+        override fun run(workspace: TestWorkspace) {
+            val nonce = UUID.randomUUID().toString()
+            val lifespan = Duration.ofMinutes(30)
+            val keyFormula = SshKeyFormula(
+                ec2 = aws.ec2,
+                workingDirectory = workspace.directory,
+                lifespan = lifespan,
+                prefix = nonce
+            )
+            val dcFormula = DataCenterFormula.Builder(
+                productDistribution = PublicJiraSoftwareDistribution(jiraVersion),
+                jiraHomeSource = dataset.jiraHomeSource,
+                database = dataset.database
+            ).computer(C5NineExtraLargeEphemeral())
+                .databaseComputer(C5NineExtraLargeEphemeral())
+                .loadBalancerFormula(ApacheEc2LoadBalancerFormula())
+                .build()
+
+            val provisionedJira = dcFormula.provision(
+                investment = Investment(
+                    useCase = "Test Data Center provisioning",
+                    lifespan = lifespan
+                ),
+                pluginsTransport = aws.jiraStorage(nonce),
+                resultsTransport = aws.resultsStorage(nonce),
+                key = CompletableFuture.completedFuture(keyFormula.provision()),
+                roleProfile = aws.shortTermStorageAccess(),
+                aws = aws
+            )
+            provisionedJira.jira.gatherResults()
+
+            assertThat(Files.walk(workspace.directory)).anyMatch {
+                it.parent.endsWith("apache2") && it.fileName.toString().endsWith(".log")
+            }
+
+            provisionedJira.resource.release().get(3, TimeUnit.MINUTES)
         }
     }
 

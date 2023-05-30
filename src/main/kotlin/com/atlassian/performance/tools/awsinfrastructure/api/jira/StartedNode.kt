@@ -51,6 +51,7 @@ class StartedNode(
     fun gatherAnalyticLogs() {
         ssh.newConnection().use {
             it.execute("cp -r $analyticLogs/analytics-logs $resultsDirectory")
+            it.execute("mkdir -p $resultsDirectory/analytics-logs") // next line can file without the dir
             it.execute("find $resultsDirectory/analytics-logs/ -maxdepth 1 -type f -name '*.gz' -exec gunzip {} +")
             AwsCli().upload(
                 location = resultsTransport.location,
