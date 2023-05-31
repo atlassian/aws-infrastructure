@@ -61,8 +61,7 @@ class DataCenterFormula private constructor(
     private val databaseVolume: Volume,
     private val accessRequester: AccessRequester,
     private val adminPasswordPlainText: String,
-    private val storeAvatarsInS3: Boolean,
-    private val storeAttachmentsInS3: Boolean,
+    private val jiraSharedStorageConfig: JiraSharedStorageConfig,
     private val waitForUpgrades: Boolean
 ) : JiraFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
@@ -147,7 +146,7 @@ class DataCenterFormula private constructor(
             ).provision()
         }
 
-        if (storeAvatarsInS3 || storeAttachmentsInS3) {
+        if (jiraSharedStorageConfig.isAnyResourceStoredInS3()) {
             StackFormula(
                 investment = investment,
                 aws = aws,
@@ -207,8 +206,7 @@ class DataCenterFormula private constructor(
                 ssh = sharedHomeSsh,
                 computer = computer,
                 s3StorageBucketName = s3StorageBucketName,
-                storeAvatarsInS3 = storeAvatarsInS3,
-                storeAttachmentsInS3 = storeAttachmentsInS3
+                jiraSharedStorageConfig = jiraSharedStorageConfig
             ).provision()
             logger.info("Shared home is set up")
             sharedHome
@@ -243,8 +241,7 @@ class DataCenterFormula private constructor(
                         sharedHome = sharedHome,
                         privateIpAddress = instance.privateIpAddress,
                         s3StorageBucketName = s3StorageBucketName,
-                        storeAvatarsInS3 = storeAvatarsInS3,
-                        storeAttachmentsInS3 = storeAttachmentsInS3,
+                        jiraSharedStorageConfig = jiraSharedStorageConfig,
                         awsRegion = aws.region.name
                     )
                 )
@@ -400,8 +397,7 @@ class DataCenterFormula private constructor(
         private var databaseVolume: Volume = Volume(100)
         private var accessRequester: AccessRequester = ForIpAccessRequester(LocalPublicIpv4Provider.Builder().build())
         private var adminPasswordPlainText: String = "admin"
-        private var storeAvatarsInS3: Boolean = false
-        private var storeAttachmentsInS3: Boolean = false
+        private var jiraSharedStorageConfig: JiraSharedStorageConfig = JiraSharedStorageConfig.Builder().build()
         private var waitForUpgrades: Boolean = true
 
         internal constructor(
@@ -422,8 +418,7 @@ class DataCenterFormula private constructor(
             databaseVolume = formula.databaseVolume
             accessRequester = formula.accessRequester
             adminPasswordPlainText = formula.adminPasswordPlainText
-            storeAvatarsInS3 = formula.storeAvatarsInS3
-            storeAttachmentsInS3 = formula.storeAttachmentsInS3
+            jiraSharedStorageConfig = formula.jiraSharedStorageConfig
             waitForUpgrades = formula.waitForUpgrades
         }
 
@@ -452,9 +447,8 @@ class DataCenterFormula private constructor(
 
         fun accessRequester(accessRequester: AccessRequester) = apply { this.accessRequester = accessRequester }
 
-        fun storeAvatarsInS3(storeAvatarsInS3: Boolean) = apply { this.storeAvatarsInS3 = storeAvatarsInS3 }
-
-        fun storeAttachmentsInS3(storeAttachmentsInS3: Boolean) = apply { this.storeAttachmentsInS3 = storeAttachmentsInS3 }
+        fun jiraSharedStorageConfig(jiraSharedStorageConfig: JiraSharedStorageConfig) : Builder =
+            apply { this.jiraSharedStorageConfig = jiraSharedStorageConfig }
 
         /**
          * Don't change when starting up multi-node Jira DC of version lower than 9.1.0
@@ -477,8 +471,7 @@ class DataCenterFormula private constructor(
             databaseVolume = databaseVolume,
             accessRequester = accessRequester,
             adminPasswordPlainText = adminPasswordPlainText,
-            storeAvatarsInS3 = storeAvatarsInS3,
-            storeAttachmentsInS3 = storeAttachmentsInS3,
+            jiraSharedStorageConfig = jiraSharedStorageConfig,
             waitForUpgrades = waitForUpgrades
         )
     }

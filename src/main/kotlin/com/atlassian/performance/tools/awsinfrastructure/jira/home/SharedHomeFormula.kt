@@ -3,6 +3,7 @@ package com.atlassian.performance.tools.awsinfrastructure.jira.home
 import com.atlassian.performance.tools.aws.api.Storage
 import com.atlassian.performance.tools.awsinfrastructure.api.aws.AwsCli
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
+import com.atlassian.performance.tools.awsinfrastructure.api.jira.JiraSharedStorageConfig
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource
 import com.atlassian.performance.tools.infrastructure.api.jira.SharedHome
 import com.atlassian.performance.tools.infrastructure.api.os.Ubuntu
@@ -15,8 +16,7 @@ internal class SharedHomeFormula(
     private val ip: String,
     private val ssh: Ssh,
     private val computer: Computer,
-    private val storeAvatarsInS3: Boolean = false,
-    private val storeAttachmentsInS3: Boolean = false,
+    private val jiraSharedStorageConfig: JiraSharedStorageConfig = JiraSharedStorageConfig.Builder().build(),
     private val s3StorageBucketName: String? = null
 ) {
     private val localSubnet = "10.0.0.0/24"
@@ -43,9 +43,9 @@ internal class SharedHomeFormula(
             ubuntu.install(it, listOf("nfs-kernel-server"))
             it.execute("sudo echo '$localSharedHome $localSubnet(rw,sync,no_subtree_check,no_root_squash)' | sudo tee -a /etc/exports")
 
-            if (s3StorageBucketName != null && (storeAvatarsInS3 || storeAttachmentsInS3)) {
+            if (s3StorageBucketName != null && jiraSharedStorageConfig.isAnyResourceStoredInS3()) {
                 AwsCli(awsCliVersion).ensureAwsCli(it)
-                if (storeAttachmentsInS3) {
+                if (jiraSharedStorageConfig.storeAttachmentsInS3) {
                     // Copy the attachment data from NFS onto S3
                     // Use xargs to split the work across 30 concurrent jobs.  This is much faster than a single job.
                     it.safeExecute(
@@ -53,7 +53,7 @@ internal class SharedHomeFormula(
                         timeout = Duration.ofMinutes(10)
                     )
                 }
-                if (storeAvatarsInS3) {
+                if (jiraSharedStorageConfig.storeAvatarsInS3) {
                     // Copy the avatar data from NFS onto S3
                     // Split up into subdirs for faster s3 copy then use xargs to split the work across 30 concurrent jobs.
                     it.safeExecute(
