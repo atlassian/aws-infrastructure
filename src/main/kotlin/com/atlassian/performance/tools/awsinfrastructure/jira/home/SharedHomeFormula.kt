@@ -24,6 +24,10 @@ internal class SharedHomeFormula(
 
     private val ubuntu = Ubuntu()
 
+    companion object {
+        const val SOME_RESOURCES_STORED_IN_S3_FILENAME: String = ".some_resources_are_stored_in_s3"
+    }
+
     fun provision(): SharedHome {
         val awsCliVersion = "2.9.12"
 
@@ -65,6 +69,7 @@ internal class SharedHomeFormula(
                         timeout = Duration.ofMinutes(10)
                     )
                 }
+                it.safeExecute(cmd = "sudo touch $localSharedHome/$SOME_RESOURCES_STORED_IN_S3_FILENAME")
             }
 
             it.execute("sudo service nfs-kernel-server restart")
