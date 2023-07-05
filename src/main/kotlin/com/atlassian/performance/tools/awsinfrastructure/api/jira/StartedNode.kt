@@ -37,7 +37,7 @@ class StartedNode(
                 "cp $jiraPath/logs/*access* $nodeResultsDirectory",
                 "mkdir -p $nodeResultsDirectory/$threadDumpsFolder",
                 "cp $threadDumpsFolder/* $nodeResultsDirectory/$threadDumpsFolder",
-                "cp $jiraHome/log/atlassian-jira.log $nodeResultsDirectory",
+                "cp $jiraHome/log/atlassian-jira.log* $nodeResultsDirectory",
                 "cp ${JiraGcLog(jiraPath).path()} $nodeResultsDirectory",
                 "cp /var/log/syslog $nodeResultsDirectory",
                 "cp /var/log/cloud-init.log $nodeResultsDirectory",
