@@ -23,6 +23,14 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-3.0.1...master
 
+### Added
+- Add `DatasetCatalogue().smallJiraNine()`. Unblock [JPERF-1184].
+
+### Fixed
+- Add missing `sudo` to `CustomDatasetSource.stopDockerContainers` to avoid permission errors. Fix [JPERF-1184].
+
+[JPERF-1184] https://ecosystem.atlassian.net/browse/JPERF-1184
+
 ## [3.0.1] - 2023-06-22
 [3.0.1]: https://github.com/atlassian/aws-infrastructure/compare/release-3.0.0...release-3.0.1
 

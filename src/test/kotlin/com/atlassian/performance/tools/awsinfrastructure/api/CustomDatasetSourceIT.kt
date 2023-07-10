@@ -29,10 +29,10 @@ class CustomDatasetSourceIT {
 
         //then
         val databaseSsh = Ssh(datasetSource.database.host)
-        val use = databaseSsh.newConnection().use { ssh ->
-            return@use ssh.execute("sudo docker ps -q")
+        val containerList = databaseSsh.newConnection().use { ssh ->
+            ssh.execute("sudo docker ps -q")
         }
-        assertThat(use.output).isEmpty()
+        assertThat(containerList.output).isEmpty()
     }
 
     private fun provisionStandaloneJira(): ProvisionedJira {
