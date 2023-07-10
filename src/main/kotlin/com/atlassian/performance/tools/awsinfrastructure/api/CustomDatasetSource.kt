@@ -94,7 +94,7 @@ class CustomDatasetSource private constructor(
     }
 
     private fun stopDockerContainers(host: SshHost) {
-        Ssh(host, connectivityPatience = 4).newConnection().use { it.safeExecute("docker stop \$(docker ps -aq)") }
+        Ssh(host, connectivityPatience = 4).newConnection().use { it.execute("sudo docker stop \$(sudo docker ps -aq)") }
     }
 
     override fun toString(): String {
