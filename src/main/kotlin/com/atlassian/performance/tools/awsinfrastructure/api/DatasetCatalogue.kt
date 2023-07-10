@@ -1,5 +1,6 @@
 package com.atlassian.performance.tools.awsinfrastructure.api
 
+import com.amazonaws.regions.Regions
 import com.atlassian.performance.tools.aws.api.StorageLocation
 import com.atlassian.performance.tools.awsinfrastructure.api.dataset.S3DatasetPackage
 import com.atlassian.performance.tools.infrastructure.api.database.LicenseOverridingMysql
@@ -76,6 +77,17 @@ class DatasetCatalogue {
                 ))
             )
         }
+
+    fun smallJiraNine(): Dataset = DatasetCatalogue().custom(
+        location = StorageLocation(
+            URI("s3://jpt-custom-datasets-storage-a008820-datasetbucket-1nrja8d1upind/")
+                .resolve("parent/v01-disable-backup-service-aa9bfcd4-68f2-4836-8271-d128b3c9fa0a/child/v01-publish-8.20.0-66b31acf-1a1b-40bd-b650-d15f79674bf0"),
+            Regions.EU_CENTRAL_1
+        ),
+        label = "1k issues",
+        databaseDownload = ofMinutes(5),
+        jiraHomeDownload = ofMinutes(5)
+    )
 
     fun custom(
         location: StorageLocation,
