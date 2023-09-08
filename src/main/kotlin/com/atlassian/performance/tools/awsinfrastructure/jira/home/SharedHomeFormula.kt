@@ -33,7 +33,7 @@ internal class SharedHomeFormula(
             )
 
             it.execute("sudo mkdir -p $localSharedHome")
-            it.execute("sudo mv $jiraHome/{data,plugins,import,export} $localSharedHome")
+            it.safeExecute("sudo mv $jiraHome/{data,plugins,import,export} $localSharedHome")
             it.safeExecute("sudo mv $jiraHome/logos $localSharedHome")
             ubuntu.install(it, listOf("nfs-kernel-server"))
             it.execute("sudo echo '$localSharedHome $localSubnet(rw,sync,no_subtree_check,no_root_squash)' | sudo tee -a /etc/exports")
