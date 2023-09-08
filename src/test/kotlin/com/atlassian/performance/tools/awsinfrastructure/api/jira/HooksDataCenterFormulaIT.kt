@@ -38,9 +38,10 @@ import java.util.stream.Collectors
 import kotlin.streams.toList
 
 class HooksDataCenterFormulaIT {
-    private val logger: Logger = LogManager.getLogger(this::class.java)
     private val jiraVersion = "9.4.9"
     private val workspace = IntegrationTestRuntime.taskWorkspace.isolateTest(javaClass.simpleName).directory
+    // it needs to be instantiated after IntegrationTestRuntime constructor
+    private val logger: Logger = LogManager.getLogger(this::class.java)
     private val s3Bucket = URI("https://s3-eu-central-1.amazonaws.com/")
         .resolve("jpt-custom-datasets-storage-a008820-datasetbucket-1nrja8d1upind/")
         .resolve("dataset-a533e558-e5c5-46e7-9398-5aeda84d793a/")
