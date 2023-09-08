@@ -1,0 +1,189 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Serves a Jira Data Center cluster with Jira nodes, shared home and a MySQL database, without a load balancer
+Parameters:
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  InstanceProfile:
+    Type: String
+  Ami:
+    Type: String
+  JiraInstanceType:
+    Type: String
+  JiraVolumeSize:
+    Type: Number
+  DatabaseInstanceType:
+    Type: String
+  DatabaseVolumeSize:
+    Type: Number
+  Vpc:
+    Type: String
+  Subnet:
+    Type: String
+  VpcCidrBlock:
+    Type: String
+Resources:
+  jira1:
+    Type: AWS::EC2::Instance
+    Properties:
+      SecurityGroupIds:
+        - Ref: SshSecurityGroup
+        - Ref: JiraNodeSecurityGroup
+      InstanceType: !Ref JiraInstanceType
+      SubnetId:
+        Ref: Subnet
+      KeyName:
+        Ref: KeyName
+      ImageId: !Ref Ami
+      InstanceInitiatedShutdownBehavior: terminate
+      Tags:
+        -
+          Key: jpt-jira
+          Value: true
+      IamInstanceProfile: !Ref InstanceProfile
+      BlockDeviceMappings:
+        -
+          DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: !Ref JiraVolumeSize
+            VolumeType: gp2
+  jira2:
+    Type: AWS::EC2::Instance
+    Properties:
+      SecurityGroupIds:
+        - Ref: SshSecurityGroup
+        - Ref: JiraNodeSecurityGroup
+      InstanceType: !Ref JiraInstanceType
+      SubnetId:
+        Ref: Subnet
+      KeyName:
+        Ref: KeyName
+      ImageId: !Ref Ami
+      InstanceInitiatedShutdownBehavior: terminate
+      Tags:
+        -
+          Key: jpt-jira
+          Value: true
+      IamInstanceProfile: !Ref InstanceProfile
+      BlockDeviceMappings:
+        -
+          DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: !Ref JiraVolumeSize
+            VolumeType: gp2
+  SharedHome:
+    Type: AWS::EC2::Instance
+    Properties:
+      SecurityGroupIds:
+        - Ref: SshSecurityGroup
+        - Ref: SharedHomeSecurityGroup
+      InstanceType: !Ref JiraInstanceType
+      SubnetId:
+        Ref: Subnet
+      KeyName:
+        Ref: KeyName
+      ImageId: !Ref Ami
+      InstanceInitiatedShutdownBehavior: terminate
+      Tags:
+        -
+          Key: jpt-shared-home
+          Value: true
+      IamInstanceProfile: !Ref InstanceProfile
+      BlockDeviceMappings:
+        -
+          DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: !Ref JiraVolumeSize
+            VolumeType: gp2
+  Database:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref DatabaseInstanceType
+      SubnetId:
+        Ref: Subnet
+      SecurityGroupIds:
+        - Ref: SshSecurityGroup
+        - Ref: DatabaseSecurityGroup
+      KeyName:
+        Ref: KeyName
+      ImageId: !Ref Ami
+      InstanceInitiatedShutdownBehavior: terminate
+      Tags:
+        -
+          Key: jpt-database
+          Value: true
+      IamInstanceProfile: !Ref InstanceProfile
+      BlockDeviceMappings:
+        -
+          DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: !Ref DatabaseVolumeSize
+            VolumeType: gp2
+  SshSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        Ref: Vpc
+      GroupDescription: For SSH enabled instances
+      SecurityGroupIngress:
+        -
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+  JiraNodeSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        Ref: Vpc
+      GroupDescription: For Jira DC nodes
+  SharedHomeSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        Ref: Vpc
+      GroupDescription: For Jira DC shared home
+  DatabaseSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        Ref: Vpc
+      GroupDescription: For Jira DC database
+  JiraNodeAccess:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref JiraNodeSecurityGroup
+      IpProtocol: tcp
+      FromPort: 8080
+      ToPort: 8080
+      CidrIp: !Ref VpcCidrBlock
+  CacheReplicationRmiPortAccess:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref JiraNodeSecurityGroup
+      IpProtocol: tcp
+      # For cache replication we only need ports 40001 and 40011,
+      # however before Jira 7.4.0 the 2nd RMI port was always random and unconfigurable.
+      # We decided to not break compatibility with Jira 7.2 yet and keep every port between Jira nodes open.
+      # If the communication between nodes needs to be restricted, feel free to break the compatibility.
+      FromPort: 0
+      ToPort: 65535
+      CidrIp: !Ref VpcCidrBlock
+  SharedHomeMountAccess:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref SharedHomeSecurityGroup
+      IpProtocol: tcp
+      FromPort: 2049
+      ToPort: 2049
+      CidrIp: !Ref VpcCidrBlock
+  MySqlPortAccess:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref DatabaseSecurityGroup
+      IpProtocol: tcp
+      FromPort: 3306
+      ToPort: 3306
+      CidrIp: !Ref VpcCidrBlock
+  # External access to Web App HTTP, JVM debug, JMX and Splunk forwarder ports added dynamically via `com.atlassian.performance.tools.awsinfrastructure.network.access.AccessProvider`

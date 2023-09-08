@@ -64,7 +64,7 @@ class LegacyAwsInfrastructure private constructor(
 
     private fun provisionStack(): ProvisionedStack {
         logger.info("Setting up Jira stack...")
-        val template = TemplateBuilder("2-nodes-dc.yaml").adaptTo(jiraNodeConfigs)
+        val template = TemplateBuilder("2-nodes-dc-hooks.yaml").adaptTo(jiraNodeConfigs)
         val stack = StackFormula(
             investment = investment,
             cloudformationTemplate = template,
@@ -95,7 +95,10 @@ class LegacyAwsInfrastructure private constructor(
                     .withParameterValue(network.vpc.vpcId),
                 Parameter()
                     .withParameterKey("Subnet")
-                    .withParameterValue(network.subnet.subnetId)
+                    .withParameterValue(network.subnet.subnetId),
+                Parameter()
+                    .withParameterKey("VpcCidrBlock")
+                    .withParameterValue(network.vpc.cidrBlock)
             ),
             aws = aws,
             pollingTimeout = provisioningTimout
