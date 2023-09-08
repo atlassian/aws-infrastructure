@@ -32,7 +32,10 @@ import org.assertj.core.api.SoftAssertions
 import org.junit.Test
 import java.net.URI
 import java.nio.file.Files
+import java.nio.file.Path
 import java.time.Duration
+import java.util.stream.Collectors
+import kotlin.streams.toList
 
 class HooksDataCenterFormulaIT {
     private val logger: Logger = LogManager.getLogger(this::class.java)
@@ -59,6 +62,17 @@ class HooksDataCenterFormulaIT {
         .databaseVolume(Volume(100))
         .workspace(workspace)
         .build()
+
+    private fun makeFailureObservable(block: () -> Unit) {
+        try {
+            block()
+        } catch (e: Exception) {
+            val potentialJiraProblems = findPotentialJiraProblems()
+            logger.error("Failed to provision DC. Report downloaded to $workspace")
+            e.addSuppressed(RuntimeException("Potential Jira problems found in workspace: $potentialJiraProblems"))
+            throw e
+        }
+    }
 
     @Test
     fun shouldProvisionDc() {
@@ -99,26 +113,23 @@ class HooksDataCenterFormulaIT {
             .build()
 
         // when
-        val dataCenter: JiraInstance
-        try {
+        var dataCenter: JiraInstance? = null
+        makeFailureObservable {
             dataCenter = dcPlan.materialize()
-        } catch (e: Exception) {
-            dcPlan.report().downloadTo(workspace)
-            logger.error("Failed to provision DC. Report downloaded to $workspace")
-            throw e
         }
-
         // then
-        dataCenter.nodes.forEach { node ->
-            val installed = node.installed
-            val serverXml = installed
-                .installation
-                .resolve("conf/server.xml")
-                .download(Files.createTempFile("downloaded-config", ".xml"))
-            assertThat(serverXml.readText()).contains("<Connector port=\"${installed.http.tcp.port}\"")
-            assertThat(node.pid).isPositive()
-            installed.http.tcp.ssh.newConnection().use { ssh ->
-                ssh.execute("wget ${dataCenter.address}")
+        makeFailureObservable {
+            dataCenter!!.nodes.forEach { node ->
+                val installed = node.installed
+                val serverXml = installed
+                    .installation
+                    .resolve("conf/server.xml")
+                    .download(Files.createTempFile("downloaded-config", ".xml"))
+                assertThat(serverXml.readText()).contains("<Connector port=\"${installed.http.tcp.port}\"")
+                assertThat(node.pid).isPositive()
+                installed.http.tcp.ssh.newConnection().use { ssh ->
+                    ssh.execute("wget ${dataCenter!!.address}")
+                }
             }
         }
         val reports = dcPlan.report().downloadTo(workspace)
@@ -141,4 +152,32 @@ class HooksDataCenterFormulaIT {
                 .isNotEmpty
         }.assertAll()
     }
+
+    private fun findPotentialJiraProblems(): Map<Path, List<String>> {
+        val jiraLogFileName = "atlassian-jira.log"
+        val keywords = setOf("fatal", "error", "exception", "timeout", "waiting", "fail", "unable", "lock", "block")
+
+        val result = mutableMapOf<Path, MutableList<String>>()
+        val files = findFiles(workspace, jiraLogFileName)
+
+        for (file in files) {
+            val filteredLines = filterFile(file, keywords)
+            result.putIfAbsent(file, mutableListOf())
+            result[file]!!.addAll(filteredLines)
+        }
+        return result
+    }
+
+    private fun findFiles(start: Path, fileName: String): List<Path> {
+        return Files.walk(start)
+            .filter { path -> Files.isRegularFile(path) && path.fileName.toString() == fileName }
+            .collect(Collectors.toList())
+    }
+
+    private fun filterFile(file: Path, keywords: Set<String>): List<String> {
+        return file.toFile().bufferedReader().lines().filter { line ->
+            keywords.any { keyword -> line.contains(keyword, ignoreCase = true) }
+        }.toList()
+    }
+
 }
