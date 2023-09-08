@@ -21,7 +21,7 @@ Parameters:
     Type: String
   Subnet:
     Type: String
-  VpcCidrBlock:
+  AccessCidr:
     Type: String
 Resources:
   jira1:
@@ -157,7 +157,7 @@ Resources:
       IpProtocol: tcp
       FromPort: 8080
       ToPort: 8080
-      CidrIp: !Ref VpcCidrBlock
+      CidrIp: !Ref AccessCidr
   CacheReplicationRmiPortAccess:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -169,7 +169,7 @@ Resources:
       # If the communication between nodes needs to be restricted, feel free to break the compatibility.
       FromPort: 0
       ToPort: 65535
-      CidrIp: !Ref VpcCidrBlock
+      CidrIp: !Ref AccessCidr
   SharedHomeMountAccess:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -177,7 +177,7 @@ Resources:
       IpProtocol: tcp
       FromPort: 2049
       ToPort: 2049
-      CidrIp: !Ref VpcCidrBlock
+      CidrIp: !Ref AccessCidr
   MySqlPortAccess:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -185,5 +185,5 @@ Resources:
       IpProtocol: tcp
       FromPort: 3306
       ToPort: 3306
-      CidrIp: !Ref VpcCidrBlock
+      CidrIp: !Ref AccessCidr
   # External access to Web App HTTP, JVM debug, JMX and Splunk forwarder ports added dynamically via `com.atlassian.performance.tools.awsinfrastructure.network.access.AccessProvider`

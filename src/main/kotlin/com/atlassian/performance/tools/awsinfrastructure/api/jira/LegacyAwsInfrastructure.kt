@@ -13,6 +13,8 @@ import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.LoadBa
 import com.atlassian.performance.tools.awsinfrastructure.api.network.Network
 import com.atlassian.performance.tools.awsinfrastructure.api.network.NetworkFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.network.ProvisionedNetwork
+import com.atlassian.performance.tools.awsinfrastructure.api.network.access.ForIpAccessRequester
+import com.atlassian.performance.tools.awsinfrastructure.api.network.access.LocalPublicIpv4Provider
 import com.atlassian.performance.tools.awsinfrastructure.aws.TokenScrollingEc2
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
 import com.atlassian.performance.tools.infrastructure.api.jira.install.HttpNode
@@ -97,8 +99,8 @@ class LegacyAwsInfrastructure private constructor(
                     .withParameterKey("Subnet")
                     .withParameterValue(network.subnet.subnetId),
                 Parameter()
-                    .withParameterKey("VpcCidrBlock")
-                    .withParameterValue(network.vpc.cidrBlock)
+                    .withParameterKey("AccessCidr")
+                    .withParameterValue("0.0.0.0/0")
             ),
             aws = aws,
             pollingTimeout = provisioningTimout
@@ -136,6 +138,8 @@ class LegacyAwsInfrastructure private constructor(
                         sshKey,
                         aws
                     )
+                    .also { it.accessProvider.provideAccess("0.0.0.0/0") }
+                    .also { ForIpAccessRequester(LocalPublicIpv4Provider.Builder().build()).requestAccess(it.accessProvider) }
                     .loadBalancer
             }
         }
