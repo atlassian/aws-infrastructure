@@ -2,13 +2,16 @@ package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
 import com.atlassian.performance.tools.aws.api.Investment
 import com.atlassian.performance.tools.aws.api.SshKeyFormula
+import com.atlassian.performance.tools.aws.api.Storage
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime
 import com.atlassian.performance.tools.awsinfrastructure.api.DatasetCatalogue
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C5NineExtraLargeEphemeral
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
+import com.atlassian.performance.tools.infrastructure.api.database.MinimalMysqlDatabase
 import com.atlassian.performance.tools.infrastructure.api.dataset.Dataset
 import com.atlassian.performance.tools.infrastructure.api.distribution.PublicJiraSoftwareDistribution
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
+import com.atlassian.performance.tools.infrastructure.api.jira.MinimalMysqlJiraHome
 import com.atlassian.performance.tools.infrastructure.api.jvm.jmx.EnabledRemoteJmx
 import com.atlassian.performance.tools.workspace.api.TaskWorkspace
 import com.atlassian.performance.tools.workspace.api.TestWorkspace
@@ -17,8 +20,13 @@ import org.apache.logging.log4j.CloseableThreadContext
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.data.Percentage
 import org.junit.Test
+import java.lang.Exception
+import java.lang.Thread.sleep
+import java.net.HttpURLConnection
 import java.net.URI
+import java.net.URL
 import java.time.Duration
+import java.time.Duration.ofSeconds
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
@@ -207,4 +215,47 @@ class DataCenterFormulaIT {
 
         abstract fun run(workspace: TestWorkspace)
     }
+
+    @Test
+    fun shouldProvisionJiraWithMinimalDataset() {
+        val distribution = PublicJiraSoftwareDistribution("9.1.0")
+        val jiraHome = MinimalMysqlJiraHome()
+        val database = MinimalMysqlDatabase.Builder().build()
+        val jiraFormula = DataCenterFormula.Builder(distribution, jiraHome, database)
+            .configs(listOf(JiraNodeConfig.Builder().build()))
+            .waitForUpgrades(false)
+            .build()
+        val investment = Investment(
+            useCase = "Test if Jira provisions with minimal database and jirahome",
+            lifespan = Duration.ofMinutes(30)
+        )
+        val nonce = investment.reuseKey()
+        val keyFormula = SshKeyFormula(aws.ec2, workspace.directory, nonce, investment.lifespan)
+
+        val provisionedJira = jiraFormula
+            .provision(
+                investment = investment,
+                pluginsTransport = aws.jiraStorage(nonce),
+                resultsTransport = aws.resultsStorage(nonce),
+                key = CompletableFuture.completedFuture(keyFormula.provision()),
+                roleProfile = aws.shortTermStorageAccess(),
+                aws = aws
+            )
+        val resource = provisionedJira.resource
+        val response = generateSequence { provisionedJira.jira.address.queryHttp() }
+            .map { it.also { if (it != 200) sleep(ofSeconds(15).toMillis()) } }
+            .take(20)
+            .find { it == 200 }
+        resource.release().get(3, TimeUnit.MINUTES)
+
+        assertThat(response).isEqualTo(200)
+    }
+
+    private fun URI.queryHttp() = toURL().openConnection()
+        .let { it as? HttpURLConnection }
+        ?.let {
+            try { it.responseCode }
+            catch (e: Exception) { -1 }
+            finally { it.disconnect() }
+        }
 }

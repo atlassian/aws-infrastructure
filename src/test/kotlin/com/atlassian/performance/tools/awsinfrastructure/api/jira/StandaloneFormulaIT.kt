@@ -7,8 +7,16 @@ import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.
 import com.atlassian.performance.tools.awsinfrastructure.api.DatasetCatalogue
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C5NineExtraLargeEphemeral
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Volume
+import com.atlassian.performance.tools.infrastructure.api.database.MinimalMysqlDatabase
 import com.atlassian.performance.tools.infrastructure.api.distribution.PublicJiraServiceDeskDistribution
+import com.atlassian.performance.tools.infrastructure.api.distribution.PublicJiraSoftwareDistribution
+import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
+import com.atlassian.performance.tools.infrastructure.api.jira.MinimalMysqlJiraHome
+import org.assertj.core.api.Assertions
 import org.junit.Test
+import java.lang.Exception
+import java.net.HttpURLConnection
+import java.net.URI
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -54,4 +62,46 @@ class StandaloneFormulaIT {
 
         resource.release().get(1, TimeUnit.MINUTES)
     }
+
+    @Test
+    fun shouldProvisionJiraWithMinimalDataset() {
+        val distribution = PublicJiraSoftwareDistribution("9.1.0")
+        val jiraHome = MinimalMysqlJiraHome()
+        val database = MinimalMysqlDatabase.Builder().build()
+        val jiraFormula = StandaloneFormula.Builder(distribution, jiraHome, database)
+            .waitForUpgrades(false)
+            .build()
+        val investment = Investment(
+            useCase = "Test if Jira provisions with minimal database and jirahome",
+            lifespan = Duration.ofMinutes(30)
+        )
+        val nonce = investment.reuseKey()
+        val keyFormula = SshKeyFormula(aws.ec2, workspace.directory, nonce, investment.lifespan)
+
+        val provisionedJira = jiraFormula
+            .provision(
+                investment = investment,
+                pluginsTransport = aws.jiraStorage(nonce),
+                resultsTransport = aws.resultsStorage(nonce),
+                key = CompletableFuture.completedFuture(keyFormula.provision()),
+                roleProfile = aws.shortTermStorageAccess(),
+                aws = aws
+            )
+        val resource = provisionedJira.resource
+        val response = generateSequence { provisionedJira.jira.address.queryHttp() }
+            .map { it.also { if (it != 200) Thread.sleep(Duration.ofSeconds(15).toMillis()) } }
+            .take(20)
+            .find { it == 200 }
+        resource.release().get(3, TimeUnit.MINUTES)
+
+        Assertions.assertThat(response).isEqualTo(200)
+    }
+
+    private fun URI.queryHttp() = toURL().openConnection()
+        .let { it as? HttpURLConnection }
+        ?.let {
+            try { it.responseCode }
+            catch (e: Exception) { -1 }
+            finally { it.disconnect() }
+        }
 }
