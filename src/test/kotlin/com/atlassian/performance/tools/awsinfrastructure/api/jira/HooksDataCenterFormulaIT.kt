@@ -39,18 +39,18 @@ import kotlin.streams.toList
 
 class HooksDataCenterFormulaIT {
     private val logger: Logger = LogManager.getLogger(this::class.java)
-    private val jiraVersion = "8.13.0"
+    private val jiraVersion = "9.4.9"
     private val workspace = IntegrationTestRuntime.taskWorkspace.isolateTest(javaClass.simpleName).directory
-    private val datasetUri = URI("https://s3-eu-west-1.amazonaws.com/")
-        .resolve("jpt-custom-datasets-storage-a008820-datasetbucket-1sjxdtrv5hdhj/")
-        .resolve("dataset-f8dba866-9d1b-492e-b76c-f4a78ac3958c/")
+    private val s3Bucket = URI("https://s3-eu-central-1.amazonaws.com/")
+        .resolve("jpt-custom-datasets-storage-a008820-datasetbucket-1nrja8d1upind/")
+        .resolve("dataset-a533e558-e5c5-46e7-9398-5aeda84d793a/")
     private val mysql = HttpDatasetPackage(
-        uri = datasetUri.resolve("database.tar.bz2"),
+        uri = s3Bucket.resolve("database.tar.bz2"),
         downloadTimeout = Duration.ofMinutes(6)
     )
     private val jiraHome = JiraHomePackage(
         HttpDatasetPackage(
-            uri = datasetUri.resolve("jirahome.tar.bz2"),
+            uri = s3Bucket.resolve("jirahome.tar.bz2"),
             downloadTimeout = Duration.ofMinutes(6)
         )
     )
@@ -80,7 +80,7 @@ class HooksDataCenterFormulaIT {
         val database = DockerMysqlServer.Builder(infra.databaseServerRoom, mysql)
             .source(
                 HttpDatasetPackage(
-                    uri = datasetUri.resolve("database.tar.bz2"),
+                    uri = s3Bucket.resolve("database.tar.bz2"),
                     downloadTimeout = Duration.ofMinutes(6)
                 )
             )
