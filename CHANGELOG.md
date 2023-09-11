@@ -23,6 +23,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-3.1.0...master
 
+### Fixed
+- Fix minimal MySQL 5.7 setup. Fix [JPERF-1350].
+
+[JPERF-1350]: https://ecosystem.atlassian.net/browse/JPERF-1350
+
 ## [3.1.0] - 2023-07-17
 [3.1.0]: https://github.com/atlassian/aws-infrastructure/compare/release-3.0.1...release-3.1.0
 
