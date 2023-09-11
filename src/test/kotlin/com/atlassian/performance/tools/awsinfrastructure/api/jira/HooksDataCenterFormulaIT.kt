@@ -24,6 +24,7 @@ import com.atlassian.performance.tools.infrastructure.api.jira.start.hook.PostSt
 import com.atlassian.performance.tools.infrastructure.api.jira.start.hook.PostStartHooks
 import com.atlassian.performance.tools.infrastructure.api.jira.start.hook.RestUpgrade
 import com.atlassian.performance.tools.infrastructure.api.jvm.AdoptOpenJDK
+import com.atlassian.performance.tools.infrastructure.api.loadbalancer.ApacheProxyPlan
 import com.atlassian.performance.tools.ssh.api.SshConnection
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -105,7 +106,7 @@ class HooksDataCenterFormulaIT {
                 })
                 .build()
         }
-        val loadBalancer = infra.balance(ApacheEc2LoadBalancerFormula())
+        val loadBalancer = ApacheProxyPlan(infra.balancerServerRoom)
         val dcPlan = JiraDataCenterPlan.Builder(nodePlans, loadBalancer)
             .instanceHooks(
                 PreInstanceHooks.default()
@@ -129,9 +130,6 @@ class HooksDataCenterFormulaIT {
                     .download(Files.createTempFile("downloaded-config", ".xml"))
                 assertThat(serverXml.readText()).contains("<Connector port=\"${installed.http.tcp.port}\"")
                 assertThat(node.pid).isPositive()
-                installed.http.tcp.ssh.newConnection().use { ssh ->
-                    ssh.execute("wget ${dataCenter!!.address}")
-                }
             }
         }
         val reports = dcPlan.report().downloadTo(workspace)

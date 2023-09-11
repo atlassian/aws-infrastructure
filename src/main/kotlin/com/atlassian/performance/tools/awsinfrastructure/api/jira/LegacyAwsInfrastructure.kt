@@ -1,7 +1,7 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
 import com.amazonaws.services.cloudformation.model.Parameter
-import com.amazonaws.services.ec2.model.Filter
+import com.amazonaws.services.ec2.model.*
 import com.amazonaws.services.ec2.model.Tag
 import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
@@ -13,8 +13,7 @@ import com.atlassian.performance.tools.awsinfrastructure.api.loadbalancer.LoadBa
 import com.atlassian.performance.tools.awsinfrastructure.api.network.Network
 import com.atlassian.performance.tools.awsinfrastructure.api.network.NetworkFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.network.ProvisionedNetwork
-import com.atlassian.performance.tools.awsinfrastructure.api.network.access.ForIpAccessRequester
-import com.atlassian.performance.tools.awsinfrastructure.api.network.access.LocalPublicIpv4Provider
+import com.atlassian.performance.tools.awsinfrastructure.api.network.access.*
 import com.atlassian.performance.tools.awsinfrastructure.aws.TokenScrollingEc2
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
 import com.atlassian.performance.tools.infrastructure.api.jira.install.HttpNode
@@ -33,9 +32,12 @@ import org.apache.logging.log4j.Logger
 import java.nio.file.Path
 import java.time.Duration
 import java.util.*
-import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.function.Supplier
 
+/**
+ * @param [networking] all machines in this infra have access to the VPC CIDR
+ */
 class LegacyAwsInfrastructure private constructor(
     private val aws: Aws,
     private val investment: Investment,
@@ -50,18 +52,21 @@ class LegacyAwsInfrastructure private constructor(
 ) : Networked, AutoCloseable {
     private val logger: Logger = LogManager.getLogger(this::class.java)
     private val nonce = UUID.randomUUID().toString()
+    private val resources: Queue<Resource> = ConcurrentLinkedQueue()
     private val sshKey: SshKey by lazy { provisionKey() }
-    private val provisionedNetwork: ProvisionedNetwork by lazy { networking.get() }
-    private val network: Network by lazy { provisionedNetwork.network }
-    private val provisioning: ProvisionedStack by lazy { provisionStack() }
-    private val deprovisioning: CompletableFuture<*> by lazy {
-        provisioning.release()
-        provisionedNetwork.resource.release()
-        sshKey.remote.release()
-    }
+    private val network: Network by lazy { provisionNetwork() }
+    private val stack: ProvisionedStack by lazy { provisionStack() }
 
     private fun provisionKey(): SshKey {
-        return SshKeyFormula(aws.ec2, workspace, nonce, investment.lifespan).provision()
+        val key = SshKeyFormula(aws.ec2, workspace, nonce, investment.lifespan).provision()
+        resources.add(key.remote)
+        return key
+    }
+
+    private fun provisionNetwork(): Network {
+        val provisionedNetwork = networking.get()
+        resources.add(provisionedNetwork.resource)
+        return provisionedNetwork.network
     }
 
     private fun provisionStack(): ProvisionedStack {
@@ -105,12 +110,13 @@ class LegacyAwsInfrastructure private constructor(
             aws = aws,
             pollingTimeout = provisioningTimout
         ).provision()
+        resources.add(stack)
         logger.info("Jira stack is provisioned, it will expire at ${stack.expiry}")
         return stack
     }
 
     override fun close() {
-        deprovisioning.get()
+        CompositeResource(resources.toList()).release().get()
     }
 
     override fun subnet(): String = network.subnet.cidrBlock
@@ -118,30 +124,92 @@ class LegacyAwsInfrastructure private constructor(
     val jiraNodesServerRoom: HttpServerRoom = StackJiraNodes()
     val databaseServerRoom: TcpServerRoom = StackDatabase()
     val sharedHomeServerRoom: TcpServerRoom = StackSharedHome()
+    val balancerServerRoom: HttpServerRoom = Ec2Balancer()
 
-    private fun listMachines() = provisioning.listMachines()
+    private fun listMachines() = stack.listMachines()
 
-    fun balance(formula: LoadBalancerFormula): LoadBalancerPlan {
-        return object : LoadBalancerPlan {
-            override fun materialize(nodes: List<HttpNode>, hooks: List<PreStartHooks>): LoadBalancer {
-                val filter = Filter(
-                    "network-interface.addresses.private-ip-address",
-                    nodes.map { it.tcp.privateIp }
+    private inner class Ec2Balancer : HttpServerRoom {
+
+        private val port = 80
+
+        override fun serveHttp(name: String): HttpNode {
+            logger.info("Setting up Apache load balancer...")
+            val ec2 = aws.ec2
+            val securityGroup = aws.awaitingEc2.allocateSecurityGroup(
+                investment,
+                CreateSecurityGroupRequest()
+                    .withGroupName("${investment.reuseKey()}-HttpListener")
+                    .withDescription("Load balancer security group")
+                    .withVpcId(network.vpc.vpcId)
+            )
+            val (ssh, resource, instance) = aws.awaitingEc2.allocateInstance(
+                investment = investment,
+                key = sshKey,
+                vpcId = network.vpc.vpcId,
+                customizeLaunch = { launch ->
+                    launch
+                        .withInstanceInitiatedShutdownBehavior(ShutdownBehavior.Terminate)
+                        .withSecurityGroupIds(securityGroup.groupId)
+                        .withSubnetId(network.subnet.subnetId)
+                        .withInstanceType(InstanceType.M5Large)
+                        .withIamInstanceProfile(IamInstanceProfileSpecification().withName(aws.shortTermStorageAccess()))
+                }
+            )
+            resources.add(
+                DependentResources(
+                    user = resource,
+                    dependency = Ec2SecurityGroup(securityGroup, ec2)
                 )
-                val instances = TokenScrollingEc2(aws.ec2).findInstances(filter)
-                return formula
-                    .provision(
-                        investment,
-                        instances,
-                        network.vpc,
-                        network.subnet,
-                        sshKey,
-                        aws
-                    )
-                    .also { it.accessProvider.provideAccess("0.0.0.0/0") }
-                    .also { ForIpAccessRequester(LocalPublicIpv4Provider.Builder().build()).requestAccess(it.accessProvider) }
-                    .loadBalancer
-            }
+            )
+            sshKey.file.facilitateSsh(ssh.host.ipAddress)
+            val accessToBalancer = SecurityGroupIngressAccessProvider
+                .Builder(ec2 = aws.ec2, securityGroup = securityGroup, portRange = port..port)
+                .build()
+            grantAccessFromVpc(accessToBalancer)
+            grantSelfAccess(accessToBalancer, instance)
+            grantAccessFromLocal(accessToBalancer)
+            val tcp = TcpNode(
+                publicIp = instance.publicIpAddress,
+                privateIp = instance.privateIpAddress,
+                port = port,
+                name = name,
+                ssh = ssh
+            )
+            return HttpNode(
+                tcp = tcp,
+                basePath = "/",
+                supportsTls = false
+            )
+        }
+
+        private fun grantAccessFromVpc(accessToBalancer: AccessProvider) {
+            accessToBalancer.provideAccess(network.vpc.cidrBlock)
+        }
+
+        /**
+         * This was missed when reporting and fixing JPERF-790.
+         *
+         * For Jira pre 8.9.0 if the instance has no access to its own HTTP the dashboard view may freeze
+         * (in our case it was after log in, however it may be related to dataset config).
+         *
+         * This access to self is described as required in the [setup documentation](https://confluence.atlassian.com/jirakb/configure-linux-firewall-for-jira-applications-741933610.html)
+         * and it was missed in implementation of aws-infrastructure 2.24.0
+         *
+         * > 4 - Allowing connections to JIRA from itself (to ensure you don't run into problems with
+         * > [gadget titles showing as __MSG_gadget](https://confluence.atlassian.com/jirakb/fix-gadget-titles-showing-as-__msg_gadget-in-jira-server-813697086.html))
+         *
+         * > ```iptables -t nat -I OUTPUT -p tcp -o lo --dport 80 -j REDIRECT --to-ports 8080```
+         */
+        private fun grantSelfAccess(accessToBalancer: AccessProvider, instance: Instance) {
+            accessToBalancer.provideAccess(instance.publicIpAddress.ipToCidr())
+        }
+
+        /**
+         * Grant access from local laptop to facilitate investigations when provisioning goes wrong.
+         */
+        private fun grantAccessFromLocal(accessToBalancer: AccessProvider) {
+            val localIp = LocalPublicIpv4Provider.Builder().build().get()
+            accessToBalancer.provideAccess(localIp.ipToCidr())
         }
     }
 
