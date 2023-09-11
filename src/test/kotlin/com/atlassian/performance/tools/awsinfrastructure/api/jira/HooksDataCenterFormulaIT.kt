@@ -105,7 +105,8 @@ class HooksDataCenterFormulaIT {
                 })
                 .build()
         }
-        val dcPlan = JiraDataCenterPlan.Builder(nodePlans, infra.balance(ApacheEc2LoadBalancerFormula()))
+        val loadBalancer = infra.balance(ApacheEc2LoadBalancerFormula())
+        val dcPlan = JiraDataCenterPlan.Builder(nodePlans, loadBalancer)
             .instanceHooks(
                 PreInstanceHooks.default()
                     .also { it.insert(database) }
@@ -151,6 +152,8 @@ class HooksDataCenterFormulaIT {
             assertThat(fileTree.filter { it.fileName.toString().startsWith("atlassian-jira-gc") })
                 .`as`("GC logs from $fileTree")
                 .isNotEmpty
+            val jiraResponse = dataCenter!!.address.addressPublicly().toURL().readText()
+            assertThat(jiraResponse).contains("<body>")
         }.assertAll()
     }
 
