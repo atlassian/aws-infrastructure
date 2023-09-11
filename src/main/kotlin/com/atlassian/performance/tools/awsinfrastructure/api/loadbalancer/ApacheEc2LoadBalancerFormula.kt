@@ -49,7 +49,7 @@ class ApacheEc2LoadBalancerFormula : LoadBalancerFormula {
         )
         key.file.facilitateSsh(ssh.host.ipAddress)
         val loadBalancer = ApacheProxyLoadBalancer.Builder(ssh)
-            .nodes(instances.map { URI("http://${it.publicIpAddress}:8080/") })
+            .nodes(instances.map { URI("http://${it.privateIpAddress}:8080/") })
             .ipAddress(instance.publicIpAddress)
             .build()
         loadBalancer.provision()

@@ -100,7 +100,7 @@ class LegacyAwsInfrastructure private constructor(
                     .withParameterValue(network.subnet.subnetId),
                 Parameter()
                     .withParameterKey("AccessCidr")
-                    .withParameterValue("0.0.0.0/0")
+                    .withParameterValue(network.vpc.cidrBlock)
             ),
             aws = aws,
             pollingTimeout = provisioningTimout
