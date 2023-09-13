@@ -23,6 +23,9 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-3.1.1...master
 
+### Fixed
+- Use newer mysql connector v8.0.33
+
 ## [3.1.1] - 2023-09-12
 [3.1.1]: https://github.com/atlassian/aws-infrastructure/compare/release-3.1.0...release-3.1.1
 

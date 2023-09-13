@@ -77,11 +77,11 @@ internal class StandaloneNodeFormula(
                 connection.safeExecute("sed -i '/^jira.autoexport=/d' $jiraHome/jira-config.properties")
                 connection.execute("echo jira.autoexport=false >> $jiraHome/jira-config.properties")
                 downloadMysqlConnector(
-                    "https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.40.tar.gz",
+                    "https://cdn.mysql.com/archives/mysql-connector-java-8.0/mysql-connector-j-8.0.33.tar.gz",
                     connection
                 )
-                connection.execute("tar -xzf mysql-connector-java-5.1.40.tar.gz")
-                connection.execute("cp mysql-connector-java-5.1.40/mysql-connector-java-5.1.40-bin.jar $unpackedProduct/lib")
+                connection.execute("tar -xzf mysql-connector-j-8.0.33.tar.gz")
+                connection.execute("cp mysql-connector-j-8.0.33/mysql-connector-j-8.0.33.jar $unpackedProduct/lib")
                 AwsCli().download(pluginsTransport.location, connection, target = "$jiraHome/plugins/installed-plugins")
 
                 jdk.install(connection)
