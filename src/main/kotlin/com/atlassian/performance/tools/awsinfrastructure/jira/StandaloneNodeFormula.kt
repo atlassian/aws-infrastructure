@@ -21,6 +21,10 @@ import org.apache.logging.log4j.Logger
 import java.time.Duration
 import java.util.concurrent.Executors
 
+/**
+ * Since bumping mysql connector 5.1.40 -> 8.0.33, Jira < 8.12.0 is not supported
+ * 8.12.0 is first Jira listed to support mysql connector 8.0 in [official docs](https://confluence.atlassian.com/adminjiraserver0812/supported-platforms-1026528236.html)
+ */
 internal class StandaloneNodeFormula(
     private val jiraHomeSource: JiraHomeSource,
     private val pluginsTransport: Storage,
