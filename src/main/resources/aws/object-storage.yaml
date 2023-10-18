@@ -3,7 +3,7 @@ Description: Creates an S3 bucket for storage of resources (eg. avatars/attachme
 Parameters:
   S3StorageBucketName:
     Type: String
-  AWSAccount:
+  BucketAccessRoleArn:
     Type: String
 Resources:
   S3Storage:
@@ -24,7 +24,7 @@ Resources:
         Statement:
           - Principal:
               AWS:
-                - !Ref AWSAccount
+                - !Ref BucketAccessRoleArn
             Effect: Allow
             Action:
               - 's3:GetObject'
@@ -34,7 +34,7 @@ Resources:
               Fn::Join: [ '', [ 'arn:aws:s3:::', !Ref S3Storage, '/*' ] ]
           - Principal:
               AWS:
-                - !Ref AWSAccount
+                - !Ref BucketAccessRoleArn
             Effect: Allow
             Action:
               - 's3:ListBucket'

@@ -1,6 +1,7 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
 import com.amazonaws.services.cloudformation.model.Parameter
+import com.amazonaws.services.identitymanagement.model.GetInstanceProfileRequest
 import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.InstanceFilters
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
@@ -147,6 +148,9 @@ class DataCenterFormula private constructor(
         }
 
         if (jiraSharedStorageConfig.isAnyResourceStoredInS3()) {
+            val instanceProfileRoleArn = aws.iam.getInstanceProfile(
+                GetInstanceProfileRequest().withInstanceProfileName(roleProfile)
+            ).instanceProfile.roles.first().arn
             StackFormula(
                 investment = investment,
                 aws = aws,
@@ -156,8 +160,8 @@ class DataCenterFormula private constructor(
                         .withParameterKey("S3StorageBucketName")
                         .withParameterValue(s3StorageBucketName),
                     Parameter()
-                        .withParameterKey("AWSAccount")
-                        .withParameterValue(aws.callerIdentity.account)
+                        .withParameterKey("BucketAccessRoleArn")
+                        .withParameterValue(instanceProfileRoleArn)
                 )
             ).provision()
         }
