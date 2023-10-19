@@ -152,7 +152,14 @@ class DataCenterFormula private constructor(
                 GetInstanceProfileRequest().withInstanceProfileName(roleProfile)
             ).instanceProfile.roles.first().arn
             StackFormula(
-                investment = investment,
+                investment = investment.copy(
+                    // This stack contains a bucket with a lifecycle policy that expires the objects after one day. We
+                    // want to wait for AWS to expire and delete the objects before the housekeeping plan tries to
+                    // delete this stack as the large number of objects in the bucket will take a long time to delete
+                    // and may cause the housekeeping plan to fail. AWS can take additional time to perform the deletion
+                    // however there is no charge past the expiry time.
+                    lifespan = Duration.ofDays(4)
+                ),
                 aws = aws,
                 cloudformationTemplate = readResourceText("aws/object-storage.yaml"),
                 parameters = listOf(
