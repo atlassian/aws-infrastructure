@@ -2,6 +2,7 @@ package com.atlassian.performance.tools.awsinfrastructure.api
 
 import com.atlassian.performance.tools.aws.api.StorageLocation
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.StoppableNode
+import com.atlassian.performance.tools.awsinfrastructure.jira.home.SharedHomeFormula
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.dataset.Dataset
 import com.atlassian.performance.tools.ssh.api.Ssh
@@ -49,15 +50,17 @@ class CustomDatasetSource private constructor(
         location: StorageLocation
     ): Dataset {
         logger.info("Uploading dataset to '$location'...")
+
+        stopJira()
+        stopDockerContainers(database.host)
+        checkResourcesStoredInJiraHome(jiraHome)
+
         val executor = Executors.newFixedThreadPool(
             3,
             ThreadFactoryBuilder()
                 .setNameFormat("s3-upload-thread-%d")
                 .build()
         )
-
-        stopJira()
-        stopDockerContainers(database.host)
 
         val jiraHomeUpload = executor.submitWithLogContext("jiraHome") {
             val renamed = jiraHome.move(FileNames.JIRAHOME, Duration.ofMinutes(1))
@@ -95,6 +98,23 @@ class CustomDatasetSource private constructor(
 
     private fun stopDockerContainers(host: SshHost) {
         Ssh(host, connectivityPatience = 4).newConnection().use { it.execute("sudo docker stop \$(sudo docker ps -aq)") }
+    }
+
+    /**
+     * Checks to see if all data from the dataset is stored in the jira home.  If not then the dataset cannot be saved
+     * as it would be missing data.
+     *
+     * @see com.atlassian.performance.tools.awsinfrastructure.api.jira.JiraSharedStorageConfig
+     */
+    private fun checkResourcesStoredInJiraHome(jiraHome: RemoteLocation) {
+        Ssh(jiraHome.host, connectivityPatience = 4).newConnection().use {
+            if (it.safeExecute("test -f ${jiraHome.location}/${SharedHomeFormula.SOME_RESOURCES_STORED_IN_S3_FILENAME}").isSuccessful()) {
+                throw IllegalStateException(
+                    "Cannot save dataset because some resources (eg. avatars, attachments) are stored in S3. " +
+                    "To save a dataset, ensure all resources are stored in the Jira home."
+                )
+            }
+        }
     }
 
     override fun toString(): String {

@@ -3,6 +3,7 @@ package com.atlassian.performance.tools.awsinfrastructure.jira.home
 import com.atlassian.performance.tools.aws.api.Storage
 import com.atlassian.performance.tools.awsinfrastructure.api.aws.AwsCli
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.Computer
+import com.atlassian.performance.tools.awsinfrastructure.api.jira.JiraSharedStorageConfig
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource
 import com.atlassian.performance.tools.infrastructure.api.jira.SharedHome
 import com.atlassian.performance.tools.infrastructure.api.os.Ubuntu
@@ -14,18 +15,26 @@ internal class SharedHomeFormula(
     private val jiraHomeSource: JiraHomeSource,
     private val ip: String,
     private val ssh: Ssh,
-    private val computer: Computer
+    private val computer: Computer,
+    private val jiraSharedStorageConfig: JiraSharedStorageConfig = JiraSharedStorageConfig.Builder().build(),
+    private val s3StorageBucketName: String? = null
 ) {
     private val localSubnet = "10.0.0.0/24"
     private val localSharedHome = "/home/ubuntu/jira-shared-home"
 
     private val ubuntu = Ubuntu()
 
+    companion object {
+        const val SOME_RESOURCES_STORED_IN_S3_FILENAME: String = ".some_resources_are_stored_in_s3"
+    }
+
     fun provision(): SharedHome {
+        val awsCliVersion = "2.9.12"
+
         ssh.newConnection().use {
             computer.setUp(it)
             val jiraHome = jiraHomeSource.download(it)
-            AwsCli().download(
+            AwsCli(awsCliVersion).download(
                 location = pluginsTransport.location,
                 ssh = it,
                 target = "$jiraHome/plugins/installed-plugins",
@@ -37,6 +46,32 @@ internal class SharedHomeFormula(
             it.safeExecute("sudo mv $jiraHome/logos $localSharedHome")
             ubuntu.install(it, listOf("nfs-kernel-server"))
             it.execute("sudo echo '$localSharedHome $localSubnet(rw,sync,no_subtree_check,no_root_squash)' | sudo tee -a /etc/exports")
+
+            if (s3StorageBucketName != null && jiraSharedStorageConfig.isAnyResourceStoredInS3()) {
+                AwsCli(awsCliVersion).ensureAwsCli(it)
+                if (jiraSharedStorageConfig.storeAttachmentsInS3) {
+                    // Copy the attachment data from NFS onto S3
+                    // Use xargs to split the work across 30 concurrent jobs.  This is much faster than a single job.
+                    it.safeExecute(
+                        cmd = "export AWS_RETRY_MODE=standard; export AWS_MAX_ATTEMPTS=10; cd $localSharedHome/data && ( find attachments -mindepth 1 -maxdepth 1 -type d -print0 | xargs -n1 -0 -P30 -I {} aws s3 cp --recursive --only-show-errors {}/ s3://$s3StorageBucketName/{}/ )",
+                        timeout = Duration.ofMinutes(10)
+                    )
+                }
+                if (jiraSharedStorageConfig.storeAvatarsInS3) {
+                    // Copy the avatar data from NFS onto S3
+                    // Split up into subdirs for faster s3 copy then use xargs to split the work across 30 concurrent jobs.
+                    it.safeExecute(
+                        cmd = "cd $localSharedHome/data/avatars && ( find . -mindepth 1 -maxdepth 1 -type f -print0 | xargs -0 -n 1000 bash -c 'dir=\"subdir_\$(date +%s%N)\"; mkdir -p \"\$dir\"; mv \"\${@:1}\" \"\$dir\"' _ )",
+                        timeout = Duration.ofMinutes(3)
+                    )
+                    it.safeExecute(
+                        cmd = "export AWS_RETRY_MODE=standard; export AWS_MAX_ATTEMPTS=10; cd $localSharedHome/data && ( find avatars -mindepth 1 -maxdepth 1 -type d -print0 | xargs -n1 -0 -P30 -I {} aws s3 cp --recursive --only-show-errors {}/ s3://$s3StorageBucketName/avatars )",
+                        timeout = Duration.ofMinutes(10)
+                    )
+                }
+                it.safeExecute(cmd = "sudo touch $localSharedHome/$SOME_RESOURCES_STORED_IN_S3_FILENAME")
+            }
+
             it.execute("sudo service nfs-kernel-server restart")
         }
 

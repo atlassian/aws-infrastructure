@@ -1,6 +1,7 @@
 package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
 import com.amazonaws.services.cloudformation.model.Parameter
+import com.amazonaws.services.identitymanagement.model.GetInstanceProfileRequest
 import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.InstanceFilters
 import com.atlassian.performance.tools.awsinfrastructure.TemplateBuilder
@@ -26,6 +27,7 @@ import com.atlassian.performance.tools.infrastructure.api.database.Database
 import com.atlassian.performance.tools.infrastructure.api.distribution.ProductDistribution
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
+import com.atlassian.performance.tools.io.api.readResourceText
 import com.atlassian.performance.tools.jvmtasks.api.TaskTimer.time
 import com.atlassian.performance.tools.ssh.api.Ssh
 import com.atlassian.performance.tools.ssh.api.SshHost
@@ -34,6 +36,7 @@ import org.apache.logging.log4j.CloseableThreadContext
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.time.Duration
+import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
@@ -59,6 +62,7 @@ class DataCenterFormula private constructor(
     private val databaseVolume: Volume,
     private val accessRequester: AccessRequester,
     private val adminPasswordPlainText: String,
+    private val jiraSharedStorageConfig: JiraSharedStorageConfig,
     private val waitForUpgrades: Boolean
 ) : JiraFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
@@ -101,6 +105,7 @@ class DataCenterFormula private constructor(
         roleProfile: String,
         aws: Aws
     ): ProvisionedJira {
+        val s3StorageBucketName = "jpt-storage-${UUID.randomUUID()}"
         val provisionedNetwork = NetworkFormula(investment, aws).reuseOrProvision(overriddenNetwork)
         val network = provisionedNetwork.network
         val template = TemplateBuilder("2-nodes-dc.yaml").adaptTo(configs)
@@ -139,6 +144,32 @@ class DataCenterFormula private constructor(
                 ),
                 aws = aws,
                 pollingTimeout = stackCreationTimeout
+            ).provision()
+        }
+
+        if (jiraSharedStorageConfig.isAnyResourceStoredInS3()) {
+            val instanceProfileRoleArn = aws.iam.getInstanceProfile(
+                GetInstanceProfileRequest().withInstanceProfileName(roleProfile)
+            ).instanceProfile.roles.first().arn
+            StackFormula(
+                investment = investment.copy(
+                    // This stack contains a bucket with a lifecycle policy that expires the objects after one day. We
+                    // want to wait for AWS to expire and delete the objects before the housekeeping plan tries to
+                    // delete this stack as the large number of objects in the bucket will take a long time to delete
+                    // and may cause the housekeeping plan to fail. AWS can take additional time to perform the deletion
+                    // however there is no charge past the expiry time.
+                    lifespan = Duration.ofDays(4)
+                ),
+                aws = aws,
+                cloudformationTemplate = readResourceText("aws/object-storage.yaml"),
+                parameters = listOf(
+                    Parameter()
+                        .withParameterKey("S3StorageBucketName")
+                        .withParameterValue(s3StorageBucketName),
+                    Parameter()
+                        .withParameterKey("BucketAccessRoleArn")
+                        .withParameterValue(instanceProfileRoleArn)
+                )
             ).provision()
         }
 
@@ -184,7 +215,9 @@ class DataCenterFormula private constructor(
                 pluginsTransport = pluginsTransport,
                 ip = sharedHomePrivateIp,
                 ssh = sharedHomeSsh,
-                computer = computer
+                computer = computer,
+                s3StorageBucketName = s3StorageBucketName,
+                jiraSharedStorageConfig = jiraSharedStorageConfig
             ).provision()
             logger.info("Shared home is set up")
             sharedHome
@@ -217,7 +250,10 @@ class DataCenterFormula private constructor(
                         ),
                         nodeIndex = i,
                         sharedHome = sharedHome,
-                        privateIpAddress = instance.privateIpAddress
+                        privateIpAddress = instance.privateIpAddress,
+                        s3StorageBucketName = s3StorageBucketName,
+                        jiraSharedStorageConfig = jiraSharedStorageConfig,
+                        awsRegion = aws.region.name
                     )
                 )
             }
@@ -372,6 +408,7 @@ class DataCenterFormula private constructor(
         private var databaseVolume: Volume = Volume(100)
         private var accessRequester: AccessRequester = ForIpAccessRequester(LocalPublicIpv4Provider.Builder().build())
         private var adminPasswordPlainText: String = "admin"
+        private var jiraSharedStorageConfig: JiraSharedStorageConfig = JiraSharedStorageConfig.Builder().build()
         private var waitForUpgrades: Boolean = true
 
         internal constructor(
@@ -392,6 +429,7 @@ class DataCenterFormula private constructor(
             databaseVolume = formula.databaseVolume
             accessRequester = formula.accessRequester
             adminPasswordPlainText = formula.adminPasswordPlainText
+            jiraSharedStorageConfig = formula.jiraSharedStorageConfig
             waitForUpgrades = formula.waitForUpgrades
         }
 
@@ -420,6 +458,9 @@ class DataCenterFormula private constructor(
 
         fun accessRequester(accessRequester: AccessRequester) = apply { this.accessRequester = accessRequester }
 
+        fun jiraSharedStorageConfig(jiraSharedStorageConfig: JiraSharedStorageConfig) : Builder =
+            apply { this.jiraSharedStorageConfig = jiraSharedStorageConfig }
+
         /**
          * Don't change when starting up multi-node Jira DC of version lower than 9.1.0
          * See https://confluence.atlassian.com/jirakb/index-management-on-jira-start-up-1141500654.html for more details.
@@ -441,6 +482,7 @@ class DataCenterFormula private constructor(
             databaseVolume = databaseVolume,
             accessRequester = accessRequester,
             adminPasswordPlainText = adminPasswordPlainText,
+            jiraSharedStorageConfig = jiraSharedStorageConfig,
             waitForUpgrades = waitForUpgrades
         )
     }
