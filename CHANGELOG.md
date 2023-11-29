@@ -21,7 +21,10 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-3.1.1...master
+[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-3.1.3...master
+
+## [3.1.3] - 2023-11-29
+[3.1.3]: https://github.com/atlassian/aws-infrastructure/compare/release-3.1.2...release-3.1.3
 
 ### Fixed
 - Respect `JiraNodeConfig.name` when naming Data Center nodes.
