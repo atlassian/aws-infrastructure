@@ -23,6 +23,9 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-3.1.1...master
 
+### Fixed
+- Respect `JiraNodeConfig.name` when naming Data Center nodes.
+
 ## [3.1.2] - 2023-09-13
 [3.1.2]: https://github.com/atlassian/aws-infrastructure/compare/release-3.1.1...release-3.1.2
 

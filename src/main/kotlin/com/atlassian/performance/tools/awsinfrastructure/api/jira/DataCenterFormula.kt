@@ -215,7 +215,6 @@ class DataCenterFormula private constructor(
                             computer = computer,
                             adminPasswordPlainText = adminPasswordPlainText
                         ),
-                        nodeIndex = i,
                         sharedHome = sharedHome,
                         privateIpAddress = instance.privateIpAddress
                     )
