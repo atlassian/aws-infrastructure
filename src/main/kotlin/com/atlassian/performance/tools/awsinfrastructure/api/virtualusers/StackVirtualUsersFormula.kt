@@ -15,6 +15,7 @@ import com.atlassian.performance.tools.infrastructure.api.splunk.SplunkForwarder
 import com.atlassian.performance.tools.infrastructure.api.virtualusers.ResultsTransport
 import com.atlassian.performance.tools.infrastructure.api.virtualusers.SshVirtualUsers
 import com.atlassian.performance.tools.io.api.readResourceText
+import com.atlassian.performance.tools.jvmtasks.api.EventBus
 import com.atlassian.performance.tools.ssh.api.Ssh
 import com.atlassian.performance.tools.ssh.api.SshHost
 import org.apache.logging.log4j.LogManager
@@ -88,6 +89,7 @@ class StackVirtualUsersFormula private constructor(
         ).provision()
 
         val virtualUsersMachine = InstanceFilters().vuNodes(virtualUsersStack.listMachines())
+        EventBus.publish(virtualUsersMachine)
         val virtualUsersSshIp = virtualUsersMachine.publicIpAddress
         val virtualUsersSsh = Ssh(SshHost(virtualUsersSshIp, "ubuntu", key.get().file.path), connectivityPatience = 4)
 

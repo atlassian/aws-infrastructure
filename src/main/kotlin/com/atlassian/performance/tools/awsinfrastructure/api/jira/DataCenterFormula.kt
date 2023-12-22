@@ -26,6 +26,7 @@ import com.atlassian.performance.tools.infrastructure.api.database.Database
 import com.atlassian.performance.tools.infrastructure.api.distribution.ProductDistribution
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
+import com.atlassian.performance.tools.jvmtasks.api.EventBus
 import com.atlassian.performance.tools.jvmtasks.api.TaskScope.task
 import com.atlassian.performance.tools.ssh.api.Ssh
 import com.atlassian.performance.tools.ssh.api.SshHost
@@ -168,6 +169,7 @@ class DataCenterFormula private constructor(
         // shared home provisioning relies on plugins being uploaded
         uploadPlugins.get()
         val sharedHome = executor.submitWithLogContext("provision shared home") {
+            EventBus.publish(sharedHomeMachine)
             logger.info("Setting up shared home...")
             val sharedHomeSsh = Ssh(sharedHomeSshHost, connectivityPatience = 4)
             key.get().file.facilitateSsh(sharedHomeMachine.publicIpAddress)
@@ -187,6 +189,7 @@ class DataCenterFormula private constructor(
             .mapIndexed { i: Int, instance ->
                 val config = configs[i]
                 task(config.name, Callable {
+                    EventBus.publish(instance)
                     val sshIpAddress = instance.publicIpAddress
                     val ssh = Ssh(SshHost(sshIpAddress, "ubuntu", keyPath), connectivityPatience = 5)
                     key.get().file.facilitateSsh(sshIpAddress)
@@ -270,6 +273,7 @@ class DataCenterFormula private constructor(
         }
 
         val setupDatabase = executor.submitWithLogContext("database") {
+            EventBus.publish(databaseMachine)
             val databaseSshIp = databaseMachine.publicIpAddress
             val databaseSsh = Ssh(SshHost(databaseSshIp, "ubuntu", keyPath), connectivityPatience = 5)
             key.get().file.facilitateSsh(databaseSshIp)
