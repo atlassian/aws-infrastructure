@@ -4,6 +4,7 @@ import com.amazonaws.services.ec2.model.*
 import com.atlassian.performance.tools.aws.api.*
 import com.atlassian.performance.tools.awsinfrastructure.api.network.access.ForIpAccessRequester
 import com.atlassian.performance.tools.awsinfrastructure.api.network.access.SecurityGroupIngressAccessProvider
+import com.atlassian.performance.tools.jvmtasks.api.EventBus
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.net.URI
@@ -47,6 +48,7 @@ class ApacheEc2LoadBalancerFormula : LoadBalancerFormula {
                     .withIamInstanceProfile(IamInstanceProfileSpecification().withName(aws.shortTermStorageAccess()))
             }
         )
+        EventBus.publish(instance)
         key.file.facilitateSsh(ssh.host.ipAddress)
         val loadBalancer = ApacheProxyLoadBalancer.Builder(ssh)
             .nodes(instances.map { URI("http://${it.publicIpAddress}:8080/") })
