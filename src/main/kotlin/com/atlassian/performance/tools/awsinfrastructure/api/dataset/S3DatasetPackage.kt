@@ -4,9 +4,10 @@ import com.atlassian.performance.tools.aws.api.StorageLocation
 import com.atlassian.performance.tools.awsinfrastructure.api.aws.AwsCli
 import com.atlassian.performance.tools.infrastructure.api.dataset.DatasetPackage
 import com.atlassian.performance.tools.infrastructure.api.dataset.FileArchiver
-import com.atlassian.performance.tools.jvmtasks.api.TaskTimer.time
+import com.atlassian.performance.tools.jvmtasks.api.TaskScope.task
 import com.atlassian.performance.tools.ssh.api.SshConnection
 import java.time.Duration
+import java.util.concurrent.Callable
 
 /**
  * Downloads dataset from S3 and unzips on the remote machine.
@@ -29,9 +30,9 @@ class S3DatasetPackage(
         val unzipCommand = FileArchiver().pipeUnzip(ssh)
         val downloadFileCommand = AwsCli().downloadFileCommand(location, ssh, artifactName, stdOut)
 
-        time("download") {
+        task("download", Callable {
             ssh.execute("$downloadFileCommand | $unzipCommand", downloadTimeout)
-        }
+        })
 
         return unpackedPath
     }
