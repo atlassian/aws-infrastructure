@@ -5,11 +5,12 @@ import com.atlassian.performance.tools.awsinfrastructure.api.RemoteLocation
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.MeasurementSource
 import com.atlassian.performance.tools.infrastructure.api.jvm.jmx.JmxClient
-import com.atlassian.performance.tools.jvmtasks.api.TaskTimer.time
+import com.atlassian.performance.tools.jvmtasks.api.TaskScope.task
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.net.URI
+import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 
 class Jira private constructor(
@@ -34,7 +35,7 @@ class Jira private constructor(
         )
         nodes.map { executor.submitWithLogContext("gather $it") { it.gatherResults() } }
             .forEach { it.get() }
-        time("gather analytics") { nodes.firstOrNull()?.gatherAnalyticLogs() }
+        task("gather analytics", Callable { nodes.firstOrNull()?.gatherAnalyticLogs() })
         executor.shutdownNow()
     }
 

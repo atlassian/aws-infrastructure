@@ -20,15 +20,15 @@ import com.atlassian.performance.tools.infrastructure.api.database.Database
 import com.atlassian.performance.tools.infrastructure.api.distribution.ProductDistribution
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraHomeSource
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
-import com.atlassian.performance.tools.jvmtasks.api.TaskTimer.time
+import com.atlassian.performance.tools.jvmtasks.api.TaskScope.task
 import com.atlassian.performance.tools.ssh.api.Ssh
 import com.atlassian.performance.tools.ssh.api.SshHost
 import com.google.common.util.concurrent.ThreadFactoryBuilder
-import org.apache.logging.log4j.CloseableThreadContext
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.net.URI
 import java.time.Duration
+import java.util.concurrent.Callable
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
@@ -62,10 +62,10 @@ class StandaloneFormula private constructor(
         key: Future<SshKey>,
         roleProfile: String,
         aws: Aws
-    ): ProvisionedJira = time("provision Jira Server") {
+    ): ProvisionedJira {
         logger.info("Setting up Jira...")
 
-        AbruptExecutorService(
+        return AbruptExecutorService(
             Executors.newFixedThreadPool(
                 4,
                 ThreadFactoryBuilder()
@@ -156,9 +156,7 @@ class StandaloneFormula private constructor(
         val databaseSshIp = databaseMachine.publicIpAddress
         val databaseSsh = Ssh(SshHost(databaseSshIp, "ubuntu", keyPath), connectivityPatience = 4)
 
-        CloseableThreadContext.push("Jira node").use {
-            key.get().file.facilitateSsh(jiraSshIp)
-        }
+        key.get().file.facilitateSsh(jiraSshIp)
         val nodeFormula = StandaloneNodeFormula(
             config = config,
             jiraHomeSource = jiraHomeSource,
@@ -229,7 +227,7 @@ class StandaloneFormula private constructor(
         val provisionedNode = nodeFormula.provision()
 
         val databaseDataLocation = setupDatabase.get()
-        val node = time("start") { provisionedNode.start(emptyList()) }
+        val node = task("start", Callable { provisionedNode.start(emptyList()) })
 
         if (!selfDashboardAccess.get()) {
             logger.warn("It's possible that Jira doesn't have HTTP access to itself. Dashboards may not work.")

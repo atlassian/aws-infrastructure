@@ -1,6 +1,9 @@
 package com.atlassian.performance.tools.awsinfrastructure.api
 
-import com.atlassian.performance.tools.aws.api.*
+import com.atlassian.performance.tools.aws.api.Aws
+import com.atlassian.performance.tools.aws.api.CompositeResource
+import com.atlassian.performance.tools.aws.api.Investment
+import com.atlassian.performance.tools.aws.api.SshKeyFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.DataCenterFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.JiraFormula
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.JiraSoftwareDevDistribution
@@ -14,12 +17,13 @@ import com.atlassian.performance.tools.awsinfrastructure.api.virtualusers.Virtua
 import com.atlassian.performance.tools.awsinfrastructure.virtualusers.S3ResultsTransport
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.virtualusers.VirtualUsers
+import com.atlassian.performance.tools.jvmtasks.api.TaskScope.task
 import com.google.common.util.concurrent.ThreadFactoryBuilder
-import org.apache.logging.log4j.CloseableThreadContext
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.nio.file.Path
 import java.time.Duration
+import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 
 /**
@@ -64,9 +68,9 @@ class InfrastructureFormula<out T : VirtualUsers> private constructor(
             ).provision()
         }
 
-        val provisionedNetwork = CloseableThreadContext.push("network").use {
+        val provisionedNetwork = task("network", Callable {
             NetworkFormula(investment, aws).reuseOrProvision(preProvisionedNetwork)
-        }
+        })
         val network = provisionedNetwork.network
 
         val provisionJira = executor.submitWithLogContext("jira") {

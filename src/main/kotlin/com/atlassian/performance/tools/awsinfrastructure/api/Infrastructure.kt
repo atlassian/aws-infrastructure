@@ -6,13 +6,14 @@ import com.atlassian.performance.tools.awsinfrastructure.api.jira.Jira
 import com.atlassian.performance.tools.concurrency.api.submitWithLogContext
 import com.atlassian.performance.tools.infrastructure.api.MeasurementSource
 import com.atlassian.performance.tools.infrastructure.api.virtualusers.VirtualUsers
-import com.atlassian.performance.tools.jvmtasks.api.TaskTimer.time
+import com.atlassian.performance.tools.jvmtasks.api.TaskScope.task
 import com.atlassian.performance.tools.virtualusers.api.VirtualUserOptions
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.net.URI
 import java.nio.file.Path
+import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 
 class Infrastructure<out T : VirtualUsers>(
@@ -26,11 +27,11 @@ class Infrastructure<out T : VirtualUsers>(
     fun applyLoad(
         options: TargetingVirtualUserOptions
     ) {
-        time("applying load") {
+        task("applying load", Callable {
             virtualUsers.applyLoad(
                 options.target(jira.address)
             )
-        }
+        })
     }
 
     fun downloadResults(

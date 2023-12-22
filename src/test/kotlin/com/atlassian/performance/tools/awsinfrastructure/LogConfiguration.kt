@@ -31,11 +31,6 @@ internal class LogConfiguration(
                 )
             },
             logToFile(
-                name = "com.atlassian.performance.tools.jvmtasks.api.TaskTimer",
-                path = Paths.get("timing.log"),
-                pattern = "%d{ISO8601}{UTC}Z <%t> %x %msg%n"
-            ),
-            logToFile(
                 name = "com.atlassian.performance.tools.ssh",
                 path = Paths.get("ssh.log")
             ),

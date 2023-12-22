@@ -50,7 +50,7 @@ dependencies {
     api("com.atlassian.performance.tools:virtual-users:[3.3.0,4.0.0)")
     api("com.amazonaws:aws-java-sdk-ec2:1.11.817")
 
-    implementation("com.atlassian.performance.tools:jvm-tasks:[1.0.0,2.0.0)")
+    implementation("com.atlassian.performance.tools:jvm-tasks:[1.3.0, 2.0.0)") // 1.3.0 gives TaskScope
     implementation("com.atlassian.performance.tools:workspace:[2.0.0,3.0.0)")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
     implementation("org.glassfish:javax.json:1.1")
