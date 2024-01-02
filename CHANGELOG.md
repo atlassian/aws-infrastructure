@@ -23,6 +23,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-3.1.3...master
 
+### Fixed
+- Use `TaskScope` instead of `TaskTimer`.
+- Stop manipulating the log4j `ThreadContext` directly.
+- Publish `Instance` events.
+
 ## [3.1.3] - 2023-11-29
 [3.1.3]: https://github.com/atlassian/aws-infrastructure/compare/release-3.1.2...release-3.1.3
 
