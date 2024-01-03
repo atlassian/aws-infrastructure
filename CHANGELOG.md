@@ -21,7 +21,10 @@ Adding a requirement of a major version of a dependency is breaking a contract.
 Dropping a requirement of a major version of a dependency is a new contract.
 
 ## [Unreleased]
-[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-3.1.3...master
+[Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-3.1.4...master
+
+## [3.1.4] - 2024-01-03
+[3.1.4]: https://github.com/atlassian/aws-infrastructure/compare/release-3.1.3...release-3.1.4
 
 ### Fixed
 - Use `TaskScope` instead of `TaskTimer`.
