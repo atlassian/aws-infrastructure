@@ -13,4 +13,6 @@ internal class DiagnosableStoppedNode(
     } catch (e: Exception) {
         throw Exception("Failed to start $nodeIdentifier", e)
     }
+
+    override fun toString() = node.toString()
 }
