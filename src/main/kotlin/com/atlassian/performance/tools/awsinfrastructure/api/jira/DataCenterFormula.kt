@@ -184,36 +184,33 @@ class DataCenterFormula private constructor(
             sharedHome
         }
 
-        val nodeFormulas = jiraNodes
-            .asSequence()
-            .mapIndexed { i: Int, instance ->
-                val config = configs[i]
-                task(config.name, Callable {
-                    EventBus.publish(instance)
-                    val sshIpAddress = instance.publicIpAddress
-                    val ssh = Ssh(SshHost(sshIpAddress, "ubuntu", keyPath), connectivityPatience = 5)
-                    key.get().file.facilitateSsh(sshIpAddress)
-                    DiagnosableNodeFormula(
-                        delegate = DataCenterNodeFormula(
-                            base = StandaloneNodeFormula(
-                                resultsTransport = resultsTransport,
-                                databaseIp = databaseMachine.privateIpAddress,
-                                jiraHomeSource = jiraHomeSource,
-                                pluginsTransport = pluginsTransport,
-                                productDistribution = productDistribution,
-                                ssh = ssh,
-                                waitForUpgrades = waitForUpgrades,
-                                config = config,
-                                computer = computer,
-                                adminPasswordPlainText = adminPasswordPlainText
-                            ),
-                            sharedHome = sharedHome,
-                            privateIpAddress = instance.privateIpAddress
-                        )
-                    )
-                })
+        val nodesProvisioning = jiraNodes.mapIndexed { i: Int, instance ->
+            val nodeConfig = configs[i]
+            executor.submitWithLogContext("install ${nodeConfig.name}") {
+                EventBus.publish(instance)
+                val sshIpAddress = instance.publicIpAddress
+                val ssh = Ssh(SshHost(sshIpAddress, "ubuntu", keyPath), connectivityPatience = 5)
+                key.get().file.facilitateSsh(sshIpAddress)
+                val baseNode = StandaloneNodeFormula(
+                    resultsTransport = resultsTransport,
+                    databaseIp = databaseMachine.privateIpAddress,
+                    jiraHomeSource = jiraHomeSource,
+                    pluginsTransport = pluginsTransport,
+                    productDistribution = productDistribution,
+                    ssh = ssh,
+                    waitForUpgrades = waitForUpgrades,
+                    config = nodeConfig,
+                    computer = computer,
+                    adminPasswordPlainText = adminPasswordPlainText
+                )
+                val dcNode = DataCenterNodeFormula(
+                    base = baseNode,
+                    sharedHome = sharedHome,
+                    privateIpAddress = instance.privateIpAddress
+                )
+                DiagnosableNodeFormula(dcNode).provision()
             }
-            .toList()
+        }
 
         val provisionedLoadBalancer = futureLoadBalancer.get()
         val loadBalancer = provisionedLoadBalancer.loadBalancer
@@ -289,15 +286,12 @@ class DataCenterFormula private constructor(
             }
         }
 
-        val nodesProvisioning = nodeFormulas.map {
-            executor.submitWithLogContext("provision ${it.name}") { it.provision() }
-        }
-
         val databaseDataLocation = setupDatabase.get()
 
         val updateJiraConfiguration =
             if (loadBalancer is ApacheProxyLoadBalancer) listOf(loadBalancer::updateJiraConfiguration) else emptyList()
 
+        // official docs require nodes to be added one by one: https://confluence.atlassian.com/adminjiraserver/installing-jira-data-center-938846870.html
         val nodes = nodesProvisioning
             .map { it.get() }
             .map { node -> task("start $node", Callable { node.start(updateJiraConfiguration) }) }
