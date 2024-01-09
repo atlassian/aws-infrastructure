@@ -23,6 +23,9 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-3.1.4...master
 
+### Fixed
+- Clean up `start node X` task name.
+
 ## [3.1.4] - 2024-01-03
 [3.1.4]: https://github.com/atlassian/aws-infrastructure/compare/release-3.1.3...release-3.1.4
 
