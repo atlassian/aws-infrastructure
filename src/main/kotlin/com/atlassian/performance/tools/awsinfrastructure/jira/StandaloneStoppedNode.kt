@@ -119,13 +119,7 @@ internal class StandaloneStoppedNode(
             "RUNNING state"
         ) {
             val response = ssh.safeExecute("curl $statusEndpoint", launchTimeouts.unresponsivenessTimeout).output
-            Json.createParser(StringReader(response)).use { jsonParser ->
-                if (jsonParser.hasNext()) {
-                    jsonParser.`object`.getString("state") == "RUNNING"
-                } else {
-                    false
-                }
-            }
+            JiraStatus.Parser.parseResponse(response) == JiraStatus.RUNNING
         }
     }
 
