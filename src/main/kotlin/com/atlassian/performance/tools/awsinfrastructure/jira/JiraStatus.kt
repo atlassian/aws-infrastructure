@@ -4,10 +4,16 @@ import java.io.StringReader
 import javax.json.Json
 import kotlin.streams.asSequence
 
-
+/**
+ * https://confluence.atlassian.com/jirakb/jira-status-endpoint-response-meanings-1116294680.html
+ */
 enum class JiraStatus {
     STARTING,
-    RUNNING;
+    STOPPING,
+    FIRST_RUN,
+    RUNNING,
+    MAINTENANCE,
+    ERROR;
 
     object Parser {
 
