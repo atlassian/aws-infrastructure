@@ -37,4 +37,11 @@ class JiraStatusTest {
 
         assertThat(actual).isEqualTo(JiraStatus.STARTING)
     }
+
+    @Test
+    fun shouldParseUnknown() {
+        val actual = JiraStatus.Parser.parseResponse("""{"state":"YOUR_ENGINE_IS_BURNING_OUT"}""")
+
+        assertThat(actual).isNull()
+    }
 }
