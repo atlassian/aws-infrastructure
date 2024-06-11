@@ -13,6 +13,7 @@ enum class JiraStatus {
         fun parseResponse(response: String): JiraStatus? {
             return Json.createParser(StringReader(response)).use { jsonParser ->
                 if (jsonParser.hasNext()) {
+                    jsonParser.next()
                     JiraStatus.valueOf(jsonParser.`object`.getString("state"))
                 } else {
                     null
