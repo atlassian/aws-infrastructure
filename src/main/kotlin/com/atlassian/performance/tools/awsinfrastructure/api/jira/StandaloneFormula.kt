@@ -51,6 +51,7 @@ class StandaloneFormula private constructor(
     private val databaseVolume: Volume,
     private val accessRequester: AccessRequester,
     private val adminPasswordPlainText: String,
+    private val waitForRunning: Boolean,
     private val waitForUpgrades: Boolean
 ) : JiraFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
@@ -167,6 +168,7 @@ class StandaloneFormula private constructor(
             ssh = jiraSsh,
             computer = computer,
             adminPasswordPlainText = adminPasswordPlainText,
+            waitForRunning = waitForRunning,
             waitForUpgrades = waitForUpgrades
         )
 
@@ -276,6 +278,7 @@ class StandaloneFormula private constructor(
         private var databaseVolume: Volume = Volume(100)
         private var accessRequester: AccessRequester = ForIpAccessRequester(LocalPublicIpv4Provider.Builder().build())
         private var adminPasswordPlainText: String = "admin"
+        private var waitForRunning: Boolean = false
         private var waitForUpgrades: Boolean = true
 
         internal constructor(
@@ -295,6 +298,7 @@ class StandaloneFormula private constructor(
             databaseVolume = formula.databaseVolume
             accessRequester = formula.accessRequester
             adminPasswordPlainText = formula.adminPasswordPlainText
+            waitForRunning = formula.waitForRunning
             waitForUpgrades = formula.waitForUpgrades
         }
 
@@ -315,6 +319,7 @@ class StandaloneFormula private constructor(
 
         fun accessRequester(accessRequester: AccessRequester) = apply { this.accessRequester = accessRequester }
 
+        fun waitForRunning(waitForRunning: Boolean) = apply { this.waitForRunning = waitForRunning }
         fun waitForUpgrades(waitForUpgrades: Boolean) = apply { this.waitForUpgrades = waitForUpgrades }
 
         fun build(): StandaloneFormula = StandaloneFormula(
@@ -331,6 +336,7 @@ class StandaloneFormula private constructor(
             databaseVolume = databaseVolume,
             accessRequester = accessRequester,
             adminPasswordPlainText = adminPasswordPlainText,
+            waitForRunning = waitForRunning,
             waitForUpgrades = waitForUpgrades
         )
     }

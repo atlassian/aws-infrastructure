@@ -89,6 +89,7 @@ class DataCenterFormulaIT {
                 database = dataset.database
             ).computer(C5NineExtraLargeEphemeral())
                 .databaseComputer(C5NineExtraLargeEphemeral())
+                .waitForRunning(true)
                 .build()
 
             val provisionedJira = dcFormula.provision(

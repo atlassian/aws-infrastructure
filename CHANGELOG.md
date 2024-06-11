@@ -23,6 +23,11 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-3.1.4...master
 
+### Added
+- Wait for running status via:
+  - `DataCenterFormula.Builder.waitForRunning`
+  - `StandaloneFormula.Builder.waitForRunning`
+
 ### Fixed
 - Provision Jira nodes in parallel to the load balancer.
 - Glue `jira-node-X` and `provision jira-node-X` tasks together into `install jira-node-X`.
