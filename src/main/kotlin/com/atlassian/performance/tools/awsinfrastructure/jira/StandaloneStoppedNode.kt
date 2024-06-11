@@ -12,11 +12,13 @@ import com.atlassian.performance.tools.ssh.api.Ssh
 import com.atlassian.performance.tools.ssh.api.SshConnection
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import java.io.StringReader
 import java.net.URI
 import java.time.Duration
 import java.time.Duration.ofMinutes
 import java.time.Duration.ofSeconds
 import java.time.Instant.now
+import javax.json.Json
 
 internal class StandaloneStoppedNode(
     private val name: String,
@@ -25,6 +27,7 @@ internal class StandaloneStoppedNode(
     private val resultsTransport: Storage,
     private val unpackedProduct: String,
     private val osMetrics: List<OsMetric>,
+    private val waitForRunning: Boolean,
     private val waitForUpgrades: Boolean,
     private val launchTimeouts: JiraLaunchTimeouts,
     private val jdk: JavaDevelopmentKit,
@@ -53,6 +56,7 @@ internal class StandaloneStoppedNode(
             profiler.start(sshConnection, pid)?.let { monitoringProcesses.add(it) }
             val threadDump = ThreadDump(pid, jdk)
             try {
+                waitForRunning(sshConnection, threadDump)
                 waitForUpgrades(sshConnection, threadDump)
             } catch (exception: Exception) {
                 StartedNode(
@@ -99,6 +103,32 @@ internal class StandaloneStoppedNode(
         return ssh.execute("cat $unpackedProduct/work/catalina.pid").output.trim().toInt()
     }
 
+    private fun waitForRunning(
+        ssh: SshConnection,
+        threadDump: ThreadDump
+    ) {
+        if (!waitForRunning) {
+            logger.debug("Skipping Jira startup wait")
+            return
+        }
+        val statusEndpoint = URI("http://admin:$adminPasswordPlainText@localhost:8080/status")
+        pollJira(
+            launchTimeouts.initTimeout,
+            ssh,
+            threadDump,
+            "RUNNING state"
+        ) {
+            val response = ssh.safeExecute("curl $statusEndpoint", launchTimeouts.unresponsivenessTimeout).output
+            Json.createParser(StringReader(response)).use { jsonParser ->
+                if (jsonParser.hasNext()) {
+                    jsonParser.`object`.getString("state") == "RUNNING"
+                } else {
+                    false
+                }
+            }
+        }
+    }
+
     /**
      * Possible side effect: when wrong password provided increases cwd_user.invalidPasswordAttempts and that might result in
      * - captcha input being needed at login
@@ -109,11 +139,11 @@ internal class StandaloneStoppedNode(
         threadDump: ThreadDump
     ) {
         if (!waitForUpgrades) {
-            logger.debug("Skipping Jira startup wait")
+            logger.debug("Skipping Jira upgrade wait")
             return
         }
-        logger.debug("Waiting for Jira node to start...")
-        val upgradesEndpoint = URI("http://admin:${adminPasswordPlainText}@localhost:8080/rest/api/2/upgrade")
+        logger.debug("Waiting for Jira node to upgrade...")
+        val upgradesEndpoint = URI("http://admin:$adminPasswordPlainText@localhost:8080/rest/api/2/upgrade")
         waitForStatusToChange(
             statusQuo = "000",
             timeout = launchTimeouts.offlineTimeout,
@@ -148,14 +178,31 @@ internal class StandaloneStoppedNode(
         ssh: SshConnection,
         threadDump: ThreadDump
     ) {
-        val backoff = ofSeconds(10)
-        val deadline = now() + timeout
-        while (true) {
-            val currentStatus = ssh.safeExecute(
+        pollJira(
+            timeout,
+            ssh,
+            threadDump,
+            "upgrades passing $statusQuo status"
+        ) {
+            val newStatus = ssh.safeExecute(
                 cmd = "curl --silent --write-out '%{http_code}' --output /dev/null -X GET $uri",
                 timeout = launchTimeouts.unresponsivenessTimeout
             ).output
-            if (currentStatus != statusQuo) {
+            newStatus != statusQuo
+        }
+    }
+
+    private fun pollJira(
+        timeout: Duration,
+        ssh: SshConnection,
+        threadDump: ThreadDump,
+        checkName: String,
+        check: () -> Boolean
+    ) {
+        val backoff = ofSeconds(10)
+        val deadline = now() + timeout
+        while (true) {
+            if (check()) {
                 break
             }
             if (deadline < now()) {
@@ -166,15 +213,16 @@ internal class StandaloneStoppedNode(
                     ).output
                     logger.debug("Jira log file: <<$logContent>>")
                 }
-                throw Exception("$uri failed to get out of $statusQuo status within $timeout")
+                throw Exception("Jira didn't pass $checkName check in $timeout")
             }
             threadDump.gather(ssh, "thread-dumps")
             Thread.sleep(backoff.toMillis())
         }
     }
 
+
     override fun toString(): String {
-        return "StandaloneStoppedNode(name='$name', jiraHome='$jiraHome', analyticLogs='$analyticLogs', resultsTransport=$resultsTransport, unpackedProduct='$unpackedProduct', osMetrics=$osMetrics, waitForUpgrades=$waitForUpgrades, launchTimeouts=$launchTimeouts, jdk=$jdk, profiler=$profiler)"
+        return "StandaloneStoppedNode(name='$name', jiraHome='$jiraHome', analyticLogs='$analyticLogs', resultsTransport=$resultsTransport, unpackedProduct='$unpackedProduct', osMetrics=$osMetrics, waitForRunning=$waitForRunning, waitForUpgrades=$waitForUpgrades, launchTimeouts=$launchTimeouts, jdk=$jdk, profiler=$profiler)"
     }
 
 }

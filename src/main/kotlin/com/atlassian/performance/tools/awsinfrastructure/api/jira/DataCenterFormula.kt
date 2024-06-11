@@ -60,6 +60,7 @@ class DataCenterFormula private constructor(
     private val databaseVolume: Volume,
     private val accessRequester: AccessRequester,
     private val adminPasswordPlainText: String,
+    private val waitForRunning: Boolean,
     private val waitForUpgrades: Boolean
 ) : JiraFormula {
     private val logger: Logger = LogManager.getLogger(this::class.java)
@@ -198,6 +199,7 @@ class DataCenterFormula private constructor(
                     pluginsTransport = pluginsTransport,
                     productDistribution = productDistribution,
                     ssh = ssh,
+                    waitForRunning = waitForRunning,
                     waitForUpgrades = waitForUpgrades,
                     config = nodeConfig,
                     computer = computer,
@@ -361,6 +363,7 @@ class DataCenterFormula private constructor(
         private var databaseVolume: Volume = Volume(100)
         private var accessRequester: AccessRequester = ForIpAccessRequester(LocalPublicIpv4Provider.Builder().build())
         private var adminPasswordPlainText: String = "admin"
+        private var waitForRunning: Boolean = false
         private var waitForUpgrades: Boolean = true
 
         internal constructor(
@@ -381,6 +384,7 @@ class DataCenterFormula private constructor(
             databaseVolume = formula.databaseVolume
             accessRequester = formula.accessRequester
             adminPasswordPlainText = formula.adminPasswordPlainText
+            waitForRunning = formula.waitForRunning
             waitForUpgrades = formula.waitForUpgrades
         }
 
@@ -409,6 +413,8 @@ class DataCenterFormula private constructor(
 
         fun accessRequester(accessRequester: AccessRequester) = apply { this.accessRequester = accessRequester }
 
+        fun waitForRunning(waitForRunning: Boolean) = apply { this.waitForRunning = waitForRunning }
+
         /**
          * Don't change when starting up multi-node Jira DC of version lower than 9.1.0
          * See https://confluence.atlassian.com/jirakb/index-management-on-jira-start-up-1141500654.html for more details.
@@ -430,6 +436,7 @@ class DataCenterFormula private constructor(
             databaseVolume = databaseVolume,
             accessRequester = accessRequester,
             adminPasswordPlainText = adminPasswordPlainText,
+            waitForRunning = waitForRunning,
             waitForUpgrades = waitForUpgrades
         )
     }
