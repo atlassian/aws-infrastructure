@@ -2,6 +2,7 @@ package com.atlassian.performance.tools.awsinfrastructure.jira
 
 import java.io.StringReader
 import javax.json.Json
+import kotlin.streams.asSequence
 
 
 enum class JiraStatus {
@@ -12,14 +13,14 @@ enum class JiraStatus {
 
         fun parseResponse(response: String): JiraStatus? {
             return Json.createParser(StringReader(response)).use { jsonParser ->
-                if (jsonParser.hasNext()) {
-                    jsonParser.next()
-                    JiraStatus.valueOf(jsonParser.`object`.getString("state"))
-                } else {
-                    null
-                }
+                jsonParser
+                    .valueStream
+                    .asSequence()
+                    .firstOrNull()
+                    ?.asJsonObject()
+                    ?.getString("state")
+                    ?.let { JiraStatus.valueOf(it) }
             }
         }
     }
-
 }
