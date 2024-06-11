@@ -19,7 +19,7 @@ enum class JiraStatus {
                     .firstOrNull()
                     ?.asJsonObject()
                     ?.getString("state")
-                    ?.let { JiraStatus.valueOf(it) }
+                    ?.let { state -> JiraStatus.values().find { it.name == state } }
             }
         }
     }
