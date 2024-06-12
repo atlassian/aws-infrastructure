@@ -7,8 +7,14 @@ on:
   workflow_dispatch:
     inputs:
       release:
-        description: 'Release? yes/no'
-        default: 'no'
+        type: choice
+        description: 'Bump SemVer and release?'
+        options:
+          - No
+          - Patch
+          - Minor
+          - Major
+        default: No
 
 jobs:
   build:
@@ -61,7 +67,7 @@ jobs:
       contents: write
       id-token: write
     needs: build-check
-    if: github.event.inputs.release == 'yes'
+    if: github.event.inputs.release != null && github.event.inputs.release != 'No'
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -75,7 +81,6 @@ jobs:
           atlassian_private_username: ${{ steps.publish-token.outputs.artifactoryUsername }}
           atlassian_private_password: ${{ steps.publish-token.outputs.artifactoryApiKey }}
         run: |
-          ./gradlew release \
-              -Prelease.customUsername=${{ github.actor }} \
-              -Prelease.customPassword=${{ github.token }}
+          ./gradlew markNextVersion -Prelease.incrementer=increment${{ github.event.inputs.release }} -Prelease.localOnly
+          ./gradlew release -Prelease.customUsername=${{ github.actor }} -Prelease.customPassword=${{ github.token }}
           ./gradlew publish
