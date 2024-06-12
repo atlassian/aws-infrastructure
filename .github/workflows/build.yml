@@ -10,11 +10,11 @@ on:
         type: choice
         description: 'Bump SemVer and release?'
         options:
-          - No
+          - 'No'
           - Patch
           - Minor
           - Major
-        default: No
+        default: 'No'
 
 jobs:
   build:
