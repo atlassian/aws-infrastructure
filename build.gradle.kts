@@ -56,9 +56,9 @@ dependencies {
         "slf4j-impl"
     ).forEach { implementation(it) }
 
-    testCompile("junit:junit:4.12")
-    testCompile("org.assertj:assertj-core:3.11.1")
-    testCompile("org.hamcrest:hamcrest-library:1.3")
+    testImplementation("junit:junit:4.12")
+    testImplementation("org.assertj:assertj-core:3.11.1")
+    testImplementation("org.hamcrest:hamcrest-library:1.3")
 }
 
 fun log4j(
