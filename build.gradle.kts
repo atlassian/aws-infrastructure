@@ -1,20 +1,29 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val kotlinVersion = "1.2.70"
 val log4jVersion = "2.17.2"
 
 plugins {
     id("com.atlassian.performance.tools.gradle-release").version("0.9.0")
-    kotlin("jvm").version("1.3.20")
+    kotlin("jvm").version("1.4.32")
     `java-library`
 }
 
+tasks.withType<KotlinCompile> {
+    kotlinOptions {
+        jvmTarget = "1.8"
+        languageVersion = "1.4"
+        languageVersion = "1.2" // the maximum, which still produces 1.1.x metadata required by 1.2.70 kotlin clients
+    }
+}
+
 configurations.all {
+    if (name.startsWith("kotlinCompiler") || name.startsWith("dokka")) {
+        return@all
+    }
     resolutionStrategy {
-        if (name.startsWith("kotlinCompiler")) {
-            return@resolutionStrategy
-        }
         activateDependencyLocking()
         failOnVersionConflict()
         eachDependency {
