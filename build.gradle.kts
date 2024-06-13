@@ -26,7 +26,7 @@ configurations.all {
         failOnVersionConflict()
         eachDependency {
             when (requested.module.toString()) {
-                "com.google.guava:guava" -> useVersion("23.6-jre")
+                "com.google.guava:guava" -> useVersion("25.0-jre") // conflict between infrastructure, virtual-users and jira-actions
                 "org.apache.httpcomponents:httpclient" -> useVersion("4.5.13")
                 "com.fasterxml.jackson.core:jackson-core" -> useVersion("2.9.4")
                 "org.slf4j:slf4j-api" -> useVersion("1.8.0-alpha2")
@@ -58,7 +58,6 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
     implementation("org.glassfish:javax.json:1.1")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.4")
-    implementation("com.google.guava:guava:23.6-jre")
     implementation("com.atlassian.performance.tools:concurrency:[1.2.0, 2.0.0)")
     listOf("api", "core", "slf4j-impl").forEach { implementation("org.apache.logging.log4j:log4j-$it:$log4jVersion") }
 
