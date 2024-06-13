@@ -5,16 +5,9 @@ val kotlinVersion = "1.2.70"
 val log4jVersion = "2.17.2"
 
 plugins {
-    kotlin("jvm").version("1.2.70")
+    id("com.atlassian.performance.tools.gradle-release").version("0.9.0")
+    kotlin("jvm").version("1.3.20")
     `java-library`
-    id("com.atlassian.performance.tools.gradle-release").version("0.7.1")
-    id("com.gradle.build-scan").version("2.4.2")
-}
-
-buildScan {
-    termsOfServiceUrl = "https://gradle.com/terms-of-service"
-    termsOfServiceAgree = "yes"
-    publishAlways()
 }
 
 configurations.all {
@@ -90,7 +83,7 @@ val testIntegration = task<Test>("testIntegration") {
 tasks["check"].dependsOn(testIntegration)
 
 tasks.getByName("wrapper", Wrapper::class).apply {
-    gradleVersion = "5.2.1"
+    gradleVersion = "7.6.3"
     distributionType = Wrapper.DistributionType.ALL
 }
 
