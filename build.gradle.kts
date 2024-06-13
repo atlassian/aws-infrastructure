@@ -36,38 +36,28 @@ configurations.all {
 }
 
 dependencies {
-    api("com.atlassian.performance.tools:infrastructure:[4.19.0,5.0.0)")
+    api("com.atlassian.performance.tools:infrastructure:[4.19.0, 5.0.0)")
     api("com.atlassian.performance.tools:aws-resources:[1.10.1, 2.0.0)") // 1.10.1 gives Ami.Builder.amiProvider
-    api("com.atlassian.performance.tools:jira-actions:[2.0.0,4.0.0)")
-    api("com.atlassian.performance.tools:ssh:[2.4.1,3.0.0)")
-    api("com.atlassian.performance.tools:virtual-users:[3.3.0,4.0.0)")
+    api("com.atlassian.performance.tools:jira-actions:[2.0.0, 4.0.0)")
+    api("com.atlassian.performance.tools:ssh:[2.4.1, 3.0.0)")
+    api("com.atlassian.performance.tools:virtual-users:[3.3.0, 4.0.0)")
     api("com.amazonaws:aws-java-sdk-ec2:1.11.817")
 
     implementation("com.atlassian.performance.tools:jvm-tasks:[1.3.0, 2.0.0)") // 1.3.0 gives TaskScope and EventBus
-    implementation("com.atlassian.performance.tools:workspace:[2.0.0,3.0.0)")
+    implementation("com.atlassian.performance.tools:workspace:[2.0.0, 3.0.0)")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
     implementation("org.glassfish:javax.json:1.1")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.4")
     implementation("com.google.guava:guava:23.6-jre")
-    implementation("com.atlassian.performance.tools:concurrency:[1.2.0,2.0.0)")
-    log4j(
-        "api",
-        "core",
-        "slf4j-impl"
-    ).forEach { implementation(it) }
+    implementation("com.atlassian.performance.tools:concurrency:[1.2.0, 2.0.0)")
+    listOf("api", "core", "slf4j-impl").forEach { implementation("org.apache.logging.log4j:log4j-$it:$log4jVersion") }
 
     testImplementation("junit:junit:4.12")
     testImplementation("org.assertj:assertj-core:3.11.1")
     testImplementation("org.hamcrest:hamcrest-library:1.3")
 }
 
-fun log4j(
-    vararg modules: String
-): List<String> = modules.map { module ->
-    "org.apache.logging.log4j:log4j-$module:$log4jVersion"
-}
-
-tasks.getByName("test", Test::class).apply {
+tasks.test {
     filter {
         exclude("**/*IT.class")
     }
@@ -80,9 +70,11 @@ val testIntegration = task<Test>("testIntegration") {
     maxParallelForks = 5
 }
 
-tasks["check"].dependsOn(testIntegration)
+tasks.check {
+    dependsOn(testIntegration)
+}
 
-tasks.getByName("wrapper", Wrapper::class).apply {
+tasks.wrapper {
     gradleVersion = "7.6.3"
     distributionType = Wrapper.DistributionType.ALL
 }
