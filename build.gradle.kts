@@ -1,5 +1,3 @@
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val kotlinVersion = "1.2.70"
@@ -89,11 +87,4 @@ tasks.check {
 tasks.wrapper {
     gradleVersion = "7.6.3"
     distributionType = Wrapper.DistributionType.ALL
-}
-
-tasks.withType<Test> {
-    testLogging {
-        events = setOf(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
-        exceptionFormat = TestExceptionFormat.FULL
-    }
 }
