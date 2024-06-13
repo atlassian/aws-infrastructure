@@ -18,7 +18,7 @@ tasks.withType<KotlinCompile> {
 }
 
 configurations.all {
-    if (name.startsWith("kotlinCompiler") || name.startsWith("dokka")) {
+    if (name.startsWith("kotlin") || name.startsWith("dokka")) {
         return@all
     }
     resolutionStrategy {
