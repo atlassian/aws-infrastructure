@@ -12,6 +12,9 @@ plugins {
 
 configurations.all {
     resolutionStrategy {
+        if (name.startsWith("kotlinCompiler")) {
+            return@resolutionStrategy
+        }
         activateDependencyLocking()
         failOnVersionConflict()
         eachDependency {
