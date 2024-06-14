@@ -1,8 +1,8 @@
 package com.atlassian.performance.tools.awsinfrastructure.jira
 
+import org.apache.logging.log4j.LogManager
 import java.io.StringReader
 import javax.json.Json
-import kotlin.streams.asSequence
 
 /**
  * https://confluence.atlassian.com/jirakb/jira-status-endpoint-response-meanings-1116294680.html
@@ -17,16 +17,18 @@ enum class JiraStatus {
 
     object Parser {
 
+        private val LOG = LogManager.getLogger(this::class.java)
+
         fun parseResponse(response: String): JiraStatus? {
-            return Json.createParser(StringReader(response)).use { jsonParser ->
-                jsonParser
-                    .valueStream
-                    .asSequence()
-                    .firstOrNull()
-                    ?.asJsonObject()
-                    ?.getString("state")
-                    ?.let { state -> JiraStatus.values().find { it.name == state } }
+            val json = try {
+                Json.createReader(StringReader(response)).read()
+            } catch (e: Exception) {
+                LOG.warn("That's not a JSON! $response", e)
+                return null
             }
+            return json.asJsonObject()
+                ?.getString("state")
+                ?.let { state -> JiraStatus.values().find { it.name == state } }
         }
     }
 }

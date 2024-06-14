@@ -23,6 +23,9 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-3.2.0...master
 
+### Fixed
+- Harden `JiraStatus` parsing.
+
 ## [3.2.0] - 2024-06-24
 [3.2.0]: https://github.com/atlassian/aws-infrastructure/compare/release-3.1.4...release-3.2.0
 
