@@ -20,15 +20,16 @@ enum class JiraStatus {
         private val LOG = LogManager.getLogger(this::class.java)
 
         fun parseResponse(response: String): JiraStatus? {
-            val json = try {
-                Json.createReader(StringReader(response)).read()
+            val state = try {
+                Json.createReader(StringReader(response))
+                    .read()
+                    .asJsonObject()
+                    .getString("state")
             } catch (e: Exception) {
-                LOG.warn("That's not a JSON! $response", e)
+                LOG.warn("Invalid JSON state: '$response'", e)
                 return null
             }
-            return json.asJsonObject()
-                ?.getString("state")
-                ?.let { state -> JiraStatus.values().find { it.name == state } }
+            return JiraStatus.values().find { it.name == state }
         }
     }
 }
