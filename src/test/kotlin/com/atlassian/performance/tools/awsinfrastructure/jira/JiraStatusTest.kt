@@ -44,4 +44,11 @@ class JiraStatusTest {
 
         assertThat(actual).isNull()
     }
+
+    @Test
+    fun shouldParseGarbled() {
+        val actual = JiraStatus.Parser.parseResponse("""<html>SURPRISE</html>""")
+
+        assertThat(actual).isNull()
+    }
 }
