@@ -123,7 +123,7 @@ internal class StandaloneStoppedNode(
                 stdout = Level.DEBUG,
                 stderr = Level.DEBUG
             )
-            JiraStatus.Parser.parseResponse(curl.output) == JiraStatus.RUNNING
+            curl.isSuccessful() && JiraStatus.Parser.parseResponse(curl.output) == JiraStatus.RUNNING
         }
     }
 
