@@ -4,7 +4,7 @@ val kotlinVersion = "1.2.70"
 val log4jVersion = "2.17.2"
 
 plugins {
-    id("com.atlassian.performance.tools.gradle-release").version("0.9.0")
+    id("com.atlassian.performance.tools.gradle-release").version("0.10.0")
     kotlin("jvm").version("1.4.32")
     `java-library`
 }
