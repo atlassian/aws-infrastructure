@@ -10,15 +10,14 @@ import com.atlassian.performance.tools.infrastructure.api.process.RemoteMonitori
 import com.atlassian.performance.tools.infrastructure.api.profiler.Profiler
 import com.atlassian.performance.tools.ssh.api.Ssh
 import com.atlassian.performance.tools.ssh.api.SshConnection
+import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-import java.io.StringReader
 import java.net.URI
 import java.time.Duration
 import java.time.Duration.ofMinutes
 import java.time.Duration.ofSeconds
 import java.time.Instant.now
-import javax.json.Json
 
 internal class StandaloneStoppedNode(
     private val name: String,
@@ -118,8 +117,13 @@ internal class StandaloneStoppedNode(
             threadDump,
             "RUNNING state"
         ) {
-            val response = ssh.safeExecute("curl $statusEndpoint", launchTimeouts.unresponsivenessTimeout).output
-            JiraStatus.Parser.parseResponse(response) == JiraStatus.RUNNING
+            val curl = ssh.safeExecute(
+                "curl --silent $statusEndpoint",
+                launchTimeouts.unresponsivenessTimeout,
+                stdout = Level.DEBUG,
+                stderr = Level.DEBUG
+            )
+            JiraStatus.Parser.parseResponse(curl.output) == JiraStatus.RUNNING
         }
     }
 
