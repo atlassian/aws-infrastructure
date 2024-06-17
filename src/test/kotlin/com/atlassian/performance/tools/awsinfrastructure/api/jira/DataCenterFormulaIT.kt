@@ -2,7 +2,6 @@ package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
 import com.atlassian.performance.tools.aws.api.Investment
 import com.atlassian.performance.tools.aws.api.SshKeyFormula
-import com.atlassian.performance.tools.aws.api.Storage
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime
 import com.atlassian.performance.tools.awsinfrastructure.api.DatasetCatalogue
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C5NineExtraLargeEphemeral
@@ -12,6 +11,7 @@ import com.atlassian.performance.tools.infrastructure.api.dataset.Dataset
 import com.atlassian.performance.tools.infrastructure.api.distribution.PublicJiraSoftwareDistribution
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
 import com.atlassian.performance.tools.infrastructure.api.jira.MinimalMysqlJiraHome
+import com.atlassian.performance.tools.infrastructure.api.jvm.OpenJDK
 import com.atlassian.performance.tools.infrastructure.api.jvm.jmx.EnabledRemoteJmx
 import com.atlassian.performance.tools.workspace.api.TaskWorkspace
 import com.atlassian.performance.tools.workspace.api.TestWorkspace
@@ -20,11 +20,9 @@ import org.apache.logging.log4j.CloseableThreadContext
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.data.Percentage
 import org.junit.Test
-import java.lang.Exception
 import java.lang.Thread.sleep
 import java.net.HttpURLConnection
 import java.net.URI
-import java.net.URL
 import java.time.Duration
 import java.time.Duration.ofSeconds
 import java.util.*
@@ -39,6 +37,13 @@ class DataCenterFormulaIT {
     private val jiraVersionEight = "8.22.0"
     private val datasetSeven = DatasetCatalogue().smallJiraSeven()
     private val datasetEight = DatasetCatalogue().largeJiraEight()
+
+    /**
+     * The default JDK in [JiraNodeConfig] is flaky to install.
+     */
+    private val stableJdk = JiraNodeConfig.Builder()
+        .versionedJdk(OpenJDK())
+        .build()
 
     @Test
     fun shouldProvisionDataCenter() {
@@ -90,6 +95,7 @@ class DataCenterFormulaIT {
             ).computer(C5NineExtraLargeEphemeral())
                 .databaseComputer(C5NineExtraLargeEphemeral())
                 .waitForRunning(true)
+                .configs(stableJdk.multipleNodes(2))
                 .build()
 
             val provisionedJira = dcFormula.provision(
@@ -161,7 +167,7 @@ class DataCenterFormulaIT {
                 lifespan = lifespan,
                 prefix = nonce
             )
-            val config = JiraNodeConfig.Builder()
+            val config = JiraNodeConfig.Builder(stableJdk)
                 .remoteJmx(EnabledRemoteJmx())
                 .build()
             val dcFormula = DataCenterFormula.Builder(
@@ -170,13 +176,7 @@ class DataCenterFormulaIT {
                 database = dataset.database
             ).computer(C5NineExtraLargeEphemeral())
                 .databaseComputer(C5NineExtraLargeEphemeral())
-                .configs(
-                    (1..2).map {
-                        JiraNodeConfig.Builder(config)
-                            .name("${config.name}-$it")
-                            .build()
-                    }
-                )
+                .configs(config.multipleNodes(2))
                 .build()
 
             val provisionedJira = dcFormula.provision(
@@ -223,7 +223,7 @@ class DataCenterFormulaIT {
         val jiraHome = MinimalMysqlJiraHome()
         val database = MinimalMysqlDatabase.Builder().build()
         val jiraFormula = DataCenterFormula.Builder(distribution, jiraHome, database)
-            .configs(listOf(JiraNodeConfig.Builder().build()))
+            .configs(listOf(stableJdk))
             .waitForUpgrades(false)
             .build()
         val investment = Investment(
@@ -259,4 +259,12 @@ class DataCenterFormulaIT {
             catch (e: Exception) { -1 }
             finally { it.disconnect() }
         }
+}
+
+private fun JiraNodeConfig.multipleNodes(nodeCount: Int): List<JiraNodeConfig> {
+    return (1..nodeCount).map { nodeIndex ->
+        JiraNodeConfig.Builder(this)
+            .name("${this.name}-$nodeIndex")
+            .build()
+    }
 }
