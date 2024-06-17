@@ -12,9 +12,9 @@ import com.atlassian.performance.tools.infrastructure.api.distribution.PublicJir
 import com.atlassian.performance.tools.infrastructure.api.distribution.PublicJiraSoftwareDistribution
 import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
 import com.atlassian.performance.tools.infrastructure.api.jira.MinimalMysqlJiraHome
+import com.atlassian.performance.tools.infrastructure.api.jvm.OpenJDK
 import org.assertj.core.api.Assertions
 import org.junit.Test
-import java.lang.Exception
 import java.net.HttpURLConnection
 import java.net.URI
 import java.time.Duration
@@ -26,6 +26,13 @@ class StandaloneFormulaIT {
 
     private val workspace = taskWorkspace.isolateTest(javaClass.simpleName)
     private val dataset = DatasetCatalogue().smallJiraSeven()
+
+    /**
+     * The default JDK in [JiraNodeConfig] is flaky to install.
+     */
+    private val stableJdk = JiraNodeConfig.Builder()
+        .versionedJdk(OpenJDK())
+        .build()
 
     @Test
     fun shouldProvisionServer() {
@@ -45,6 +52,7 @@ class StandaloneFormulaIT {
             .jiraVolume(Volume(80))
             .databaseComputer(C5NineExtraLargeEphemeral())
             .databaseVolume(Volume(90))
+            .config(stableJdk)
             .build()
         val copiedFormula = StandaloneFormula.Builder(serverFormula).build()
 
@@ -69,6 +77,7 @@ class StandaloneFormulaIT {
         val jiraHome = MinimalMysqlJiraHome()
         val database = MinimalMysqlDatabase.Builder().build()
         val jiraFormula = StandaloneFormula.Builder(distribution, jiraHome, database)
+            .config(stableJdk)
             .waitForUpgrades(false)
             .build()
         val investment = Investment(
