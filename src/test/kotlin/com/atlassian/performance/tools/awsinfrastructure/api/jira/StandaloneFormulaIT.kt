@@ -45,7 +45,7 @@ class StandaloneFormulaIT {
             prefix = nonce
         )
         val serverFormula = StandaloneFormula.Builder(
-            productDistribution = PublicJiraServiceDeskDistribution("3.9.8"),
+            productDistribution = PublicJiraServiceDeskDistribution("3.16.0"),
             database = dataset.database,
             jiraHomeSource = dataset.jiraHomeSource
         ).computer(C5NineExtraLargeEphemeral())
@@ -109,8 +109,12 @@ class StandaloneFormulaIT {
     private fun URI.queryHttp() = toURL().openConnection()
         .let { it as? HttpURLConnection }
         ?.let {
-            try { it.responseCode }
-            catch (e: Exception) { -1 }
-            finally { it.disconnect() }
+            try {
+                it.responseCode
+            } catch (e: Exception) {
+                -1
+            } finally {
+                it.disconnect()
+            }
         }
 }
