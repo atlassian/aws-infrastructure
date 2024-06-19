@@ -21,7 +21,7 @@ import java.net.URI
 import java.time.Duration
 import java.time.Duration.ofSeconds
 import java.util.*
-import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletableFuture.completedFuture
 import java.util.concurrent.Executors.newFixedThreadPool
 import java.util.concurrent.TimeUnit
 
@@ -70,7 +70,7 @@ class DataCenterFormulaIT {
             ),
             pluginsTransport = aws.jiraStorage(nonce),
             resultsTransport = aws.resultsStorage(nonce),
-            key = CompletableFuture.completedFuture(keyFormula.provision()),
+            key = completedFuture(keyFormula.provision()),
             roleProfile = aws.shortTermStorageAccess(),
             aws = aws
         )
@@ -87,7 +87,7 @@ class DataCenterFormulaIT {
         val executor = newFixedThreadPool(20) { Thread(it, "DCFIT-test-load-balancer-thread-$it") }
 
         val routeIds = (1..1000).map {
-            executor.submitWithLogContext("Test") {
+            executor.submitWithLogContext("route-$it") {
                 getRouteId(address)
             }
         }
@@ -95,20 +95,18 @@ class DataCenterFormulaIT {
             .groupingBy { it }
             .eachCount()
 
-        assertThat(routeIds.size).isEqualTo(2)
+        assertThat(routeIds).hasSize(2)
 
         val counts = routeIds.entries.map { it.value }
         assertThat(counts[0]).isCloseTo(counts[1], withPercentage(10.0))
     }
 
     private fun getRouteId(address: URI): String {
-        val cookiesList = address.toURL().openConnection().headerFields["Set-Cookie"]
-        assertThat(cookiesList).isNotNull()
-        val routeId = cookiesList!!.filter { str ->
-            str.contains("ROUTEID")
-        }
-        assertThat(routeId).hasSize(1)
-        return routeId[0].split(";")[0]
+        val headers = address.toURL().openConnection().headerFields
+        assertThat(headers).containsKey("Set-Cookie")
+        val routeIds = headers["Set-Cookie"]!!.filter { it.contains("ROUTEID") }
+        assertThat(routeIds).hasSize(1)
+        return routeIds.single().split(";").first()
     }
 
     @Test
@@ -132,7 +130,7 @@ class DataCenterFormulaIT {
                 investment = investment,
                 pluginsTransport = aws.jiraStorage(nonce),
                 resultsTransport = aws.resultsStorage(nonce),
-                key = CompletableFuture.completedFuture(keyFormula.provision()),
+                key = completedFuture(keyFormula.provision()),
                 roleProfile = aws.shortTermStorageAccess(),
                 aws = aws
             )
