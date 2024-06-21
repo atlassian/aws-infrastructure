@@ -1,10 +1,18 @@
 package com.atlassian.performance.tools.awsinfrastructure.api
 
 import com.amazonaws.regions.Regions
+import com.atlassian.performance.tools.aws.api.Investment
 import com.atlassian.performance.tools.aws.api.StorageLocation
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.aws
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.taskWorkspace
+import com.atlassian.performance.tools.awsinfrastructure.api.dataset.DatasetHost
+import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C5NineExtraLargeEphemeral
+import com.atlassian.performance.tools.awsinfrastructure.api.jira.StandaloneFormula
+import com.atlassian.performance.tools.awsinfrastructure.api.virtualusers.AbsentVirtualUsersFormula
 import com.atlassian.performance.tools.infrastructure.api.dataset.Dataset
+import com.atlassian.performance.tools.infrastructure.api.distribution.PublicJiraSoftwareDistribution
+import com.atlassian.performance.tools.infrastructure.api.jira.JiraNodeConfig
+import com.atlassian.performance.tools.infrastructure.api.jvm.OpenJDK
 import com.atlassian.performance.tools.ssh.api.Ssh
 import org.junit.Test
 import java.net.URI
@@ -30,10 +38,34 @@ class AwsDatasetModificationIT {
                     ssh.execute("rm -r $backupPath")
                 }
         }
+        // avoid unstable default JDK from StandaloneFormula.Builder/JiraNodeConfig.Builder
+        // TODO update the default DatasetHost after 3.2.0 release
+        val stableDatasetHost = DatasetHost {
+            InfrastructureFormula
+                .Builder(
+                    aws = aws,
+                    virtualUsersFormula = AbsentVirtualUsersFormula()
+                )
+                .investment(
+                    investment = Investment(
+                        useCase = "Generic purpose dataset modification",
+                        lifespan = ofMinutes(50)
+                    )
+                )
+                .jiraFormula(
+                    StandaloneFormula
+                        .Builder(PublicJiraSoftwareDistribution("8.0.0"), it.jiraHomeSource, it.database)
+                        .config(JiraNodeConfig.Builder().versionedJdk(OpenJDK()).build())
+                        .computer(C5NineExtraLargeEphemeral())
+                        .build()
+                )
+                .build()
+        }
         val modification = AwsDatasetModification.Builder(
             aws = aws,
             dataset = sourceDataset
         )
+            .host(stableDatasetHost)
             .workspace(workspace)
             .onlineTransformation(transformation)
             .build()
