@@ -16,8 +16,8 @@ import java.nio.file.Path
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 
-class Infrastructure<out T : VirtualUsers>(
-    val virtualUsers: T,
+class Infrastructure<out V : VirtualUsers>(
+    val virtualUsers: V,
     val jira: Jira,
     private val resultsTransport: Storage,
     val sshKey: SshKey
