@@ -2,6 +2,7 @@ package com.atlassian.performance.tools.awsinfrastructure.api
 
 import com.atlassian.performance.tools.aws.api.Investment
 import com.atlassian.performance.tools.aws.api.SshKeyFormula
+import com.atlassian.performance.tools.awsinfrastructure.FlakyJdkWorkaround
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.aws
 import com.atlassian.performance.tools.awsinfrastructure.api.jira.ProvisionedJira
@@ -49,6 +50,7 @@ class CustomDatasetSourceIT {
             jiraHomeSource = sourceDataset.jiraHomeSource,
             productDistribution = PublicJiraSoftwareDistribution("9.9.0")
         )
+            .config(FlakyJdkWorkaround.STABLE_JDK_CONFIG)
             .build()
             .provision(
                 investment = Investment(

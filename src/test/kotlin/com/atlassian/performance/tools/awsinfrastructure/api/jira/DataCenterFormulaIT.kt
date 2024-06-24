@@ -2,6 +2,7 @@ package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
 import com.atlassian.performance.tools.aws.api.Investment
 import com.atlassian.performance.tools.aws.api.SshKeyFormula
+import com.atlassian.performance.tools.awsinfrastructure.FlakyJdkWorkaround
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime
 import com.atlassian.performance.tools.awsinfrastructure.api.DatasetCatalogue
 import com.atlassian.performance.tools.awsinfrastructure.api.hardware.C5NineExtraLargeEphemeral
@@ -13,7 +14,6 @@ import com.atlassian.performance.tools.infrastructure.api.jira.MinimalMysqlJiraH
 import com.atlassian.performance.tools.infrastructure.api.jvm.OpenJDK
 import com.atlassian.performance.tools.infrastructure.api.jvm.jmx.EnabledRemoteJmx
 import org.apache.logging.log4j.LogManager
-import org.apache.logging.log4j.Logger
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.data.Percentage.withPercentage
 import org.junit.Test
@@ -31,13 +31,6 @@ class DataCenterFormulaIT {
     private val workspace = IntegrationTestRuntime.taskWorkspace
     private val aws = IntegrationTestRuntime.aws
 
-    /**
-     * The default JDK in [JiraNodeConfig] is flaky to install.
-     */
-    private val stableJdk = JiraNodeConfig.Builder()
-        .versionedJdk(OpenJDK())
-        .build()
-
     @Test
     fun shouldProvisionDataCenter() {
         val dataset = DatasetCatalogue().largeJiraEight()
@@ -52,7 +45,7 @@ class DataCenterFormulaIT {
             prefix = nonce
         )
         val nodeCount = 2
-        val nodeConfigs = JiraNodeConfig.Builder(stableJdk)
+        val nodeConfigs = JiraNodeConfig.Builder(FlakyJdkWorkaround.STABLE_JDK_CONFIG)
             .remoteJmx(EnabledRemoteJmx())
             .build()
             .multipleNodes(nodeCount)
@@ -125,7 +118,7 @@ class DataCenterFormulaIT {
         val database = MinimalMysqlDatabase.Builder().build()
         val nodeCount = 1
         val jiraFormula = DataCenterFormula.Builder(distribution, jiraHome, database)
-            .configs(stableJdk.multipleNodes(nodeCount))
+            .configs(FlakyJdkWorkaround.STABLE_JDK_CONFIG.multipleNodes(nodeCount))
             .waitForUpgrades(false)
             .build()
         val investment = Investment(
