@@ -60,5 +60,5 @@ jobs:
           ./gradlew release \
               -Prelease.customUsername=${{ github.actor }} \
               -Prelease.customPassword=${{ github.token }} \
-              -Prelease.incrementer=increment${{ github.event.inputs.release }}
+              -Prelease.versionIncrementer=increment${{ github.event.inputs.release }}
           ./gradlew publish
