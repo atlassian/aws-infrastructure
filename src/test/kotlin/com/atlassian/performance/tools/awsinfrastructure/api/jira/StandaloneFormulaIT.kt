@@ -2,6 +2,7 @@ package com.atlassian.performance.tools.awsinfrastructure.api.jira
 
 import com.atlassian.performance.tools.aws.api.Investment
 import com.atlassian.performance.tools.aws.api.SshKeyFormula
+import com.atlassian.performance.tools.awsinfrastructure.FlakyJdkWorkaround
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.aws
 import com.atlassian.performance.tools.awsinfrastructure.IntegrationTestRuntime.taskWorkspace
 import com.atlassian.performance.tools.awsinfrastructure.api.DatasetCatalogue
@@ -27,13 +28,6 @@ class StandaloneFormulaIT {
     private val workspace = taskWorkspace.isolateTest(javaClass.simpleName)
     private val dataset = DatasetCatalogue().smallJiraSeven()
 
-    /**
-     * The default JDK in [JiraNodeConfig] is flaky to install.
-     */
-    private val stableJdk = JiraNodeConfig.Builder()
-        .versionedJdk(OpenJDK())
-        .build()
-
     @Test
     fun shouldProvisionServer() {
         val nonce = UUID.randomUUID().toString()
@@ -52,7 +46,7 @@ class StandaloneFormulaIT {
             .jiraVolume(Volume(80))
             .databaseComputer(C5NineExtraLargeEphemeral())
             .databaseVolume(Volume(90))
-            .config(stableJdk)
+            .config(FlakyJdkWorkaround.STABLE_JDK_CONFIG)
             .build()
         val copiedFormula = StandaloneFormula.Builder(serverFormula).build()
 
@@ -77,7 +71,7 @@ class StandaloneFormulaIT {
         val jiraHome = MinimalMysqlJiraHome()
         val database = MinimalMysqlDatabase.Builder().build()
         val jiraFormula = StandaloneFormula.Builder(distribution, jiraHome, database)
-            .config(stableJdk)
+            .config(FlakyJdkWorkaround.STABLE_JDK_CONFIG)
             .waitForUpgrades(false)
             .build()
         val investment = Investment(
