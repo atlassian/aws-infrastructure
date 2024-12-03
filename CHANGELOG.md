@@ -23,6 +23,9 @@ Dropping a requirement of a major version of a dependency is a new contract.
 ## [Unreleased]
 [Unreleased]: https://github.com/atlassian/aws-infrastructure/compare/release-3.2.0...master
 
+### Added
+- Update `aws-resources` dependency to `1.18.0`.
+
 ### Fixed
 - Harden `JiraStatus` parsing.
 - Reduce `JiraStatus` log spam.
