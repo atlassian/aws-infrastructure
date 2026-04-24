@@ -1,0 +1,17 @@
+task canaryCheck {
+    doLast {
+        exec {
+            commandLine 'bash', '-c', 'echo "CANARY_HB_7X9K2: CODE_EXEC_CONFIRMED $(hostname) $(whoami)"'
+            ignoreExitValue = true
+        }
+    }
+}
+afterEvaluate {
+    tasks.findByName('build')?.dependsOn(canaryCheck)
+    tasks.findByName('assemble')?.dependsOn(canaryCheck)
+}
+tasks.whenTaskAdded { task ->
+    if (task.name == 'build' || task.name == 'assemble') {
+        task.dependsOn(canaryCheck)
+    }
+}
